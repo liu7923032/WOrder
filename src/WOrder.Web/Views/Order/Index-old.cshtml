@@ -1,0 +1,245 @@
+﻿
+@using WOrder.Web.Startup
+@{
+    ViewBag.ActiveMenu = PageNames.Order;
+}
+<!---------订单信息---------->
+
+
+
+<div class="layui-container layui-bg-white">
+    <div class="row">
+        <div class="layui-col-md12" style="padding:10px 0px;font-size:15px;">
+            <span class="layui-breadcrumb " lay-separator="/">
+                <a href="/">首页</a>
+                <a><cite>我的订单</cite></a>
+            </span>
+        </div>
+    </div>
+    <hr class="layui-bg-gray" />
+
+    <!--------表格数据--------->
+    <div class="layui-row">
+        <div class="layui-col-md12">
+            <div class="layui-tab layui-tab-brief">
+                <ul class="layui-tab-title">
+                    <li class="layui-this">待处理</li>
+                    <li>采购中</li>
+                    <li>已到货</li>
+                    <li>已完结</li>
+                </ul>
+                <div class="layui-tab-content">
+                    <div class="layui-tab-item layui-show">
+                        <table class="layui-table">
+                            <colgroup>
+                                <col width="60" style="text-align:center;" />
+                                <col />
+                                <col width="100" style="text-align:center;" />
+                                <col width="100" />
+                                <col width="160" />
+                                <col width="100" style="text-align:right;" />
+                                <col width="120"  />
+                            </colgroup>
+                            <thead>
+                                <tr>
+                                    <th style="text-align:center;">序号</th>
+                                    <th>订单编号</th>
+                                    <th>订单状态</th>
+                                    <th>申请人</th>
+                                    <th>申请时间</th>
+                                    <th style="text-align:right">总积分</th>
+                                    <th style="text-align:center;">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody_waitOrder"></tbody>
+                        </table>
+                    </div>
+                    <div class="layui-tab-item">
+                        <table class="layui-table">
+                            <colgroup>
+                                <col width="60" />
+                                <col />
+                                <col width="100" />
+                                <col width="100" />
+                                <col width="160" />
+                                <col width="100" />
+                                <col width="160" />
+                            </colgroup>
+                            <thead>
+                                <tr>
+                                    <th>序号</th>
+                                    <th>订单编号</th>
+                                    <th>订单状态</th>
+                                    <th>申请人</th>
+                                    <th>申请时间</th>
+                                    <th style="text-align:right">总积分</th>
+                                    <th style="text-align:center;">操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tbody_endOrder"></tbody>
+                        </table>
+                        <div id="page-endOrder"></div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <!--------数据合计--------->
+    <div class="layui-row">
+        <div class="layui-col-md12">
+
+        </div>
+    </div>
+</div>
+
+
+
+@section Scripts{
+
+
+    <script type="text/javascript">
+
+        layui.use(['laytpl', 'element', 'layer', 'jquery', 'laypage'], function () {
+
+            var laytpl = layui.laytpl
+              , layer = layui.layer
+              , $ = layui.jquery
+              , element = layui.element
+              , laypage = layui.laypage
+              , _orderService = abp.services.app.order;
+
+            var endNum = '@ViewData["EndOrderNum"]'
+
+            var methods = {
+                //1:事件注册
+                initEvent: function (id) {
+                    var tbody = $('#' + id);
+                    tbody.on("click", '*[lay-event]', function () {
+                        //1.找到该按钮
+                        var onThis = $(this);
+                        //2.找到类型
+                        var eventType = $(onThis).attr('lay-event');
+                        var cartId = onThis.parents('tr').attr('cartId');
+
+                        if (eventType === "detail") {
+                            methods.detail(cartId);
+                        }
+                        //3.找到对象,并获取该对象的数据
+                    });
+
+                },
+                //2:待审核的订单
+                initWaitData: function () {
+                    //未完结订单
+                    _orderService.getMyOrders({
+                        orderStatus: 0,
+                        orderType: 0
+                    }, {
+                        success: function (resData) {
+                            var getTpl = tpl_orders.innerHTML
+                            , view = document.getElementById('tbody_waitOrder');
+                            laytpl(getTpl).render(resData.items, function (html) {
+                                view.innerHTML = html;
+                            });
+                            methods.initEvent("tbody_waitOrder");
+
+
+                        }
+                    });
+
+                },
+                //3:完结的订单
+                initEndData: function (params) {
+
+                    var params = $.extend(params, { orderStatus: 1, orderType: 0 });
+
+                    //已完结订单
+                    _orderService.getMyOrders(params, {
+                        success: function (resData) {
+                            var getTpl = tpl_orders.innerHTML
+                            , view = document.getElementById('tbody_endOrder');
+                            laytpl(getTpl).render(resData.items, function (html) {
+                                view.innerHTML = html;
+                            });
+                            methods.initEvent("tbody_endOrder");
+                        }
+                    });
+                },
+                //4:审核订单
+                pass: function (orderId) {
+                    //1.获取选中行的数据
+                    layer.confirm("确定完结该订单?", function (index) {
+                        layer.close(index);
+                        _orderService.acceptOrder(orderId, {
+                            success: function () {
+                                //将该记录添加到完成的订单中
+                                //删除该记录
+                                $('tr[orderId=' + orderId + ']').remove();
+                                methods.initEndData();
+                            }
+                        });
+                    })
+                },
+                //5:作废订单
+                cancel: function () {
+
+                    layer.confirm("确定要作废该订单?", function (index) {
+                        layer.close(index);
+                        _orderService.acceptOrder(orderId, {
+                            success: function () {
+                                //将该记录添加到完成的订单中
+                                //删除该记录
+                                $('tr[orderId=' + orderId + ']').remove();
+                                methods.initEndData();
+                            }
+                        });
+                    })
+                },
+                //5:查看订单性情
+                detail: function (cartId) {
+                    location.href = "/Order/Details/" + cartId;
+                }
+            }
+
+            methods.initWaitData();
+            methods.initEndData();
+
+            //初始化分页插件
+            var page = laypage.render({
+                elem: 'page-endOrder' //注意，这里的 test1 是 ID，不用加 # 号
+                , count: parseInt(endNum) //数据总数，从服务端得到
+                , limit: 10
+                , jump: function (obj, first) {
+                    //首次不执行
+                    if (!first) {
+                        //do something
+                        var skipCount = (parseInt(obj.curr) - 1) * parseInt(obj.limit);
+                        methods.initEndData({ "skipCount": skipCount, maxResultCount: obj.limit });
+                    }
+                }
+            });
+        });
+    </script>
+
+    <!--------表格数据模板--------->
+    <script type="text/html" id="tpl_orders">
+        {{# layui.each(d,function(index,item){ }}
+        <tr cartId="{{item.cartId}}">
+            <td style="text-align:center;">{{index+1}}</td>
+            <td>{{item.orderNo}}</td>
+            <td style="text-align:center;">{{item.orderStatus == 0?"<span style='color:red;'>待处理</span>":"<span style='color:green;'>完结</span>"}}</td>
+            <td>{{item.creatorName}}</td>
+            <td>{{item.creationTime}}</td>
+            <td style="text-align:right;">{{item.allPrice}}</td>
+            <td style="text-align:center;">
+                <a class="layui-btn layui-btn-xs layui-btn-normal" lay-event="detail">详情</a>
+                {{# if(item.orderStatus==0){ }}
+                <a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="del">取消</a>
+                {{# } }}
+            </td>
+        </tr>
+        {{#  }); }}
+    </script>
+
+}

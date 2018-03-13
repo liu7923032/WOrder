@@ -1,0 +1,198 @@
+﻿body {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  background-color: #ddd;
+}
+a {
+  cursor: pointer;
+  text-decoration: none;
+}
+#ly_main {
+  background-color: whitesmoke;
+}
+#ly_main .header {
+  background-color: #3c8dbc;
+  height: 50px;
+  line-height: 50px;
+  width: 100%;
+}
+#ly_main .header .logo {
+  font-size: 24px;
+  font-weight: bold;
+  margin: 0 auto;
+  text-align: center;
+  width: 200px;
+  float: left;
+  color: white;
+}
+#ly_main .header .left {
+  width: auto;
+  float: left;
+  background-color: bisque;
+}
+#ly_main .header .right {
+  width: 200px;
+  float: right;
+  background-color: red;
+}
+#ly_main .header .right .u-name {
+  color: white;
+}
+#ly_main .logo_main {
+  float: left;
+  width: 200px;
+}
+.submenu {
+  margin: 0;
+  padding: 0;
+}
+.submenu li {
+  line-height: 25px;
+  list-style-type: none;
+  padding: 5px 20px;
+  text-align: left;
+  border-bottom: 1px solid whitesmoke;
+}
+.submenu li a {
+  font-size: 15px;
+  color: blue;
+}
+.submenu li a:hover {
+  color: orangered;
+}
+.submenu li:hover {
+  background-color: #9dbdf0;
+  color: blue;
+}
+.submenu .selected {
+  color: red;
+  background-color: orange;
+}
+.query-table {
+  border-collapse: collapse;
+  border: 1px whitesmoke solid;
+  width: auto;
+}
+.query-table td {
+  vertical-align: middle;
+  border: 0;
+  font-size: 14px;
+  padding: 2px 5px;
+  height: 30px;
+  box-sizing: border-box;
+}
+.condition {
+  padding: 5px 20px;
+  box-sizing: border-box;
+  height: 40px;
+}
+.condition label {
+  margin: 0 10;
+  vertical-align: middle;
+}
+.condition span {
+  margin-left: 5px;
+}
+/*表单对象设置,将table的的class设置为formTable*/
+.form-table {
+  border-collapse: collapse;
+  border: 1px whitesmoke solid;
+  width: 100%;
+}
+.form-table td {
+  vertical-align: middle;
+  border: 1px #DDDDDD solid;
+  font-size: 14px;
+  padding: 6px;
+}
+.form-table th {
+  border: 1px #DDDDDD solid;
+  font-size: 14px;
+  padding: 5px;
+  text-align: center;
+  background-color: #EEEEEE;
+  font-weight: bold;
+  font-family: 'Microsoft YaHei';
+}
+.form-table .tdLabel {
+  width: 100px;
+  background-color: #E0ECFF;
+}
+/*项目进度*/
+.process {
+  display: flex;
+  flex-flow: row wrap;
+  padding: 13px 5%;
+  background: #f5f7fa;
+  border-radius: 4%;
+  position: relative;
+  font-size: 16px;
+}
+.process .stage {
+  display: flex;
+  align-items: center;
+  flex-shrink: 1;
+  flex-basis: 23%;
+  margin-right: 0px;
+  cursor: pointer;
+}
+.process .stage .head {
+  width: auto;
+  padding-right: 10px;
+  position: relative;
+}
+.process .stage .head .success {
+  color: #67c23a;
+  border-color: #67c23a;
+}
+.process .stage .main {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  flex-grow: 1;
+  text-align: left;
+  white-space: normal;
+}
+.process .stage .main .success {
+  color: #67c23a;
+  border-color: #67c23a;
+}
+.process .stage .main .title {
+  line-height: 20px;
+}
+.process .stage .arrow {
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.process .stage .arrow::before {
+  transform: rotate(-45deg) translateY(-4px);
+  transform-origin: 0 0;
+  content: " ";
+  display: inline-block;
+  position: absolute;
+  height: 15px;
+  width: 1px;
+  background-color: #c0c4cc;
+}
+.process .stage .arrow::after {
+  transform: rotate(45deg) translateY(4px);
+  transform-origin: 100% 100%;
+  content: " ";
+  display: inline-block;
+  position: absolute;
+  height: 15px;
+  width: 1px;
+  background-color: #c0c4cc;
+}
+.process .isLast {
+  flex-basis: auto !important;
+  flex-grow: 0;
+  flex-shrink: 0;
+  max-width: 25%;
+}
+.process .isLast .arrow {
+  display: none;
+}

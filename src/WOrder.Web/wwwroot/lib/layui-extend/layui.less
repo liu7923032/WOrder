@@ -1,0 +1,72 @@
+﻿
+/*扩展的图标*/
+@font-face {
+    font-family: 'mine-icon';
+    src: url('font/iconfont.eot');
+    src: url('font/iconfont.eot?#iefix') format('embedded-opentype'), url('font/iconfont.woff') format('woff'), url('font/iconfont.ttf') format('truetype'), url('font/iconfont.svg#iconfont') format('svg');
+}
+
+
+.mine-icon {
+    font-family: "mine-icon" !important;
+    font-size: 16px;
+    font-style: normal;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+
+.layui-bg-white {
+    background-color: white;
+}
+/*仿制bootstrap 做的layui input-group*/
+.layui-input-group {
+    position: relative;
+    display: table;
+    border-collapse: separate;
+
+    span {
+        font-weight: 500;
+        padding: 6px 12px;
+        border: 1px solid #e6e6e6;
+        line-height: 1;
+        text-align: center;
+        display: table-cell;
+        background-color: #eee;
+        cursor: pointer;
+    }
+
+    input {
+        width: 100%;
+        line-height: 1;
+        display: table-cell;
+        padding: 0 10px;
+        text-align: center;
+        color: blue;
+        font-weight: 800;
+    }
+}
+
+
+
+.layui-panel {
+    margin-bottom:15px;
+    border-radius:2px;
+    background-color:#fff;
+    box-shadow:0 1px 0 rgba(0,0,0,.05);
+
+    .layui-panel-title{
+        position:relative;
+        height:50px;
+        line-height:50px;
+        padding:0 10px;
+        border-bottom:1px dotted #E9E9E9;
+        color:#333;
+        border-radius:2px 2px 0 0;
+        font-size:14px;
+    }
+
+    .layui-panel-body{
+        padding:10px 15px;
+    }
+}

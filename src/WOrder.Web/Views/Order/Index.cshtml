@@ -1,0 +1,178 @@
+﻿
+@using WOrder.Web.Startup
+@{
+    ViewBag.ActiveMenu = PageNames.Order;
+}
+<!---------订单信息---------->
+
+
+
+<div class="layui-container layui-bg-white">
+    <div class="row">
+        <div class="layui-col-md12" style="padding:10px 0px;font-size:15px;">
+            <span class="layui-breadcrumb " lay-separator=">">
+                <a href="/">首页</a>
+                <a><cite>我的订单</cite></a>
+            </span>
+        </div>
+    </div>
+    <hr class="layui-bg-gray" />
+
+    <div class="layui-row">
+        <div class="layui-col-md12">
+            <div class="layui-tab layui-tab-brief" lay-filter="f_order_tab">
+                <ul class="layui-tab-title">
+                    <li class="layui-this">
+                        待处理
+                        @if (ViewBag.WaitNum != 0)
+                        {
+                            <span class="layui-badge" id="span_waitNum">@ViewBag.WaitNum</span>
+                        }
+                    </li>
+                    <li>
+                        采购中
+                        @if (ViewBag.PurchaseNum != 0)
+                        {
+                            <span class="layui-badge">@ViewBag.PurchaseNum</span>
+                        }
+                    </li>
+                    <li>
+                        已到货
+                        @if (ViewBag.ReceiveNum != 0)
+                        {
+                            <span class="layui-badge">@ViewBag.ReceiveNum</span>
+                        }
+                    </li>
+                    <li>已完结</li>
+                </ul>
+                <div class="layui-tab-content">
+                    <table id="tb_myOrder" lay-filter="f_myorder"></table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+
+@section Scripts{
+
+
+    <script type="text/javascript">
+
+        layui.use(['element', 'layer', 'jquery', 'abptable'], function () {
+
+            var layer = layui.layer
+              , $ = layui.jquery
+              , table = layui.abptable
+              , element = layui.element
+              , _orderService = abp.services.app.order;
+
+
+            var methods = {
+                //1:事件注册
+                initEvent: function () {
+                    //初始化表格
+                    table.render({
+                        elem: '#tb_myOrder'
+                      , url: '/api/services/app/order/GetOrders' //数据接口
+                      , page: true //开启分页
+                      , height: 'full-270'
+                      , cellMinWidth: 80
+                      , cols: [[ //表头
+                          { type: 'numbers' }
+                        , { field: 'orderNo', title: '订单编号', align: 'center', width: 150, templet: '#tpl_orderNo' }
+                        , { field: 'addressInfo', title: '地址信息', align: 'center' }
+                        , { field: 'orderStatus', title: '订单状态', align: 'center', width: 120, templet: '#tpl_status' }
+                        , { field: 'creatorName', title: '创建人', align: 'center', width: 120 }
+                        , { field: 'creationTime', title: '创建时间', align: 'center', width: 160 }
+                        , { field: 'allPrice', title: '订单价格', width: 100, align: 'right', sort: true }
+                        , { field: 'action', title: '操作', width: 100, align: 'center', toolbar: '#tool_myOrder' }
+                      ]]
+                    });
+
+                    //2.监听工具条事件
+                    table.on('tool(f_myorder)', function (obj) {
+                        var data = obj.data;
+                        if (obj.event === 'del') {
+                            layer.confirm('确定要取消订单:<span style="color:red;">[' + data.orderNo + ']</span> ?', function (index) {
+                                _orderService.cacelOrder(data.id, {
+                                    success: function (resData) {
+                                        methods.sub('span_waitNum')
+                                        obj.del();
+                                        layer.close(index);
+                                        //将待处理的数量
+                                    }
+                                });
+                            });
+                        }  else if (obj.event == "coment") {
+                            location.href = "/Order/Details/" + data.cartId;
+                        }
+                    });
+
+                    //3.tab切换事件
+                    element.on('tab(f_order_tab)', function (data) {
+                        methods.reload(data.index);
+                    });
+                },
+                sub: function (id) {
+                    var srcNum = parseInt($('#' + id).text());
+                    $('#' + id).text(srcNum - 1);
+                },
+                reload: function (status) {
+                    table.reload('tb_myOrder', {
+                        page: {
+                            curr: 1 //重新从第 1 页开始
+                        },
+                        where: { "orderStatus": status, "orderType": 0 }
+                    });
+                },
+                //2:作废订单
+                cancel: function () {
+                    layer.confirm("确定要作废该订单?", function (index) {
+                        layer.close(index);
+                        _orderService.acceptOrder(orderId, {
+                            success: function () {
+                                //将该记录添加到完成的订单中
+                                //删除该记录
+                                $('tr[orderId=' + orderId + ']').remove();
+                                methods.initEndData();
+                            }
+                        });
+                    });
+                },
+            }
+
+            methods.initEvent();
+
+        });
+    </script>
+
+    <!--------表格数据模板--------->
+    <script type="text/html" id="tool_myOrder">
+        {{# if(d.orderStatus==0){ }}
+        <a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="del">取消</a>
+        {{# } else if (d.orderStatus==3) { }}
+        <a class="layui-btn layui-btn-xs layui-btn-danger" lay-event="coment">评论</a>
+        {{# } }}
+    </script>
+
+    <script type="text/html" id="tpl_status">
+        {{# if( d.orderStatus === 0 ) { }}
+        <span style="color:gray;">待接单</span>
+        {{# } else if (d.orderStatus === 1) { }}
+        <span style="color:gray;">采购中</span>
+        {{# } else if (d.orderStatus === 2) { }}
+        <span style="color:blue;">已到货</span>
+        {{# } else { }}
+        <span style="color:green;">完结</span>
+        {{# }  }}
+    </script>
+
+
+<script type="text/html" id="tpl_orderNo">
+    <a href="/Order/Details/{{d.cartId}}" class="layui-table-link" target="_blank">{{ d.orderNo }}</a>
+</script>
+
+}

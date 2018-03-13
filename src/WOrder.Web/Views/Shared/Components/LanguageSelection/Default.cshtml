@@ -1,0 +1,23 @@
+﻿@model WOrder.Web.Views.Shared.Components.LanguageSelection.LanguageSelectionViewModel
+<li class="layui-nav-item">
+
+    <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+        <i class="@Model.CurrentLanguage.Icon"></i>
+        <span>@Model.CurrentLanguage.DisplayName</span>
+    </a>
+    <dl class="layui-nav-child">
+         @foreach (var language in Model.Languages)
+        {
+            if (language.Name != Model.CurrentLanguage.Name)
+            {
+                <dd>
+                    <i class="@language.Icon"></i>
+                    <a href="@Url.Action("ChangeCulture", "AbpLocalization")?cultureName=@(language.Name)&returnUrl=@(Model.CurrentUrl)">
+                         
+                        @language.DisplayName
+                    </a>
+                </dd>
+            }
+        }
+    </dl>
+</li>

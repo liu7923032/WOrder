@@ -1,0 +1,81 @@
+﻿@using WOrder.Web.Startup
+@using WOrder.Web.Views.Shared.Components.TopMenu
+@using WOrder.Web.Views.Shared.Components.User
+
+@{
+    ViewBag.ActiveMenu = PageNames.WorkOrder;
+}
+
+
+<div class="easyui-layout" data-options="fit:true,border:false" id="ly_main">
+    <div class="" data-options="region:'north',height:52">
+        <div class="header">
+            <div class="logo">
+                物业派单管理系统
+            </div>
+            <div class="left">
+
+            </div>
+            <div class="right">
+                @await Component.InvokeAsync(typeof(UserViewComponent))
+            </div>
+        </div>
+    </div>
+
+    <div data-options="region:'west',width:160,title:'菜单'">
+        @await Component.InvokeAsync(typeof(TopMenuViewComponent), new { activeMenu = ViewBag.ActiveMenu })
+    </div>
+    <div class="" data-options="region:'center',border:false">
+        <div class="easyui-tabs" id="tabs_main" data-options="fit:true,border:false,tabHeight:30">
+            <div title="系统首页">
+
+            </div>
+        </div>
+    </div>
+    <div data-options="region:'south',height:25">
+        <div class="p-bottom">
+            <div>
+                当前人员:
+                <span>18</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts{
+
+    <script type="text/javascript">
+
+        $(function () {
+            var methods = {
+                init: function () {
+                    $.parser.parse('#ly_main')
+
+                },
+                initMenu: function () {
+
+                    $('#accordon_menu').accordion({
+                        title: "菜单",
+                        width: 80,
+                        fit: true,
+                        border: false
+                    });
+
+                    $('.submenu>li>a').bind('click', function () {
+                        var url = $(this).attr('_href');
+                        var title = $(this).text();
+                        $.tabAdd(title, url);
+                    })
+                }
+            }
+
+
+            methods.init();
+        })
+
+    </script>
+
+
+}
+

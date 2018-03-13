@@ -1,0 +1,458 @@
+﻿@using WOrder.Web.Startup
+@using WOrder.Category
+@{
+    ViewBag.ActiveMenu = PageNames.Manage;
+}
+
+<div class="layui-container layui-bg-white">
+    <div class="layui-row">
+        <div class="layui-col-md12" style="padding:10px 0px;font-size:15px;">
+            <span class="layui-breadcrumb " lay-separator="/">
+                <a href="/">首页</a>
+                <a><cite>商品</cite></a>
+            </span>
+        </div>
+    </div>
+    <div class="row">
+        <div class="WOrder-category">
+            <ul class="layui-clear">
+                <li class="category-item layui-this"><a href="#">全部</a></li>
+                @foreach (var categoryItem in Model.Categories)
+                {
+                    <li class="category-item" categoryId="@categoryItem.Id"><a href="javascript:void(0)">@categoryItem.Name</a></li>
+                }
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div class="layui-container layui-bg-white" style="padding:10px;">
+    <div class="layui-row">
+        <div class="layui-col-md2">
+            <button class="layui-btn" id="btnPAdd"><i class="layui-icon">&#xe654;</i> 添加</button>
+        </div>
+        <div class="layui-col-md3 layui-col-md-offset7">
+            <div class="layui-input-group">
+                <input type="text" id="txtSearch" class="layui-input" style="text-align:left;" placeholder="输入名称或者描述" />
+                <span class="layui-input-group-addon" id="btnSearch"><i class="layui-icon">&#xe615;</i></span>
+            </div>
+        </div>
+    </div>
+    <div class="layui-row">
+        <div class="layui-col-md12">
+            <table class="layui-table" id="tb_product">
+                <colgroup>
+                    <col width="60" />
+                    <col width="120" />
+                    <col width="100" />
+                    <col width="160" />
+                    <col />
+                    <col width="100" />
+                    <col width="160" />
+                </colgroup>
+                <thead>
+                    <tr>
+                        <td style="text-align:center;">标识</td>
+                        <td style="text-align:center;">分类</td>
+                        <td style="text-align:center;">编码</td>
+                        <td>名称</td>
+                        <td>描述</td>
+                        <td style="text-align:right;">价格</td>
+                        <td style="text-align:center;">操作</td>
+                    </tr>
+                </thead>
+                <tbody id="tbody_product"></tbody>
+            </table>
+        </div>
+    </div>
+    <div class="layui-row">
+        <div id="p-page"></div>
+    </div>
+</div>
+
+
+
+@section Scripts{
+
+    <script type="text/javascript">
+
+        layui.use(['laytpl', 'element', 'layer', 'jquery', 'form', 'layedit', 'upload', 'laypage'], function () {
+            var laytpl = layui.laytpl
+                , element = layui.element
+                , layer = layui.layer
+                , $ = layui.jquery
+                , form = layui.form
+                , getTpl = tpl_product.innerHTML
+                , layedit = layui.layedit
+                , upload = layui.upload
+                , laypage = layui.laypage
+                , view = document.getElementById('tbody_product')
+                , _productService = abp.services.app.product
+                , _fileService = abp.services.app.file
+                , tableData = []
+                , layIndex = -1   //弹窗
+                , editorIndex      //layedit的索引
+                , categoryId = 0 //当前的分类
+                , isFirst = true //当前是第几次请求数据
+                , isInitUp = false;  //是否初始化过上传组件
+
+
+            var methods = {
+
+                initEvent: function () {
+                    $('#btnPAdd').click(function () {
+                        //弹出对话框
+                        methods.openDialog({});
+                    });
+
+                    $('#btnSearch').click(function () {
+                        var value = $('#txtSearch').val();
+                        //弹出对话框
+                        methods.renderTpl({ "name": value });
+                    });
+
+                    $('#txtSearch').keypress(function (e) {
+                        // 回车键事件
+                        if (e.which == 13) {
+                            methods.renderTpl({ "name": $('#txtSearch').val() });
+                        }
+                    });
+
+
+                    $('.category-item').click(function () {
+                        //切换样式
+                        $('.layui-this').each(function () {
+                            $(this).removeClass('layui-this');
+                        })
+                        if (!$(this).hasClass('layui-this')) {
+                            $(this).addClass('layui-this');
+                        }
+
+                        var cateId = $(this).attr('categoryId');
+                        categoryId = cateId;
+
+                        isFirst = true;
+                        methods.renderTpl();
+                    });
+
+
+
+                    form.verify({
+                        describe: function (value, item) { //value：表单的值、item：表单的DOM对象
+                            layedit.sync(editorIndex)
+                            var desc = layedit.getContent(editorIndex);
+                            if (desc.length < 6) {
+                                return "商品详情描述不能小于5个字符";
+                            }
+                        }
+                    });
+
+                    form.on('submit(btnSubmit)', function (data) {
+                        methods.saveIn(data.field);
+                    });
+
+
+                },
+                //初始化上传组件
+                initUpload: function () {
+                    //多图片上传
+                    upload.render({
+                        elem: '#frm_btnUpload'
+                      , url: '/File/Upload/'
+                      , multiple: true
+                      , accept: "images"
+                      , multiple: true
+                      , before: function (obj) {
+                          //预读本地文件示例，不支持ie8
+                          obj.preview(function (index, file, result) {
+                              $('#fileList').append('<li><img src="' + result + '" alt="' + file.name + '" class="layui-upload-img"></li>')
+                          });
+                      }
+                      , done: function (res) {
+                          //上传完毕
+                          var existIds = $('#frm_product').find('input[name=fileIds]').val();
+                          //给对象赋值
+                          if (existIds.length > 0) {
+                              existIds = existIds + ',' + res.result.id;
+                          } else {
+                              existIds = res.result.id;
+                          }
+                          $('#frm_product').find('input[name=fileIds]').val(existIds);
+                      }
+                    });
+
+                },
+                loadFile: function (productId) {
+                    _fileService.getAll({ parentId: productId }, {
+                        success: function (res) {
+                            $('#fileList').children().remove();
+                            if (res.items.length > 0) {
+                                var imgDoc = "";
+                                var fileIds = res.items.map(function (item) {
+                                    imgDoc += '<li fileId="' + item.id + '"><img src="' + item.filePath + '" alt="' + item.fileName + '" class="layui-upload-img"><i class="layui-icon p-del" >&#x1006;</i></li>';
+                                    return item.id;
+                                }).join(',')
+                                $('#fileList').append(imgDoc)
+                                $('#frm_product').find('input[name=fileIds]').val(fileIds);
+                                //注册事件
+                                $('#fileList').find('.p-del').click(function () {
+                                    var fileId = $(this).parents('li').eq(0).attr('fileId');
+                                    methods.delFile(fileId);
+                                });
+                            }
+                        }
+                    });
+                },
+                //删除图片
+                delFile: function (fileId) {
+                    _fileService.delete({ id: fileId }, {
+                        success: function () {
+                            //删除对象
+                            $('#fileList>li[fileId=' + fileId + ']').eq(0).remove();
+                            //找到对象,接着清除ids
+                            var fileIds = $('#frm_product').find('input[name=fileIds]').val();
+                            if (fileIds.length > 0) {
+                                fileIds = fileIds.split(',').filter(function (item) {
+                                    return item != fileId;
+                                });
+                                $('#frm_product').find('input[name=fileIds]').val(fileIds)
+                            }
+                        }
+                    });
+                },
+                initTabEvent: function () {
+                    var tbody = $('#tbody_product');
+                    tbody.on("click", '*[lay-event]', function () {
+                        //1.找到该按钮
+                        var onThis = $(this);
+                        //2.找到类型
+                        var eventType = $(onThis).attr('lay-event');
+                        var productId = onThis.parents('tr').attr('productId');
+                        if (eventType === "edit") {
+                            methods.edit(productId);
+                        } else if (eventType === "del") {
+                            methods.del(productId);
+                        }
+                        //3.找到对象,并获取该对象的数据
+                    });
+                },
+                edit: function (productId) {
+
+                    //$('#frm_product').reset();
+                    var rows = tableData.filter(function (item) {
+                        return item.id == productId;
+                    });
+                    if (rows.length == 0) {
+                        layer.msg("数据不存在,请刷新重试");
+                        return;
+                    }
+                    //弹出对话框
+                    methods.openDialog(rows[0]);
+                    //加载附件
+                    methods.loadFile(productId);
+                },
+                openDialog: function (data) {
+
+                    layIndex = layer.open({
+                        type: 1
+                        , title: '产品表单'
+                        , id: 'Layer_Content'
+                        , area: '700px'
+                        , content: tpl_dlg_product.innerHTML
+                        , success: function () {
+                            //1: 渲染上传组件
+                            methods.initUpload();
+                            methods.loadForm(data);
+                        }
+                    });
+                },
+                del: function (productId) {
+                    layer.confirm("确定要删除商品?", function (index) {
+                        _productService.delete({ id: productId }, {
+                            success: function (resData) {
+                                layer.close(index);
+                                //删除该行
+                                $('#tbody_product').find('tr[categoryId=' + categoryId + ']').eq(0).remove();
+                            }
+                        });
+                    });
+                },
+                saveIn: function (frmObj) {
+                    if (frmObj.id == '') {
+                        //1：新增
+                        _productService.create(frmObj, {
+                            success: function () {
+                                layer.close(layIndex);
+                                layer.msg("新增成功");
+                                methods.renderTpl();
+                            }
+                        });
+                    } else {
+                        //2：修改
+                        _productService.update(frmObj, {
+                            success: function () {
+                                console.log("成功后的layerIndex:" + layIndex);
+                                layer.close(layIndex);
+                                layer.msg("更新成功");
+                                methods.renderTpl();
+                            },
+                        });
+                    }
+
+                },
+                loadForm: function (data) {
+
+                    Object.keys(data).forEach(function (key, index) {
+                        var tagName = '[name=' + key + ']';
+                        var $tag = $('#frm_product').find(tagName).eq(0);
+                        if ($tag.length == 0) {
+                            return false;
+                        }
+                        $tag.val(data[key]);
+                    });
+                    //1：重新渲染select 组件
+                    form.render('select');
+                    //2：重新渲染editor
+                    editorIndex = layedit.build('frm_describe', {
+                        height: 200
+                    });
+
+                },
+                renderTpl: function (params) {
+
+
+                    var index = layer.load();
+                    var param = $.extend(methods.getParam(), params);
+
+                    if (categoryId && categoryId.length > 0) {
+                        param["categoryId"] = categoryId;
+                    }
+                    _productService.getAll(param, {
+                        success: function (resData) {
+                            layer.close(index);
+                            tableData = resData.items;
+                            laytpl(getTpl).render(resData.items, function (html) {
+                                view.innerHTML = html;
+
+                            });
+                            //第一次的时候蔡进行加载
+                            if (isFirst) {
+                                methods.initPage(resData.totalCount);
+                                //执行完后,将isFirst重新赋值为false
+                                isFirst = false;
+                                methods.initTabEvent();
+                            }
+                        },
+                        fail: function () {
+                            layer.close(index);
+                        }
+                    });
+                },
+                getParam: function (params) {
+                    return $.extend({
+                        skipCount: 0,
+                    }, params);
+                },
+                initPage: function (count) {
+                    //执行一个laypage实例
+                    laypage.render({
+                        elem: 'p-page' //注意，这里的 test1 是 ID，不用加 # 号
+                      , count: count //数据总数，从服务端得到
+                      , limit: 10
+                      , jump: function (obj, first) {
+                          var params = {
+                              skipCount: (parseInt(obj.curr) - 1) * parseInt(obj.limit),
+                              maxResultCount: parseInt(obj.limit),
+                          }
+                          //obj包含了当前分页的所有参数，比如：
+                          //首次不执行
+                          if (!first) {
+                              methods.renderTpl(params);
+                          }
+                      }
+                    });
+                }
+            }
+
+            methods.initEvent();
+            methods.renderTpl();
+
+
+        })
+    </script>
+
+    <!--------table template-------->
+    <script type="text/html" id="tpl_product">
+        {{# layui.each(d,function(index,item){}}
+        <tr productId="{{item.id}}">
+            <td style="text-align:center;">{{index+1}}</td>
+            <td style="text-align:center;">{{item.categoryName}}</td>
+            <td style="text-align:center;">{{item.itemNo}}</td>
+            <td>{{item.name}}</td>
+            <td>{{item.describe}}</td>
+            <td style="text-align:right;">{{item.price}}</td>
+            <td style="text-align:center;">
+                <a class="layui-btn layui-btn-mini" lay-event="edit">编辑</a>
+                <a class="layui-btn layui-btn-danger layui-btn-mini" lay-event="del">删除</a>
+            </td>
+        </tr>
+        {{#})}}
+    </script>
+
+    <!--------dialog-------->
+    <script type="text/html" id="tpl_dlg_product">
+        <form class="layui-form" style="padding:15px 15px;" id="frm_product">
+            <input type="hidden" name="id" />
+            <input type="hidden" name="fileIds" />
+            <input type="hidden" name="itemNo" />
+            <div class="layui-form-item">
+                <label class="layui-form-label">商品名称</label>
+                <div class="layui-input-block">
+                    <input type="text" name="name" required lay-verify="required" placeholder="请输入名称,最长6个字符" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">隶属类别</label>
+                <div class="layui-input-inline">
+                    <select name="categoryId" lay-verify="required">
+                        <option value="">请选择类别</option>
+                        @foreach (var categoryItem in Model.Categories)
+                        {
+                            <option value="@categoryItem.Id">@categoryItem.Name</option>
+                        }
+                    </select>
+                </div>
+                <label class="layui-form-label">商品价格</label>
+                <div class="layui-input-inline">
+                    <input type="text" name="price" required lay-verify="required|number" placeholder="￥" class="layui-input">
+                </div>
+            </div>
+
+            <div class="layui-form-item">
+                <label class="layui-form-label">商品详情</label>
+                <div class="layui-input-block">
+                    <textarea placeholder="请输入内容" rows="7" class="layui-textarea" lay-verify="describe" id="frm_describe" name="describe"></textarea>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">图片信息</label>
+                <div class="layui-input-inline">
+                    <div class="layui-btn-group">
+                        <button type="button" class="layui-btn " id="frm_btnUpload">上传 <i class="layui-icon">&#xe681;</i></button>
+                    </div>
+                </div>
+                <div class="layui-input-inline">
+                    <span id="txtImgWarn" style="color:red;margin-left:10px;">[图片必须上传]</span>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-input-block">
+                    <ul id="fileList" class="layui-upload-list"></ul>
+                </div>
+            </div>
+            <div class="layui-form-item" style="text-align:center;margin-bottom:0px;">
+                <button class="layui-btn" type="button" lay-submit lay-filter="btnSubmit">提交</button>
+            </div>
+        </form>
+    </script>
+}

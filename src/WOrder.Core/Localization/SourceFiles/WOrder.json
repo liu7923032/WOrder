@@ -1,0 +1,13 @@
+﻿{
+  "culture": "en",
+  "texts": {
+    "logo": "WOrder",
+    "Home": "Home",
+    "Cart": "Cart",
+    "Order": "Order",
+    "Approve": "Approve",
+    "Category": "Category",
+    "Product": "Product",
+    "Manage": "Manage"
+  }
+}

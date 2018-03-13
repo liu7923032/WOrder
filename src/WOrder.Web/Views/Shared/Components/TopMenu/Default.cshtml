@@ -1,0 +1,21 @@
+﻿@using WOrder.Web.Views.Shared.Components.TopMenu
+@model TopMenuViewModel
+@{
+    //TODO: Get current virtual path
+    var ApplicationPath = "/";
+}
+
+@foreach (var menuItem in Model.MainMenu.Items)
+{
+    <div title="@menuItem.DisplayName">
+        <ul class="submenu">
+            @if (menuItem.Items.Count > 0)
+            {
+                @foreach (var item in menuItem.Items)
+                {
+                    <li><a href="#" _href="@ApplicationPath+@item.Url">@item.DisplayName</a></li>
+                }}
+        </ul>
+    </div>
+
+}

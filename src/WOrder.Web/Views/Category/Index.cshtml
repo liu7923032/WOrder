@@ -1,0 +1,248 @@
+﻿@using WOrder.Web.Startup
+@{ 
+    ViewBag.ActiveMenu = PageNames.Category;
+}
+
+<div class="layui-container layui-bg-white" >
+    <div class="layui-row">
+        <div class="layui-col-md12" style="padding:10px 0px;font-size:15px;">
+            <span class="layui-breadcrumb " lay-separator=">">
+                <a href="/">首页</a>
+                <a><cite>分类</cite></a>
+            </span>
+        </div>
+    </div>
+    <div class="layui-row">
+        <div class="layui-col-md12">
+            <button class="layui-btn" id="btnCAdd"><i class="layui-icon">&#xe654;</i> 添加</button>
+        </div>
+    </div>
+    <div class="layui-row">
+        <div class="layui-col-md12">
+            <table class="layui-table">
+                <colgroup>
+                    <col width="60"/>
+                    <col width="80"/>
+                    <col width="200"/>
+                    <col />
+                    <col width="60"/>
+                    <col width="160"/>
+                </colgroup>
+                <thead>
+                    <tr>
+                        <td style="text-align:center;">编号</td>
+                        <td style="text-align:center;">编码</td>
+                        <td>名称</td>
+                        <td>描述</td>
+                        <td style="text-align:center;">序号</td>
+                        <td style="text-align:center;">操作</td>
+                    </tr>
+                </thead>
+                <tbody id="tbody_category"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+
+
+
+@section Scripts{
+
+    <script type="text/javascript">
+
+        layui.use(['laytpl', 'element', 'layer', 'jquery', 'form'], function () {
+            var laytpl = layui.laytpl
+                , element = layui.element
+                , layer = layui.layer
+                , $ = layui.jquery
+                , form = layui.form
+                , getTpl = tpl_category.innerHTML
+                , view = document.getElementById('tbody_category')
+                , _categoryService = abp.services.app.category
+                , tableData = []
+                , layIndex = 0;
+
+
+
+            var methods = {
+
+                initEvent: function () {
+
+                    $('#btnCAdd').click(function () {
+                        //弹出对话框
+                        methods.add();
+                    });
+
+                    form.on('submit(btnSubmit)', function (data) {
+                        methods.saveIn(data.field);
+                    });
+
+                },
+                initTabEvent: function () {
+                    var tbody = $('#tbody_category');
+                    tbody.on("click", '*[lay-event]', function () {
+                        //1.找到该按钮
+                        var onThis = $(this);
+                        //2.找到类型
+                        var eventType = $(onThis).attr('lay-event');
+                        var categoryId = onThis.parents('tr').attr('categoryId');
+                        if (eventType === "edit") {
+                            methods.edit(categoryId);
+                        } else if (eventType === "del") {
+                            methods.del(categoryId);
+                        }
+                        //3.找到对象,并获取该对象的数据
+                    });
+                },
+                add: function () {
+                    layIndex = layer.open({
+                        type: 1
+                       
+                        , title: '新增分类'
+                        , area: '500px'
+                        , content: tpl_frm.innerHTML,
+                    });
+                },
+                edit: function (categoryId) {
+                    //$('#frm_category').reset();
+                    var rows = tableData.filter(function (item) {
+                        return item.id == categoryId;
+                    });
+                    abp.log.info(rows);
+                    if (rows.length==0) {
+                        layer.msg("数据不存在,请刷新重试");
+                        return;
+                    }
+                    //弹出对话框
+                    layIndex = layer.open({
+                        type: 1
+                        , title: '编辑分类'
+                        , area: '500px'
+                        , content: tpl_frm.innerHTML
+                    });
+                    methods.loadForm(rows[0]);
+                    
+                },
+                del: function (categoryId) {
+                    layer.confirm("确定要删除改类别?", function (index) {
+                        _categoryService.delete({ id: categoryId }, {
+                            success: function (resData) {
+                                layer.close(index);
+                                //删除该行
+                                $('#tbody_category').find('tr[categoryId=' + categoryId + ']').eq(0).remove();
+                            }
+                        });
+                    });
+                },
+                saveIn: function (frmObj) {
+                    if (frmObj.id == '') {
+                        //1：新增
+                        _categoryService.create(frmObj, {
+                            success: function () {
+                                layer.close(layIndex);
+                                layer.msg("新增成功");
+                                methods.renderTpl();
+                            }
+                        });
+                    } else {
+                        //2：修改
+                        _categoryService.update(frmObj, {
+                            success: function () {
+                                layer.close(layIndex);
+                                layer.msg("新增成功");
+                                methods.renderTpl();
+                            },
+                        });
+                    }
+
+                },
+                loadForm: function (data) {
+                    Object.keys(data).forEach(function (key, index) {
+                        var tagName = '[name=' + key + ']';
+                        var $tag = $('#frm_category').find(tagName).eq(0);
+                        if ($tag.length == 0) {
+                            return false;
+                        }
+                        $tag.val(data[key]);
+                    });
+                },
+                renderTpl: function () {
+                    var index = layer.load();
+                    _categoryService.getAll({
+                        sorting:'sortNo'
+                    }, {
+                        success: function (resData) {
+                            layer.close(index);
+                            tableData = resData.items;
+                            laytpl(getTpl).render(resData.items, function (html) {
+                                view.innerHTML = html;
+                                methods.initTabEvent();
+                            });
+                        },
+                        fail: function () {
+                            layer.close(index);
+                        }
+                    });
+
+                },
+            }
+
+            methods.initEvent();
+            methods.renderTpl();
+
+        })
+    </script>
+
+    <!--------table template-------->
+    <script type="text/html" id="tpl_category">
+        {{# layui.each(d,function(index,item){}}
+        <tr categoryId="{{item.id}}">
+            <td style="text-align:center;">{{index+1}}</td>
+            <td style="text-align:center;">{{item.categoryNo}}</td>
+            <td>{{item.name}}</td>
+            <td>{{item.describe}}</td>
+            <td style="text-align:center;">{{item.sortNo}}</td>
+            <td style="text-align:center;">
+                <a class="layui-btn layui-btn-xs" lay-event="edit">编辑</a>
+                <a class="layui-btn layui-btn-danger layui-btn-xs" lay-event="del">删除</a>
+            </td>
+        </tr>
+        {{#})}}
+    </script>
+
+    <!--------dialog-------->
+    <script type="text/html" id="tpl_frm">
+        <form class="layui-form" style="padding:15px 15px;" id="frm_category">
+            <input type="hidden" name="id" />
+            <input type="hidden" name="categoryNo" />
+                   @*<div class="layui-form-item">
+                <label class="layui-form-label">编号</label>
+                <div class="layui-input-block">
+                    <input type="text" name="categoryNo" required lay-verify="required" readonly="readonly" placeholder="请输入编码" class="layui-input">
+                </div>
+            </div>*@
+            <div class="layui-form-item">
+                <label class="layui-form-label">名称</label>
+                <div class="layui-input-block">
+                    <input type="text" name="name" required lay-verify="required" placeholder="请输入名称,最长6个字符" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">描述</label>
+                <div class="layui-input-block">
+                    <textarea placeholder="请输入内容" class="layui-textarea" name="describe"></textarea>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <label class="layui-form-label">序号</label>
+                <div class="layui-input-block">
+                    <input type="text" name="sortNo" required lay-verify="required|number" placeholder="例:10,20" class="layui-input">
+                </div>
+            </div>
+            <div class="layui-form-item" style="text-align:center;margin-bottom:0px;">
+                <button class="layui-btn" type="button" lay-submit lay-filter="btnSubmit">提交</button>
+            </div>
+        </form>
+    </script>
+}

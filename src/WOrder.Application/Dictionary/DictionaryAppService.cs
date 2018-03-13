@@ -1,0 +1,35 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using Abp.Application.Services;
+using Abp.Domain.Repositories;
+using Abp.Linq.Extensions;
+using WOrder.Domain.Entities;
+
+namespace WOrder.Dictionary
+{
+
+    public interface IDictionaryAppService : IAsyncCrudAppService<DictDto, int, GetAllDictDto, CreateDictDto, UpdateDictDto>
+    {
+
+    }
+
+    public class DictionaryAppService : AsyncCrudAppService<WOrder_Dictionary, DictDto, int, GetAllDictDto, CreateDictDto, UpdateDictDto>, IDictionaryAppService
+    {
+
+        private readonly IRepository<WOrder_Dictionary> _dictRepository;
+
+        public DictionaryAppService(IRepository<WOrder_Dictionary> dictRepository) : base(dictRepository)
+        {
+            _dictRepository = dictRepository;
+        }
+
+        protected override IQueryable<WOrder_Dictionary> CreateFilteredQuery(GetAllDictDto input)
+        {
+            return base.CreateFilteredQuery(input)
+                .WhereIf(!string.IsNullOrEmpty(input.No), u => u.No.Contains(input.No))
+                .WhereIf(!string.IsNullOrEmpty(input.Name), u => u.Name.Contains(input.Name));
+        }
+    }
+}

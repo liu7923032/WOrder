@@ -1,0 +1,13 @@
+﻿{
+  "culture": "zh-CN",
+  "texts": {
+    "logo": "麦迪商城",
+    "Home": "首页",
+    "Cart": "购物车",
+    "Order": "我的订单",
+    "Approve": "订单管理",
+    "Category": "分类管理",
+    "Product": "商品管理",
+    "Manage": "后台管理"
+  }
+}

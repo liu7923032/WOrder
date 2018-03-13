@@ -1,0 +1,220 @@
+﻿
+@using WOrder.Web.Models.Home;
+
+
+<div class="layui-container WOrder-details">
+    <div class="row">
+        <div class="layui-col-md12" style="padding:10px 0px;font-size:15px;">
+            <span class="layui-breadcrumb " lay-separator=">">
+                <a href="/">首页</a>
+                <a><cite>商品详情</cite></a>
+            </span>
+        </div>
+    </div>
+    <hr class="layui-bg-gray" />
+    <!-------------上半区:主要是图片和相关描述--------------->
+    <div class="layui-row layui-col-space20">
+        <div class="layui-col-md5">
+            <div class="WOrder-pic">
+                <div class="layui-carousel " id="pics">
+                    <div carousel-item>
+                        @foreach (var item in Model.Files)
+                        {
+                            <div><img src="@item.FilePath" alt="@item.FileName" /></div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <div class="layui-col-md7">
+            <div class="WOrder-desc">
+                <div class="WOrder-d-title"><a href="@Model.LinkAddr" style="color:dodgerblue;" class="layui-table-link" target="_blank">@Model.Name</a></div>
+                <div class="WOrder-d-price">￥@Model.Price</div>
+                <div class="WOrder-d-content layui-text">
+                    @Html.Raw(Model.Describe)
+                </div>
+                <div class="WOrder-d-btns">
+                    <div class="layui-row layui-col-space10">
+                        <div class="layui-col-md5">
+                            <div class="layui-input-group">
+                                <span class="layui-input-group-addon" id="btnSub"><i class="mine-icon" style="color:black;font-weight:900;">&#xe607;</i></span>
+                                <input type="text" readonly="readonly" id="p_num" class="layui-input layui-input-inline" value="1" />
+                                <span class="layui-input-group-addon" id="btnAdd"><i class="layui-icon">&#xe654;</i></span>
+                            </div>
+                        </div>
+                        <div class="layui-col-md7">
+                            <a class="layui-btn layui-btn-normal layui-btn-danger" id="btnAddToCart">加入购物车</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <hr class="layui-bg-gray" />
+    <!-------------下半区:主要是详细参数和评论--------------->
+    <div class="layui-row">
+        <div class="layui-col-md12" style="padding-bottom:50px;">
+            <div class="layui-tab layui-tab-brief" lay-filter="p-tab">
+                <ul class="layui-tab-title">
+                    <li class="layui-this">商品介绍</li>
+                    <li>用户评论</li>
+                </ul>
+                <div class="layui-tab-content">
+                    <div class="layui-tab-item layui-show">
+                        <div class="WOrder-spec">
+                            @Html.Raw(Model.Describe)
+                        </div>
+                    </div>
+                    <div class="layui-tab-item">
+                        <div class="">
+                            <div class="WOrder-editor"></div>
+                            <ul class="WOrder-comments" id="p-comments"></ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section Scripts{
+    <script type="text/javascript">
+
+        layui.use(['element', 'jquery', 'layer', 'carousel', 'element', 'flow'], function () {
+
+            var $ = layui.jquery
+            , layer = layui.layer
+            , carousel = layui.carousel
+            , element = layui.element
+            , flow = layui.flow
+            , productId = parseInt(@Model.Id)
+            , _commentService = abp.services.app.comment
+            , _cartService = abp.services.app.cart;
+
+
+            var methods = {
+
+                initEvent: function () {
+                    $('#btnAdd').click(function () {
+                        methods.addNum();
+                    });
+
+                    $('#btnSub').click(function () {
+                        methods.subNum();
+                    });
+
+                    $('#btnAddToCart').click(function () {
+                        methods.addToCart();
+                    })
+
+                    //初始化
+                    carousel.render({
+                        elem: '#pics'
+                        , width: '100%' //设置容器宽度
+                        , height: '100%'
+                        , arrow: 'always' //始终显示箭头
+                        //,anim: 'updown' //切换动画方式
+                    });
+
+                    //瀑布流加载评论信息
+                    flow.load({
+                        elem: '#p-comments' //流加载容器
+                       , done: function (page, next) { //执行下一页的回调
+                           methods.getComments(page, next);
+                       }
+                    });
+                },
+                addNum: function () {
+                    var value = $('#p_num').val();
+                    $('#p_num').val(parseInt(value) + 1);
+                },
+                subNum: function () {
+                    var value = parseInt($('#p_num').val());
+                    if (value == 1) {
+                        abp.notify.info("数量最少为1");
+                        return;
+                    }
+                    $('#p_num').val(parseInt(value) - 1);
+                },
+                addToCart: function () {
+                    //1:找到产品id
+
+                    var params = {
+                        itemNum: parseInt($('#p_num').val()),
+                        productId: productId
+                    };
+                    _cartService.addProductToCart(params, {
+                        //成功后
+                        success: function (data) {
+                            $('#cart_pNum').text(data);
+                            //进入购物车
+                            location.href = "/Cart/Index";
+                        }
+                    });
+                },
+                getComments: function (page, next) {
+
+                    var params = {
+                        "productId": productId,
+                        "skipCount": (parseInt(page) - 1) * 20,
+                        "maxSizeCount": 20
+                    }
+                    _commentService.getAll(params, {
+                        success: function (resData) {
+
+                            var strData = resData.items.map(function (item) {
+                                return '<li class="WOrder-p-comment" commentId="' + item.id + '">' +
+                                            '<div class="p-comment-about">' +
+                                                '<div class="avator">' + methods.getImg(item.sex) + '</div>' +
+                                                '<div class="reply">' +
+                                                    '<div class="user">' + item.creatorUser + " " + methods.getStatus(item.cStatus) + '</div>' +
+                                                    '<div class="time">' + methods.getCDate(item.creationTime) + '</div>' +
+                                                '</div>' +
+                                            '</div>' +
+                                            '<div class="p-comment-body">' + item.comment + '</div>'
+                                       '</li>';
+                            }).join('');
+
+                            next(strData, parseInt(page) < parseInt(resData.totalCount));
+                        }
+                    });
+                },
+                getImg: function (sex) {
+                    if (sex == "female") {
+                        return '<img src="/image/female.jpg" />';
+                    } else {
+                        return '<img src="/image/male.jpg" />';
+                    }
+                },
+                //通过状态获取不同的状态
+                getStatus: function (status) {
+                    if (status == 1) {
+                        return '<i class="layui-icon" style="font-color:green;margin-left:10px;">&#xe6c6;</i>';
+                    } else {
+                        return '<i class="layui-icon" style="font-color:red;margin-left:10px;">&#xe6c5;</i>';
+                    }
+                },
+                //获取发表时间
+                getCDate: function (strDate) {
+                    //和当前时间进行比较
+                    var now = new Date();
+                    var date = new Date(strDate);
+
+                    var minute = parseInt((now - date) / 60000);
+                    if (minute < 60) {
+                        return minute + " 分钟前"
+                    } else if (minute > 60 && minute < 24 * 60) {
+                        return parseInt(minute / 60) + " 小时前";
+                    } else {
+                        return parseInt(minute / (60 * 24)) + " 天前";
+                    }
+                },
+            }
+
+            methods.initEvent();
+        });
+
+    </script>
+}

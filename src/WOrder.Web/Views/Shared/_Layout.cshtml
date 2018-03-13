@@ -1,0 +1,82 @@
+﻿@using System.Globalization
+@using System.Threading
+@using System.Threading.Tasks
+@using Abp.Timing
+@using WOrder.Web.Views.Shared.Components.LanguageSelection
+
+
+@using Abp.Web.Security.AntiForgery
+@inject IAbpAntiForgeryManager AbpAntiForgeryManager
+@{
+    AbpAntiForgeryManager.SetCookie(Context);
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="dark.liu">
+
+    <link rel="shortcut icon" href="~/favicon.ico">
+
+    <title>物业派工系统</title>
+
+    <!-- Global styles -->
+
+    <environment names="Development">
+
+        <link rel="stylesheet" href="~/lib/easyui/themes/color.css" />
+        <link rel="stylesheet" href="~/lib/easyui/themes/icon.css" />
+        <link rel="stylesheet" href="~/lib/easyui/themes/default/easyui.css" />
+        <link rel="stylesheet" href="~/css/main.css" />
+    </environment>
+
+    <environment names="Staging,Production">
+        <link rel="stylesheet" href="~/view-resources/Views/_Bundles/layout-libs.min.css" asp-append-version="true" />
+    </environment>
+
+    <!-- View specific styles -->
+    @RenderSection("styles", required: false)
+
+</head>
+<body >
+  
+    @RenderBody()
+
+
+    <!-- Global scripts -->
+    <environment names="Development">
+        <script src="~/lib/easyui/jquery.min.js"></script>
+        <script src="~/lib/filedownload/jquery.filedownload.js"></script>
+        <script src="~/lib/easyui/jquery.easyui.min.js"></script>
+        <script src="~/js/main.js"></script>
+        <!-- abp js文件 -->
+        <script src="~/lib/abp-web-resources/Abp/Framework/scripts/abp.js"></script>
+        <script src="~/lib/abp-web-resources/Abp/Framework/scripts/libs/abp.jquery.js"></script>
+    </environment>
+
+    <environment names="Staging,Production">
+        <script src="~/view-resources/Views/_Bundles/layout-libs.min.js" asp-append-version="true"></script>
+    </environment>
+
+
+    <script type="text/javascript">
+
+        abp.localization.defaultSourceName = '@LocalizationSourceName';
+
+    </script>
+
+    <!-- Dynamic scripts of ABP system (They are created on runtime and can not be bundled) -->
+    <script src="~/AbpServiceProxies/GetAll?v=@(Clock.Now.Ticks)" type="text/javascript"></script>
+    <script src="~/AbpScripts/GetScripts?v=@(Clock.Now.Ticks)" type="text/javascript"></script>
+
+    <!-- View specific scripts -->
+    @*@if(SignalRFeature.)*@
+
+    @RenderSection("scripts", required: false)
+
+</body>
+</html>

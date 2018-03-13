@@ -1,0 +1,217 @@
+﻿
+@{
+    ViewData["Title"] = "Integral";
+}
+
+<div class="layui-container layui-bg-white">
+    <div class="layui-row">
+        <div class="layui-col-md12" style="padding:10px 0px;font-size:15px;">
+            <span class="layui-breadcrumb " lay-separator=">">
+                <a href="/">首页</a>
+                <a><cite>我的积分</cite></a>
+            </span>
+        </div>
+    </div>
+    <div class="layui-row">
+        <div class="layui-col-md6" style="font-size:16px;padding:5px;">
+            <a class="layui-btn layui-btn-normal" id="btnGive">积分赠送</a>
+        </div>
+        <div class="layui-col-md6" style="font-size:16px;padding:5px;text-align:right;">
+            <a href="/Account/IntegralAbout" style="color:blue;">积分说明 ？</a>
+        </div>
+    </div>
+    <div class="layui-row">
+        <div class="layui-col-md12">
+            <table id="tb_integral"></table>
+        </div>
+    </div>
+</div>
+
+@section Scripts{
+    <script type="text/javascript">
+
+        layui.use(["jquery", "abptable", "layer", "form"], function () {
+
+            var $ = layui.jquery
+            , table = layui.abptable
+            , integralService = abp.services.app.integral
+            , allIntegral = '@ViewBag.Integral'
+            , layer = layui.layer
+            , form = layui.form
+            , _userService = abp.services.app.user
+            , _integralService = abp.services.app.integral
+            , layIndex;
+
+            var methods = {
+                //页面初始化
+                initPage: function () {
+
+                    table.render({
+                        elem: '#tb_integral'
+                      , url: '/api/services/app/integral/getAll' //数据接口
+                      , page: true //开启分页
+                      , height: 'full-200'
+                      , cellMinWidth: 80
+                      , where: { userId: abp.session.userId, sorting: "" }
+                      , cols: [[ //表头
+                          { type: 'numbers' }
+                        //, { field: 'typeName', title: '个人/部门', align: 'center', width: 100 }
+                        , { field: 'costType', title: '收支类别', align: 'center', width: 100, templet: "#tpl_integral_cost" }
+                        , { field: 'integral', title: '积分', align: 'center', width: 100, templet: "#tpl_integral" }
+                        , { field: 'current', title: '最后积分', align: 'center', width: 100,templet:"#tpl_current"}
+                        , { field: 'describe', title: '积分描述', align: 'left' }
+                        , { field: 'actDate', title: '时间', align: 'center', width: 160 }
+                      ]]
+                      , done: function (res) {
+                          var strFoot = "<div style='font-size:15px;text-align:right;padding:3px;color:blue;display:inline-block;float:right;'> <label style='margin-left:10px;'>当前可用积分:</label><span style='color:red;padding:5px;font-size:15px;'>" + allIntegral + "</span></div>";
+                          $('#layui-table-page1').append(strFoot);
+                      }
+                    });
+
+
+                    form.on('submit(btnSubmit)', function (data) {
+
+                        if (data.field && data.field.describe) {
+                            //对script进行转义处理
+
+
+                        }
+
+                        _integralService.giveIntegral(data.field, {
+                            success: function () {
+
+                                table.reload('#tb_integral');
+                                table.reload('tb_integral', {
+                                    page: {
+                                        curr: 1 //重新从第 1 页开始
+                                    }
+                                });
+                                layer.close(layIndex);
+                                layer.msg("赠送成功")
+                            }
+                        })
+                    });
+
+
+                    $('#btnGive').click(function () {
+                        layIndex = layer.open({
+                            type: 1,
+                            title: "赠送",
+                            content: dlg_give.innerHTML,
+                            area: ['600px', '450px'],
+                            success: function () {
+                                form.render();
+                                //搜索框
+                                var lastTime = 0;
+                                $('#txtKey').bind('input propertychange', function (e) {
+                                    var value = $(this).val();
+                                    lastTime = e.timeStamp;
+
+                                    setTimeout(function () {
+                                        if (lastTime - e.timeStamp == 0) {
+                                            methods.loadUsers(value);
+                                        }
+                                    }, 500);
+
+                                });
+                            }
+                        })
+                    })
+
+
+                },
+                loadUsers: function (key) {
+                    if (key.length < 1) {
+                        return false;
+                    }
+                    var params = {
+
+                    }
+
+                    //如果是数字那么就加载
+                    if (!isNaN(key)) {
+                        params["account"] = key;
+                    } else {
+                        params["userName"] = key;
+                    }
+
+                    _userService.getAll(params, {
+                        success: function (res) {
+                            var result = "<option value=''>工号/姓名</option>";
+                            result += res.items.map(function (item) {
+                                return "<option value='" + item.id + "'>" + item.userName + "-" + item.account + "</option>"
+                            }).join('');
+                            $('#select_users').html(result);
+                            form.render('select');
+                            //显示下拉列表
+                            $('.layui-form-select').addClass('layui-form-selected');
+                        }
+                    });
+                }
+
+            }
+
+            methods.initPage();
+        })
+    </script>
+
+    <!---积分收入和花费类别---->
+    <script type="text/html" id="tpl_integral_cost">
+        {{# if(d.costType==0){ }}
+        <span style="color:red;">收入</span>
+        {{# } else { }}
+        <span style="color:green;">消费</span>
+        {{# }  }}
+    </script>
+
+    <!---积分展示---->
+    <script type="text/html" id="tpl_integral">
+        {{# if(d.costType==0){ }}
+        <span style="color:red;font-weight:900;padding:5px;">＋</span>{{d.integral}}
+        {{# } else { }}
+        <span style="color:green;font-weight:900;padding:5px;">－</span>{{d.integral}}
+        {{# }  }}
+    </script>
+
+
+    <!---最后积分显示---->
+    <script type="text/html" id="tpl_current">
+        {{# if(d.costType==0){ }}
+        <span style="color:dodgerblue;font-weight:900;padding:5px;">{{d.current+d.integral}}</span>
+        {{# } else { }}
+        <span style="color:dodgerblue;font-weight:900;padding:5px;">{{d.current-d.integral}}</span>
+        {{# }  }}
+    </script>
+
+    <script type="text/html" id="dlg_give" style="">
+        <form class="layui-form" id="frm_give" style="padding:10px 20px;">
+            <div class="layui-form-item">
+                <div class="layui-form-label">好基友:</div>
+                <div class="layui-input-inline">
+                    <input type="text" placeholder="工号/姓名搜索" class="layui-input" name="Friend" id="txtKey" />
+                </div>
+                <div class="layui-input-inline">
+                    <select lay-verify="required" id="select_users" name="UserId">
+                        <option value=""></option>
+                    </select>
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-form-label">赏钱:</div>
+                <div class="layui-input-block">
+                    <input type="text" lay-verify="required|number" placeholder="打赏￥" class="layui-input" name="Integral" />
+                </div>
+            </div>
+            <div class="layui-form-item">
+                <div class="layui-form-label">备注:</div>
+                <div class="layui-input-block">
+                    <textarea rows="9" type="text" placeholder="备注" class="layui-textarea" name="Describe" />
+                </div>
+            </div>
+            <div class="layui-form-item" style="text-align:center;">
+                <a class="layui-btn layui-btn-normal" lay-submit lay-filter="btnSubmit"><i class="layui-icon">&#xe641;</i>赠送</a>
+            </div>
+        </form>
+    </script>
+
+}

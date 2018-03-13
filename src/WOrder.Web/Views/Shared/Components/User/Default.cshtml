@@ -1,0 +1,24 @@
+﻿
+@using WOrder.Web.Views.Shared.Components.User;
+
+@model UserViewModel
+
+<!------两种情况 1.登陆了,显示登陆人的姓名;2.未登陆,显示登陆按钮-------->
+@{
+    if (!string.IsNullOrEmpty(Model.Account))
+    {
+        <li class="layui-nav-item">
+            <a href="javascript:void(0)">@Model.UserName</a>
+            <dl class="layui-nav-child">
+                <dd><a href="/Account/Integral">我的积分 <i class="layui-icon">&#xe602;</i></a> </dd>
+                <dd><a href="@Url.Action("SignOut", "Account")">系统退出 <i class="layui-icon">&#x1006;</i></a></dd>
+            </dl>
+        </li>
+    }
+    else
+    {
+        <li class="layui-nav-item">
+            <a href="/Account/Login">登陆</a>
+        </li>
+    }
+}

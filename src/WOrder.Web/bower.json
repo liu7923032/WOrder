@@ -1,0 +1,12 @@
+{
+  "name": "asp.net",
+  "private": true,
+  "dependencies": {
+    "abp-web-resources": "^1.2.1",
+    "jquery": "2.2.0",
+    "layui": "^2.1.6"
+  },
+  "resolutions": {
+    "abp-web-resources": "^0.11.1"
+  }
+}
