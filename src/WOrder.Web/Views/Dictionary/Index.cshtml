@@ -102,178 +102,201 @@
 
 
 <script type="text/javascript">
-        $(function () {
-            var dictUrl = ""
-                , delTypeUrl = ""
-                , selectNode
+    $(function () {
+        var  selectNode
             , treeUrl = "/api/services/app/DictType/GetAll?maxResultCount=10000"
             , _typeService = abp.services.app.dictType
             , _dictService = abp.services.app.dictionary;
-            var methods = {
-                init: function () {
-                    $('#dlg_dictType').dialog({
-                        width: 500, height: 300, closed: true, title: '字典类别',
-                        buttons: [
-                            {
-                                text: '保存',
-                                iconCls: 'icon-save',
-                                handler: function () {
-                                    methods.saveDictType();
+        var methods = {
+            init: function () {
+                $('#dlg_dictType').dialog({
+                    width: 500, height: 300, closed: true, title: '字典类别',
+                    buttons: [
+                        {
+                            text: '保存',
+                            iconCls: 'icon-save',
+                            handler: function () {
+                                methods.saveDictType();
+                            }
+                        }, {
+                            text: '关闭',
+                            iconCls: 'icon-cancel',
+                            handler: function () {
+                                $('#dlg_dictType').dialog('close');
+                            }
+                        }
+                    ]
+                });
+                $.parser.parse('#dlg_dictType');
+                $('#dlg_dict').dialog({
+                    buttons: [
+                        {
+                            text: '保存',
+                            iconCls: 'icon-save',
+                            handler: function () {
+                                methods.saveDict();
+                            }
+                        }, {
+                            text: '关闭',
+                            iconCls: 'icon-cancel',
+                            handler: function () {
+                                $('#dlg_dict').dialog('close');
+                            }
+                        }
+                    ]
+                });
+                $.parser.parse('#dlg_dict');
+
+            },
+            initTree: function () {
+                $.treeInit({
+                    id: 'tree_dict',
+                    url: treeUrl,
+                    loadFilter: function (resData, parent) {
+                        return resData["result"].items.map(function (item) {
+                            return {
+                                id: item.id,
+                                text: item.name,
+                                attributes:item
+                            }
+                        });
+                    },
+                    onClick: function (node) {
+                        selectNode = node;
+                        //通过类型来获取字典数据
+                        $('#tb_dict').datagrid('reload', { "typeName": node.text });
+                    },
+                    onContextMenu: function (e, node) {
+                        e.preventDefault();
+                        // select the node
+                        $('#tree_dict').tree('select', node.target);
+                        // display context menu
+                        $('#mm_dict').menu('show', {
+                            left: e.pageX,
+                            top: e.pageY,
+                            onClick: function (item) {
+                                if (item.text == "编辑") {
+                                    $('#frm_dictType').form('load', node.attributes);
+                                    $('#dlg_dictType').dialog('open')
+                                } else {
+                                    $.messager.confirm('确定?', "确定要删除<span style='color:red;'>" + node.text + "</span>", function (r) {
+                                        if (!r) {
+                                            return;
+                                        }
+                                        _dictService.delete({ id: node.id }, {
+                                            success: function (data) {
+
+
+                                            }
+                                        })
+                                    })
                                 }
-                            }, {
-                                text: '关闭',
-                                iconCls: 'icon-cancel',
-                                handler: function () {
+                            }
+                        });
+                    }
+                })
+            },
+            initTable: function () {
+                $.dgInit({
+                    id: "tb_dict",
+                    url: '/api/services/app/dictionary/getAll',
+                    columns: [[
+                        { field: 'id', hidden: true, width: 30 },
+                        { field: 'dictType', title: '字典类型', width: 100 },
+                        { field: 'no', title: '字典编号', width: 80 },
+                        { field: 'name', title: '字典名称', width: 120 },
+                        { field: 'sortNo', title: '字典排序', width: 80, sortable: true },
+                        { field: 'memo', title: '备注信息', width: 200 }
+                    ]],
+                    toolbar: [
+                        {
+                            text: "新增",
+                            iconCls: 'icon-add',
+                            handler: function () {
+                                if (!selectNode) {
+                                    $.errorMsg("请先选择字典类别");
+                                    return;
+                                }
+                                $('#frm_dict').form('clear');
+                                $('#dlg_dict').dialog('open')
+                            }
+                        }, '-', {
+                            text: "编辑",
+                            iconCls: 'icon-edit',
+                            handler: function () {
+
+                                $.rowSelectCheck('tb_dict', "请先要编辑的字典", function (row) {
+                                    $('#frm_dict').form('load', row);
+                                    $('#dlg_dict').dialog('open')
+                                })
+                            }
+                        }, '-', {
+                            text: "删除",
+                            iconCls: 'icon-remove',
+                            handler: function () {
+                                $.rowSelectCheck('tb_dict', "请先要删除的字典", function (row) {
+                                    _dictService.delete({ id: row.id }, {
+                                        success: function (data) {
+
+                                        }
+                                    })
+                                })
+                            }
+                        }
+                    ]
+                });
+            },
+
+            saveDictType: function () {
+                $.formSave({
+                    id: 'frm_dictType',
+                    action: function (data, isAdd) {
+                        if (isAdd) {
+                            _typeService.create(data, {
+                                success: function (data) {
                                     $('#dlg_dictType').dialog('close');
                                 }
-                            }
-                        ]
-                    });
-                    $.parser.parse('#dlg_dictType');
-                    $('#dlg_dict').dialog({
-                        buttons: [
-                            {
-                                text: '保存',
-                                iconCls: 'icon-save',
-                                handler: function () {
-                                    methods.saveDict();
-                                }
-                            }, {
-                                text: '关闭',
-                                iconCls: 'icon-cancel',
-                                handler: function () {
-                                    $('#dlg_dict').dialog('close');
-                                }
-                            }
-                        ]
-                    });
-                    $.parser.parse('#dlg_dict');
-
-                },
-                initTree: function () {
-                    $.treeInit({
-                        id: 'tree_dict',
-                        url: treeUrl,
-                        loadFilter: function (resData, parent) {
-                            return resData["result"].items.map(function (item) {
-                                return {
-                                    id: item.id,
-                                    text: item.name
-                                }
-                            });
-                        },
-                        onClick: function (node) {
-                            selectNode = node;
-                            //通过类型来获取字典数据
-                            $('#tb_dict').datagrid('reload', dictUrl + "?dictType=" + encodeURI(node.text));
-                        },
-                        onContextMenu: function (e, node) {
-                            e.preventDefault();
-                            // select the node
-                            $('#tree_dict').tree('select', node.target);
-                            // display context menu
-                            $('#mm_dict').menu('show', {
-                                left: e.pageX,
-                                top: e.pageY,
-                                onClick: function (item) {
-                                    if (item.text == "编辑") {
-                                        $('#frm_dictType').form('load', node.attributes);
-                                        $('#dlg_dictType').dialog('open')
-                                    } else {
-                                        $.messager.confirm('确定?', "确定要删除<span style='color:red;'>" + node.text + "</span>", function (r) {
-                                            if (!r) {
-                                                return;
-                                            }
-                                            $.post(delTypeUrl, { id: node.id }, function (data) {
-                                                $.procAjax(data)
-                                            })
-                                        })
-                                    }
-                                }
-                            });
-                        }
-                    })
-                },
-                initTable: function () {
-                    $.dgInit({
-                        id: "tb_dict",
-                        url: '/api/services/app/dictionary/getAll',
-                        columns: [[
-                            { field: 'id', hidden: true, width: 30 },
-                            { field: 'typeName', title: '字典类型', width: 50 },
-                            { field: 'no', title: '字典编号', width: 50, sortable: true },
-                            { field: 'name', title: '字典名称', width: 50, sortable: true },
-                            { field: 'sort', title: '字典排序', width: 50, sortable: true },
-                            {
-                                field: 'isDel', title: '是否启用', width: 50,
-                            },
-                            { field: 'memo', title: '备注信息', width: 100 }
-                        ]],
-                        toolbar: [
-                            {
-                                text: "新增",
-                                iconCls: 'icon-add',
-                                handler: function () {
-
-                                    if (!selectNode) {
-                                        $.errorMsg("请先选择字典类别");
-                                        return;
-                                    }
-                                    $('#frm_dict').form('clear');
-                                    $('#dlg_dict').dialog('open')
-                                }
-                            }, '-', {
-                                text: "编辑",
-                                iconCls: 'icon-edit',
-                                handler: function () {
-
-                                    $.rowSelectCheck('tb_dict', "请先要编辑的字典", function (row) {
-                                        $('#frm_dict').form('load', row);
-                                        $('#dlg_dict').dialog('open')
-                                    })
-                                }
-                            }, '-', {
-                                text: "删除",
-                                iconCls: 'icon-remove',
-                                handler: function () {
-                                    $.rowSelectCheck('tb_dict', "请先要删除的字典", function (row) {
-                                        $('#frm_dict').form('load', row);
-                                        $('#dlg_dict').dialog('open')
-                                    })
-                                }
-                            }
-                        ]
-                    });
-                },
-
-                saveDictType: function () {
-                    
-                    $.formSave({
-                        id: 'frm_dictType',
-                        action: function () {
-
-                            _typeService.create({ name: "版别", typeNo: "BB" }, {
+                            })
+                        } else {
+                            _typeService.update(data, {
                                 success: function (data) {
-                                    console.log(data)
+                                    $('#dlg_dictType').dialog('close');
                                 }
                             })
-                        }
-                    });
-                },
-                saveDict: function () {
-                    $.formSave({
-                        id: 'frm_dict',
-                        success: function (data) {
-                            $('#dlg_dict').dialog('close')
-                            $.procAjax(data);
-                        }
-                    });
-                }
-            }
 
-            methods.init();
-            methods.initTable();
-            methods.initTree()
-        })
+                        }
+                       
+                    }
+                });
+            },
+            saveDict: function () {
+
+                $.formSave({
+                    id: 'frm_dict',
+                    action: function (data,isAdd) {
+                        if (isAdd) {
+                            _dictService.create(data, {
+                                success: function (data) {
+
+                                }
+                            })
+                        } else {
+                            _dictService.update(data, {
+                                success: function (data) {
+
+                                }
+                            })
+
+                        }
+
+                    }
+                });
+            }
+        }
+
+        methods.init();
+        methods.initTable();
+        methods.initTree()
+    })
 </script>
 

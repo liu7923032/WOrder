@@ -331,15 +331,26 @@
     },
     //表单提交
     formSave: function (options) {
-        $.messager.progress();
-
+        
+        //1:校验表单
         var isValid = $('#'+options.id).form('validate');
         if (!isValid) {
             $.messager.progress('close');
             return isValid;
         }
-
-        options.action();
+        //2:获取数值
+        if (typeof (options.action) == "function") {
+            //获取form表单的所有数据
+            //获取form表单的data 
+            var formObj = {};
+            $('#' + options.id).serializeArray().forEach(function (item) {
+                formObj[item.name] = item.value;
+            });
+            //是新增操作还是编辑操作
+            var isAdd = formObj["id"].length == 0;
+            options.action(formObj, isAdd);
+        }
+       
 
         //$('#' + options.id).form('submit', {
         //    url: options.url,

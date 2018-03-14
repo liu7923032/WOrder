@@ -2,22 +2,24 @@
   {
     "outputFileName": "wwwroot/view-resources/Views/_Bundles/layout-libs.min.css",
     "inputFiles": [
-      "wwwroot/lib/layui/css/layui.css",
-      "wwwroot/lib/layui-extend/layui.css",
+      "wwwroot/lib/easyui/themes/color.css",
+      "wwwroot/lib/easyui/themes/icon.css",
+      "wwwroot/lib/easyui/themes/default/easyui.css",
       "wwwroot/css/main.css"
     ]
   },
   {
     "outputFileName": "wwwroot/view-resources/Views/_Bundles/layout-libs.min.js",
     "inputFiles": [
-      "wwwroot/lib/jquery/dist/jquery.js",
+      "wwwroot/lib/easyui/jquery.min.js",
+      "wwwroot/js/main.js",
       "wwwroot/lib/filedownload/jquery.filedownload.js",
-      "wwwroot/lib/layui/layui.js",
+      "wwwroot/lib/easyui/jquery.easyui.min.js",
 
-      "wwwroot/lib/layui-extend/js/layui.js",
+      "wwwroot/lib/easyui-plugin/easyui-extend.js",
       "wwwroot/lib/abp-web-resources/Abp/Framework/scripts/abp.js",
       "wwwroot/lib/abp-web-resources/Abp/Framework/scripts/libs/abp.jquery.js",
-      "wwwroot/lib/layui-extend/abp/abp.layui.js"
+      "wwwroot/lib/easyui-plugin/easyui.abp.js"
     ]
   }
 ]
