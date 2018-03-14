@@ -247,20 +247,18 @@
                 },
 
                 saveDictType: function () {
-                    _typeService.create({ name: "版别", typeNo: "BB" }, {
+                    
+                    $.formSave({
+                        id: 'frm_dictType',
+                        action: function () {
 
-                        success: function (data) {
-                            console.log(data)
+                            _typeService.create({ name: "版别", typeNo: "BB" }, {
+                                success: function (data) {
+                                    console.log(data)
+                                }
+                            })
                         }
-                    })
-                    //$.formSave({
-                    //    id: 'frm_dictType',
-                    //    url:"api/services/app/DictType/Create",
-                    //    success: function (data) {
-                    //        $('#dlg_dictType').dialog('close')
-                    //        $.procAjax(data);
-                    //    }
-                    //});
+                    });
                 },
                 saveDict: function () {
                     $.formSave({

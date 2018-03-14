@@ -332,23 +332,32 @@
     //表单提交
     formSave: function (options) {
         $.messager.progress();
-        $('#' + options.id).form('submit', {
-            url: options.url,
-            queryParams: options.queryParams,
-            onSubmit: function () {
-                var isValid = $(this).form('validate');
-                if (!isValid) {
-                    $.messager.progress('close');
-                }
-                return isValid;
-            },
-            success: function (data) {
-                $.messager.progress('close');
-                if (typeof (opitons.success) == "function") {
-                    options.success(data);
-                }
-            }
-        });
+
+        var isValid = $('#'+options.id).form('validate');
+        if (!isValid) {
+            $.messager.progress('close');
+            return isValid;
+        }
+
+        options.action();
+
+        //$('#' + options.id).form('submit', {
+        //    url: options.url,
+        //    queryParams: options.queryParams,
+        //    onSubmit: function () {
+        //        var isValid = $(this).form('validate');
+        //        if (!isValid) {
+        //            $.messager.progress('close');
+        //        }
+        //        return isValid;
+        //    },
+        //    success: function (data) {
+        //        $.messager.progress('close');
+        //        if (typeof (opitons.success) == "function") {
+        //            options.success(data);
+        //        }
+        //    }
+        //});
     },
     getYearArray: function () {
         var currentYear = parseInt(new Date().getFullYear());
