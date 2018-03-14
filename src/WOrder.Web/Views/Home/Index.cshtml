@@ -11,7 +11,7 @@
     <div class="" data-options="region:'north',height:52">
         <div class="header">
             <div class="logo">
-                物业派单管理系统
+                后台管理系统
             </div>
             <div class="left">
 
@@ -51,16 +51,16 @@
             var methods = {
                 init: function () {
                     $.parser.parse('#ly_main')
-
+                    methods.initMenu();
                 },
                 initMenu: function () {
 
-                    $('#accordon_menu').accordion({
-                        title: "菜单",
-                        width: 80,
-                        fit: true,
-                        border: false
-                    });
+                    //$('#accordon_menu').accordion({
+                    //    title: "菜单",
+                    //    width: 80,
+                    //    fit: true,
+                    //    border: false
+                    //});
 
                     $('.submenu>li>a').bind('click', function () {
                         var url = $(this).attr('_href');

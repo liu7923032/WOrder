@@ -3,11 +3,11 @@
   "texts": {
     "logo": "麦迪商城",
     "Home": "首页",
-    "Cart": "购物车",
-    "Order": "我的订单",
-    "Approve": "订单管理",
-    "Category": "分类管理",
-    "Product": "商品管理",
-    "Manage": "后台管理"
+    "BaseInfo": "基本信息",
+    "Dictionary": "字典管理",
+    "WorkOrder": "派单管理",
+    "User": "用户管理",
+    "Schedule": "排除管理",
+    "SysManage": "业务管理"
   }
 }

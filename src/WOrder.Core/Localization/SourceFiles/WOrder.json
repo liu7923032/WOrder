@@ -3,11 +3,11 @@
   "texts": {
     "logo": "WOrder",
     "Home": "Home",
-    "Cart": "Cart",
-    "Order": "Order",
-    "Approve": "Approve",
-    "Category": "Category",
-    "Product": "Product",
-    "Manage": "Manage"
+    "BaseInfo": "BaseInfo",
+    "Dictionary": "Dictionary",
+    "WorkOrder": "WorkOrder",
+    "User": "User",
+    "Schedule": "Schedule",
+    "SysManage": "SysManage"
   }
 }

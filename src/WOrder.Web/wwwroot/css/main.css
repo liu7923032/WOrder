@@ -16,6 +16,8 @@ a {
   height: 50px;
   line-height: 50px;
   width: 100%;
+  padding: 0px 10px;
+  box-sizing: border-box;
 }
 #ly_main .header .logo {
   font-size: 24px;
@@ -32,12 +34,21 @@ a {
   background-color: bisque;
 }
 #ly_main .header .right {
-  width: 200px;
+  width: 150px;
   float: right;
-  background-color: red;
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: space-between;
 }
-#ly_main .header .right .u-name {
+#ly_main .header .right .u-name a {
+  font-size: 16px;
   color: white;
+  line-height: 40px;
+}
+#ly_main .header .right .signout a {
+  font-size: 16px;
+  line-height: 40px;
+  color: red;
 }
 #ly_main .logo_main {
   float: left;

@@ -5,17 +5,18 @@
     var ApplicationPath = "/";
 }
 
-@foreach (var menuItem in Model.MainMenu.Items)
-{
-    <div title="@menuItem.DisplayName">
-        <ul class="submenu">
-            @if (menuItem.Items.Count > 0)
-            {
-                @foreach (var item in menuItem.Items)
+<div class="easyui-accordion" data-options="fit:true,border:false,width:160,halign:'top'">
+    @foreach (var menuItem in Model.MainMenu.Items)
+    {
+        <div title="@menuItem.DisplayName">
+            <ul class="submenu">
+                @if (menuItem.Items.Count > 0)
                 {
-                    <li><a href="#" _href="@ApplicationPath+@item.Url">@item.DisplayName</a></li>
-                }}
-        </ul>
-    </div>
-
-}
+                    @foreach (var item in menuItem.Items)
+                    {
+                        <li><a href="#" _href="@ApplicationPath@item.Url">@item.DisplayName</a></li>
+                    }}
+            </ul>
+        </div>
+    }
+</div>

@@ -4,9 +4,7 @@
         $('.sys-menu').find('li>a').click(function () {
             var url = $(this).attr('_href');
 
-
             var title = $(this).text();
-
             $.tabAdd(title, url);
         })
 
@@ -15,30 +13,23 @@
     tabAdd: function (title, url) {
         var $tab = $('#tabs_main');
         var isExist = $tab.tabs('exists', title);
+
         if (isExist) {
             var existTab = $tab.tabs('getTab', title);
-            $tab.tabs('update', {
-                tab: existTab,
-                options: {
-                    title: title,
-                    closable: true,
-                    // href: url  // the new content URL
-                    content: "<iframe style='width:100%;height:100%; border:0px solid #000;'  fit='true' scrolling='yes' src='" + url + " '></iframe>"
-                }
-            })
 
             $tab.tabs('select', title);
+            existTab.panel('refresh', url)
         } else {
             $tab.tabs('add', {
                 title: title,
                 selected: true,
                 closable: true,
-                // href:url,
-                content: "<iframe style='width:100%;height:100%; border:0px solid #000;'  fit='true' scrolling='yes' src='" + url + " '></iframe>"
+                href: url,
+                //content: "<iframe style='width:100%;height:100%; border:0px solid #000;'  fit='true' scrolling='yes' src='" + url + " '></iframe>"
             });
         }
     },
-    //
+    //easyui datagrid 方法
     dgInit: function (options) {
         var dataGirdOptions = {
             rownumbers: true,
@@ -47,6 +38,7 @@
             loadMsg: '正在加载数据...',
             striped: true,
             showFooter: true,
+            method: "GET",
             //定义通过远程排序
             remoteSort: true,
             pagination: true,
@@ -57,16 +49,26 @@
             pageSize: 15,
             pageNumber: 1,
             pageList: [15, 30, 45],
-            onBeforeLoad: function (param) {
-                console.log(param)
-            },
             queryParams: {},
-            // loader:function(param,success,error){
-            //     console.log(param)
-            // }
+
+            extractor: function (data) {
+                console.log(data)
+                alert("1")
+            },
+            onBeforeLoad: function (param) {
+                param["skipCount"] = param.page;
+                param["maxResultCount"] = param.rows;
+                param["sorting"] = param.sort;
+            },
+            loadFilter: function (abpData) {
+                if (!abpData.success) {
+                    return { total: 0, rows: [] }
+                }
+                return { total: abpData["result"].totalCount, rows: abpData["result"].items };
+            },
+
         }
         $.extend(dataGirdOptions, options);
-        console.log(dataGirdOptions)
         $('#' + options.id).datagrid(dataGirdOptions);
     },
     dgAdd: function (opitons) {
@@ -111,7 +113,7 @@
             $tb.datagrid('selectRow', rows.length - 1)
         }
     },
-    dgEdit: function () {
+    dgEdit: function (opitons) {
         //此处支持持单选模式
         var $tb = $('#' + options.id);
         var selectRow = $tb.datagrid('getSelected');
@@ -162,12 +164,31 @@
             options.save(editIndex, editIndexArray);
         }
     },
-    createS4: function () {
-        return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1).toUpperCase();
+    //行选择检查
+    rowSelectCheck: function (id, message, func) {
+        var row = $('#' + id).datagrid('getSelected');
+        console.log(row)
+        if (!row) {
+            $.errorMsg(message);
+            return;
+        }
+        if (func && typeof (func) == "function") {
+            func(row);
+        }
     },
-    newGuid: function () {
-        return ($.createS4() + $.createS4() + "-" + $.createS4() + "-" + $.createS4() + "-" + $.createS4() + "-" + $.createS4() + $.createS4() + $.createS4());
+
+    //easyui tree 方法
+    treeInit: function (options) {
+
+        var defaultOpts = {
+            lines: true,
+            method: "GET"
+        }
+
+        $.extend(true, defaultOpts, options);
+        $('#' + options.id).tree(defaultOpts)
     },
+    //弹出tb选项对话框
     dialogAndDg: function (options) {
 
         var newId = $.newGuid(),
@@ -279,51 +300,55 @@
         $('#' + dlgId).dialog('open');
     },
 
-    //行选择检查
-    rowSelectCheck: function (id, message, func) {
-        var row = $('#' + id).datagrid('getSelected');
-        console.log(row)
-        if (!row) {
-            $.errorMsg(message);
-            return;
-        }
-        if (func && typeof (func) == "function") {
-            func(row);
-        }
-    },
     errorMsg: function (message, func) {
         $.messager.alert({
             title: '错误提示',
             icon: 'error',
             msg: "<span style='color:red;font-size:14px;'>[" + message + "]</span>",
             fn: function () {
-                func();
+                if (typeof (func) == "function") func();
             }
         })
     },
-
     //处理服务器端的数据
-    procAjax: function (data, success, fail) {
+    procAjax: function (obj, success, fail) {
+        if (!obj["__abp"]) {
+            $.errorMsg(obj["error"]);
+            if (typeof (fail) == "function") {
+                fail(obj["error"]);
+            }
+            return;
+        }
+        //如果是没有进行认证,那么就处理
+        if (obj.unAuthorizedRequest) {
 
+        }
+        //对新页面进行处理
+        if (obj.targetUrl && obj.targetUrl.length > 0) {
+            window.location.href = obj.targetUrl;
+        }
+        success(obj["result"]);
     },
     //表单提交
     formSave: function (options) {
         $.messager.progress();
-        $('#' + options.id).form({
+        $('#' + options.id).form('submit', {
+            url: options.url,
+            queryParams: options.queryParams,
             onSubmit: function () {
                 var isValid = $(this).form('validate');
                 if (!isValid) {
-                    $.messager.progress('close');	// hide progress bar while the form is invalid
+                    $.messager.progress('close');
                 }
-                return isValid;	// return false will stop the form submission
+                return isValid;
             },
-            onSuccess: function (data) {
+            success: function (data) {
                 $.messager.progress('close');
                 if (typeof (opitons.success) == "function") {
                     options.success(data);
                 }
             }
-        })
+        });
     },
     getYearArray: function () {
         var currentYear = parseInt(new Date().getFullYear());
@@ -351,5 +376,11 @@
         var d = new Date(year, month, 0);
         return d.getDate();
     },
-
+    //通用方法
+    createS4: function () {
+        return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1).toUpperCase();
+    },
+    newGuid: function () {
+        return ($.createS4() + $.createS4() + "-" + $.createS4() + "-" + $.createS4() + "-" + $.createS4() + "-" + $.createS4() + $.createS4() + $.createS4());
+    },
 })

@@ -34,24 +34,13 @@ namespace WOrder.Web.Controllers
             _env = env;
         }
 
-
+        [AllowAnonymous]
         public ActionResult Login()
         {
             return View();
         }
 
-        private async Task LoginAysnc(LoginModel login)
-        {
-            var user = await _userAppService.SignAsync(login);
-            //证件当事人
-            var claimPrincipal = await _userAppService.GetPrincipalAsync(user, CookieScheme);
-
-            await HttpContext.SignOutAsync(CookieScheme);
-            //系统登陆
-            await HttpContext.SignInAsync(CookieScheme, claimPrincipal, new AuthenticationProperties() { IsPersistent = login.IsRemember });
-
-        }
-
+      
 
 
 
@@ -67,6 +56,19 @@ namespace WOrder.Web.Controllers
             //跳转地址
             //return RedirectToAction("Index", "Home");
             return Json(new AjaxResponse() { TargetUrl = "/Home/Index" });
+        }
+
+
+        private async Task LoginAysnc(LoginModel login)
+        {
+            var user = await _userAppService.SignAsync(login);
+            //证件当事人
+            var claimPrincipal = await _userAppService.GetPrincipalAsync(user, CookieScheme);
+
+            await HttpContext.SignOutAsync(CookieScheme);
+            //系统登陆
+            await HttpContext.SignInAsync(CookieScheme, claimPrincipal, new AuthenticationProperties() { IsPersistent = login.IsRemember });
+
         }
 
         public async Task<ActionResult> SignOut()

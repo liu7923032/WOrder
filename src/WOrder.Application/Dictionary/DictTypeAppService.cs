@@ -11,7 +11,6 @@ namespace WOrder.Dictionary
 {
     public interface IDictTypeAppService : IAsyncCrudAppService<DictTypeDto, int, GetAllDictTypeDto, CreateDictTypeDto, UpdateDictTypeDto>
     {
-
     }
 
     public class DictTypeAppService : AsyncCrudAppService<WOrder_DictType, DictTypeDto, int, GetAllDictTypeDto, CreateDictTypeDto, UpdateDictTypeDto>, IDictTypeAppService
@@ -28,5 +27,6 @@ namespace WOrder.Dictionary
             return base.CreateFilteredQuery(input)
                 .WhereIf(string.IsNullOrEmpty(input.Name), u => u.Name.Contains(input.Name));
         }
+       
     }
 }

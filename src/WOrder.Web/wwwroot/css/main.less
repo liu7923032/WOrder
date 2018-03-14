@@ -18,7 +18,8 @@ a {
         height: 50px;
         line-height: 50px;
         width: 100%;
-
+        padding: 0px 10px;
+        box-sizing: border-box;
 
         .logo {
             font-size: 24px;
@@ -37,13 +38,28 @@ a {
         }
 
         .right {
-            width: 200px;
+            width: 150px;
             float: right;
-            background-color: red;
 
             .u-name {
-                color: white;
+                a {
+                    font-size: 16px;
+                    color: white;
+                    line-height: 40px;
+                }
             }
+
+            .signout {
+                a {
+                    font-size: 16px;
+                    line-height: 40px;
+                    color:red;
+                }
+            }
+
+            display: flex;
+            flex-flow: row nowrap;
+            justify-content: space-between;
         }
     }
 
