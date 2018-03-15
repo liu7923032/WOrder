@@ -17,7 +17,7 @@ namespace WOrder.EntityFrameworkCore
         /// <summary>
         /// 订单记录变更表
         /// </summary>
-        public virtual DbSet<WOrder_OrderRecord> WOrder_OrderRecord { get; set; }
+        public virtual DbSet<WOrder_ORecord> WOrder_OrderRecord { get; set; }
 
         /// <summary>
         /// 产品分类

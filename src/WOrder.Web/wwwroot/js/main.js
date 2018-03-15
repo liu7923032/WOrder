@@ -35,7 +35,11 @@
             rownumbers: true,
             border: 0,
             nowrap: false,
+            idField:'id',
             loadMsg: '正在加载数据...',
+            emptyMsg: "未加载到数据",
+            //滚动条的宽度
+            scrollbarSize:10,
             striped: true,
             showFooter: true,
             method: "GET",
@@ -162,13 +166,13 @@
     //行选择检查
     rowSelectCheck: function (id, message, func) {
         var row = $('#' + id).datagrid('getSelected');
-        console.log(row)
         if (!row) {
             $.errorMsg(message);
             return;
         }
         if (func && typeof (func) == "function") {
-            func(row);
+            var rowIndex = $('#' + id).datagrid('getRowIndex',row);
+            func(row, rowIndex);
         }
     },
 
@@ -177,7 +181,22 @@
 
         var defaultOpts = {
             lines: true,
-            method: "GET"
+            method: "GET",
+            loadFilter: function (resData, parent) {
+                var subNodes = resData["result"].items.map(function (item) {
+                    return {
+                        id: item.id,
+                        text: item.name,
+                        attributes: item
+                    }
+                });
+                return {
+                    id: 0,
+                    text: "全部",
+                    state: "open",
+                    children: subNodes
+                };
+            },
         }
 
         $.extend(true, defaultOpts, options);

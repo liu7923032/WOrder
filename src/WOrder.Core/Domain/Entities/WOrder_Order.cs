@@ -18,44 +18,44 @@ namespace WOrder.Domain.Entities
         public string OrderNo { get; set; }
 
         /// <summary>
-        /// 分类
+        /// 分类 投诉 稽核  派单
         /// </summary>
         [Required]
         [StringLength(20)]
         public string Category { get; set; }
 
-
         /// <summary>
-        /// 货物名称
+        /// 项目名称
         /// </summary>
         [Required]
-        [StringLength(20)]
-        public string GoodName { get; set; }
+        [StringLength(200)]
+        public string ItemName { get; set; }
 
         /// <summary>
-        /// 楼层
-        /// </summary>
-        [Required]
-        [StringLength(100)]
-        public string Floor { get; set; }
-
-        /// <summary>
-        /// 订单编号
+        /// 具体位置
         /// </summary>
         [Required]
         [StringLength(100)]
-        public string Address { get; set; }
+        public string OAddress { get; set; }
 
         /// <summary>
-        /// 处理人
+        /// 描述信息
         /// </summary>
-        public long? HandleUId { get; set; }
+        [StringLength(1000)]
+        public string Desciption { get; set; }
 
+        
         /// <summary>
-        /// 订单状态
+        /// 单据的类别 ,默认是0是派单，1是抢单 
         /// </summary>
         [Required]
-        public OrderStatus OStatus { get; set; }
+        public OrderType OrderType { get; set; }
+
+        /// <summary>
+        /// 当前订单状态
+        /// </summary>
+        [Required]
+        public TStatus TStatus { get; set; }
 
         /// <summary>
         /// 通过串联创建人和修改人
@@ -70,13 +70,33 @@ namespace WOrder.Domain.Entities
         /// </summary>
         [ForeignKey("HandleUId")]
         public virtual WOrder_Account HandleUser { get; set; }
+
+        /// <summary>
+        /// 工单的处理人
+        /// </summary>
+        public virtual ICollection<WOrder_Handler> Handlers { get; set; }
     }
 
 
     /// <summary>
-    /// 货物状态
+    /// 订单类别
     /// </summary>
-    public enum OrderStatus
+    public enum OrderType
+    {
+        /// <summary>
+        /// 派单
+        /// </summary>
+        Dispatch,
+        /// <summary>
+        /// 抢单
+        /// </summary>
+        Grap
+    }
+
+    /// <summary>
+    /// 工单状态
+    /// </summary>
+    public enum TStatus
     {
         /// <summary>
         /// 待接收
@@ -86,13 +106,8 @@ namespace WOrder.Domain.Entities
         /// <summary>
         /// 待接单
         /// </summary>
-        [Description("已派")]
-        Wait,
-        /// <summary>
-        /// 接单
-        /// </summary>
-        [Description("接单")]
-        Accept,
+        [Description("进程中")]
+        Process,
         /// <summary>
         /// 完成
         /// </summary>

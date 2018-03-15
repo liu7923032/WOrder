@@ -141,15 +141,7 @@
                 $.treeInit({
                     id: 'tree_dict',
                     url: treeUrl,
-                    loadFilter: function (resData, parent) {
-                        return resData["result"].items.map(function (item) {
-                            return {
-                                id: item.id,
-                                text: item.name,
-                                attributes:item
-                            }
-                        });
-                    },
+                    
                     onClick: function (node) {
                         selectNode = node;
                         //通过类型来获取字典数据

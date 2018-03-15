@@ -1,4 +1,5 @@
 ﻿@using WOrder.Web.Startup
+
 @{
     ViewBag.ActiveMenu = PageNames.User;
     Layout = null;
@@ -6,34 +7,40 @@
 
 
 <div class="easyui-layout" id="ly_dict" data-options="fit:true,border:false">
-    <div data-options="region:'west',width:200,title:'字典分类',tools:[{iconCls:'icon-add',handler:function(){$('#dlg_dictType').dialog('open');$('#frm_dictType').form('clear')}}]" style="padding:5px 0px;">
-        <ul class="easyui-tree" id="tree_dict"></ul>
+    <div data-options="region:'west',width:200,title:'部门信息'" style="padding:5px 0px;">
+        <ul class="easyui-tree" id="tree_dept"></ul>
     </div>
     <div data-options="region:'center'">
-        <table id="tb_dict"></table>
+        <table id="tb_user"></table>
     </div>
 </div>
-<!-- 字典类别 -->
-<div id="dlg_dictType">
-    <form id="frm_dictType" method="post">
+<!-- 部门信息 -->
+<div id="dlg_dept">
+    <form id="frm_dept" method="post">
         <input type="hidden" name="id" />
         <table class="form-table">
             <tr>
-                <td class="tdLabel">类别名称</td>
+                <td class="tdLabel">部门名称</td>
                 <td>
                     <input class="easyui-textbox" name="name" data-options="width:300,required:true" />
                 </td>
             </tr>
             <tr>
-                <td class="tdLabel">类别序号</td>
+                <td class="tdLabel">部门简称</td>
                 <td>
-                    <input class="easyui-numberbox" name="sortNo" data-options="width:300,required:true,prompt:'10/20'" />
+                    <input class="easyui-textbox" name="inputCode" data-options="width:300,required:true" />
                 </td>
             </tr>
             <tr>
-                <td class="tdLabel">类别备注</td>
+                <td class="tdLabel">部门编号</td>
                 <td>
-                    <input class="easyui-textbox" name="memo" data-options="width:300,multiline:true,height:100" />
+                    <input class="easyui-numberbox" name="deptNo" data-options="width:300,required:true,prompt:'LC001'" />
+                </td>
+            </tr>
+            <tr>
+                <td class="tdLabel">位置</td>
+                <td>
+                    <input class="easyui-textbox" name="position" data-options="width:300,multiline:true,height:100" />
                 </td>
             </tr>
         </table>
@@ -41,28 +48,36 @@
 </div>
 
 <!-- 字典信息增删该查 -->
-<div id="dlg_dict" class="easyui-dialog" data-options="width:500,height:400,closed:true,title:'字典'">
-    <form id="frm_dict" method="POST">
+<div id="dlg_user" class="easyui-dialog" data-options="width:700,height:400,closed:true,title:'人员信息'">
+    <form id="frm_user" method="POST">
         <input type="hidden" name="id">
-        <input type="hidden" name="isDel" value="0">
+        <input type="hidden" name="isDelete" value="0">
         <table class="form-table">
             <tr>
-                <td class="tdLabel">字典类别</td>
+                <td class="tdLabel">账号</td>
                 <td>
-                    <input class="easyui-textbox" id="txtDictType" name="dictType" data-options="width:300,required:true,readonly:true" />
+                    <input class="easyui-textbox" name="account" data-options="width:200,required:true" />
+                </td>
+                <td class="tdLabel">姓名</td>
+                <td>
+                    <input class="easyui-textbox" name="userName" data-options="width:200,required:true" />
+                </td>
+            </tr>
+            <tr>
+                <td class="tdLabel">联系方式</td>
+                <td>
+                    <input class="easyui-textbox" name="phone" data-options="width:200,required:true,prompt:'185xx'" />
+                </td>
+                <td class="tdLabel">性别</td>
+                <td>
+                    <input class="easyui-combobox" name="sex" data-options="width:200,required:true,valueField:'text',textField:'text',editable:false,data:[{text:'男'},{text:'女'}]" />
                 </td>
             </tr>
 
             <tr>
-                <td class="tdLabel">字典名称</td>
+                <td class="tdLabel">部门</td>
                 <td>
-                    <input class="easyui-textbox" name="name" data-options="width:300,required:true,prompt:'XX'" />
-                </td>
-            </tr>
-            <tr>
-                <td class="tdLabel">字典编号</td>
-                <td>
-                    <input class="easyui-textbox" name="no" data-options="width:300,required:true,prompt:'默认字典名称拼音首字母大写'" />
+                    <input class="easyui-combobox" id="txtDeptId" name="deptId" data-options="width:200,required:true,valueField:'text',textField:'text',editable:false" />
                 </td>
             </tr>
             <tr>
@@ -84,23 +99,25 @@
 
 <!-- 字典类别的右键菜单 -->
 <div id="mm_dict" class="easyui-menu" style="width:120px;">
+    <div data-options="iconCls:'icon-add'">新增</div>
     <div data-options="iconCls:'icon-edit'">编辑</div>
     <div data-options="iconCls:'icon-remove'">删除</div>
 </div>
 
 
-
 <script type="text/javascript">
     $(function () {
-        var  selectNode
-            , treeUrl = "/api/services/app/DictType/GetAll?maxResultCount=10000&skipCount=0"
-            , _typeService = abp.services.app.dictType
-            , _dictService = abp.services.app.dictionary;
+        var selectNode
+            , deptUrl = "/api/services/app/dept/GetAll?maxResultCount=10000&skipCount=0"
+            , _typeService = abp.services.app.dept
+            , _userService = abp.services.app.user;
         var methods = {
             init: function () {
-                $.parser.parse('#dlg_dictType');
-                $.parser.parse('#dlg_dict');
-                $('#dlg_dictType').dialog({
+                $.parser.parse('#dlg_dept');
+                $.parser.parse('#dlg_user');
+
+
+                $('#dlg_dept').dialog({
                     width: 500, height: 300, closed: true, title: '字典类别',
                     buttons: [
                         {
@@ -113,13 +130,13 @@
                             text: '关闭',
                             iconCls: 'icon-cancel',
                             handler: function () {
-                                $('#dlg_dictType').dialog('close');
+                                $('#dlg_dept').dialog('close');
                             }
                         }
                     ]
                 });
 
-                $('#dlg_dict').dialog({
+                $('#dlg_user').dialog({
                     buttons: [
                         {
                             text: '保存',
@@ -131,47 +148,55 @@
                             text: '关闭',
                             iconCls: 'icon-cancel',
                             handler: function () {
-                                $('#dlg_dict').dialog('close');
+                                $('#dlg_user').dialog('close');
                             }
                         }
                     ]
                 });
+
+                $('#txtDeptId').combobox({
+                    url: deptUrl,
+                    loadFilter: function (result) {
+                        return result["result"].items.map(function (item) {
+                            return {
+                                id: item.id,
+                                text: item.name
+                            }
+                        });
+                    }
+                });
             },
             initTree: function () {
                 $.treeInit({
-                    id: 'tree_dict',
+                    id: 'tree_dept',
                     url: treeUrl,
-                    loadFilter: function (resData, parent) {
-                        return resData["result"].items.map(function (item) {
-                            return {
-                                id: item.id,
-                                text: item.name,
-                                attributes:item
-                            }
-                        });
-                    },
+                   
                     onClick: function (node) {
                         selectNode = node;
                         //通过类型来获取字典数据
-                        methods.queryDict();
+                        methods.queryUser();
                     },
                     onContextMenu: function (e, node) {
                         e.preventDefault();
                         // select the node
-                        $('#tree_dict').tree('select', node.target);
+                        $('#tree_dept').tree('select', node.target);
                         // display context menu
                         $('#mm_dict').menu('show', {
                             left: e.pageX,
                             top: e.pageY,
                             onClick: function (item) {
-                                if (item.text == "编辑") {
-                                    $('#frm_dictType').form('load', node.attributes);
-                                    $('#dlg_dictType').dialog('open')
+                                if (item.text == "新增") {
+                                    $('#frm_dept').form('clear');
+                                    $('#dlg_dept').dialog('open')
+                                }
+                                else if (item.text == "编辑") {
+                                    $('#frm_dept').form('load', node.attributes);
+                                    $('#dlg_dept').dialog('open')
                                 } else {
-                                    abp.message.confirm("确定要删除<span style='color:red;'>" + node.text + "</span>,一旦删除该类别的字典都会删除",function(){
+                                    abp.message.confirm("确定要删除部门<span style='color:red;'>" + node.text + "</span>?", function () {
                                         _typeService.delete({ id: node.id }, {
                                             success: function (data) {
-                                                $("#tree_dict").tree('reload');
+                                                $("#tree_dept").tree('reload');
                                             }
                                         })
                                     })
@@ -183,54 +208,64 @@
             },
             initTable: function () {
                 $.dgInit({
-                    id: "tb_dict",
-                    url: '/api/services/app/dictionary/getAll',
+                    id: "tb_user",
+                    url: '/api/services/app/user/getAll',
                     columns: [[
                         { field: 'id', hidden: true, width: 30 },
-                        { field: 'dictType', title: '字典类型', width: 100 },
-                        { field: 'no', title: '字典编号', width: 80 },
-                        { field: 'name', title: '字典名称', width: 120 },
-                        { field: 'sortNo', title: '字典排序', width: 80, sortable: true },
-                        { field: 'memo', title: '备注信息', width: 200 }
+                        { field: 'deptId', hidden: true, width: 30 },
+                        { field: 'account', title: '账号', width: 80, sortable: true },
+                        { field: 'userName', title: '姓名', width: 80 },
+                        { field: 'phone', title: '联系方式', width: 120 },
+                        { field: 'sex', title: '性别', width: 80 },
+                        { field: 'deptName', title: '隶属部门', width: 120 }
                     ]],
                     toolbar: [
                         {
                             text: "新增",
                             iconCls: 'icon-add',
                             handler: function () {
-                                if (!selectNode) {
-                                    $.errorMsg("请先选择字典类别");
-                                    return;
+                                
+                                $('#frm_user').form('clear');
+                                $('#dlg_user').dialog('open');
+                                if (selectNode) {
+                                    $('#txtDeptId').combobox('setValue', selectNode.id);
                                 }
-                                $('#frm_dict').form('clear');
-                                $('#dlg_dict').dialog('open');
-                                //console.log($('#txtDictType').textbox('getValue')+" aa")
-
-                                $('#txtDictType').textbox('setValue', selectNode.text);
                             }
                         }, '-', {
                             text: "编辑",
                             iconCls: 'icon-edit',
                             handler: function () {
 
-                                $.rowSelectCheck('tb_dict', "请先要编辑的字典", function (row) {
-                                    $('#frm_dict').form('load', row);
-                                    $('#dlg_dict').dialog('open')
+                                $.rowSelectCheck('tb_user', "请先要编辑的人员", function (row) {
+                                    $('#frm_user').form('load', row);
+                                    $('#dlg_user').dialog('open')
                                     //将no设置未只读
-
                                 })
                             }
                         }, '-', {
                             text: "删除",
                             iconCls: 'icon-remove',
                             handler: function () {
-                                $.rowSelectCheck('tb_dict', "请闲选择要删除的字典", function (row) {
-                                    abp.message.confirm("确定要删除" + row.name, function (r) {
-                                        _dictService.delete({ id: row.id }, {
+                                $.rowSelectCheck('tb_user', "请先选择要删除的人员", function (row,rowIndex) {
+                                    abp.message.confirm("确定要删除人员:" + row.name, function (r) {
+                                        _userService.delete({ id: row.id }, {
                                             success: function (data) {
-                                                methods.queryDict(row.dictType);
+                                                abp.notify.success("删除成功");
+                                                $('#tb_user').datagrid('deleteRow', rowIndex)
                                             }
                                         })
+                                    });
+                                })
+                            }
+                        }, '-', {
+                            text: "初始密码",
+                            iconCls: 'icon-undo',
+                            handler: function () {
+                                $.rowSelectCheck('tb_user', "请先选择要初始的人员", function (row) {
+                                    _userService.initPassword({ id: row.id }, {
+                                        success: function (data) {
+                                            abp.notify.success("密码初始成功");
+                                        }
                                     })
                                 })
                             }
@@ -238,31 +273,30 @@
                     ]
                 });
             },
-            queryDict: function (obj) {
-                var dictType = "";
+           
+            queryUser: function () {
+                var param = {};
                 if (selectNode) {
-                    dictType = selectNode.text;
-                }else if(obj) {
-                    dictType = obj.dictType;
+                    param["deptId"] = selectNode.id;
                 }
-                $('#tb_dict').datagrid('reload', { "dictType": dictType });
+                $('#tb_user').datagrid('reload', param);
             },
             saveDictType: function () {
                 $.formSave({
-                    id: 'frm_dictType',
+                    id: 'frm_dept',
                     action: function (data, isAdd) {
                         if (isAdd) {
                             _typeService.create(data, {
                                 success: function (data) {
-                                    $('#dlg_dictType').dialog('close');
-                                    $('#tree_dict').tree('reload');
+                                    $('#dlg_dept').dialog('close');
+                                    $('#tree_dept').tree('reload');
                                 }
                             })
                         } else {
                             _typeService.update(data, {
                                 success: function (data) {
-                                    $('#dlg_dictType').dialog('close');
-                                    $('#tree_dict').tree('reload');
+                                    $('#dlg_dept').dialog('close');
+                                    $('#tree_dept').tree('reload');
                                 }
                             })
                         }
@@ -272,20 +306,20 @@
             saveDict: function () {
 
                 $.formSave({
-                    id: 'frm_dict',
+                    id: 'frm_user',
                     action: function (data, isAdd) {
                         if (isAdd) {
-                            _dictService.create(data, {
+                            _userService.create(data, {
                                 success: function (data) {
-                                    $('#dlg_dict').dialog('close');
-                                    methods.queryDict(data.dictType);
+                                    $('#dlg_user').dialog('close');
+                                    methods.queryUser(data.dictType);
                                 }
                             })
                         } else {
-                            _dictService.update(data, {
+                            _userService.update(data, {
                                 success: function (data) {
-                                    $('#dlg_dict').dialog('close')
-                                    methods.queryDict(data.dictType);
+                                    $('#dlg_user').dialog('close')
+                                    methods.queryUser(data.dictType);
                                 }
                             })
 

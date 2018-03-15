@@ -25,9 +25,9 @@ namespace WOrder.Domain.Service
     /// </summary>
     public class OrderManager : DomainService, IOrderManager
     {
-        private readonly IRepository<WOrder_OrderRecord> _recordRepository;
+        private readonly IRepository<WOrder_ORecord> _recordRepository;
         private readonly IRepository<WOrder_Order> _cartItemRepository;
-        public OrderManager(IRepository<WOrder_OrderRecord> recordRepository, IRepository<WOrder_Order> cartItemRepository)
+        public OrderManager(IRepository<WOrder_ORecord> recordRepository, IRepository<WOrder_Order> cartItemRepository)
         {
             _recordRepository = recordRepository;
             _cartItemRepository = cartItemRepository;
@@ -36,7 +36,7 @@ namespace WOrder.Domain.Service
         public async Task UpdateOrder(WOrder_Order order, OrderStatus status)
         {
             //1:添加订单记录
-            await _recordRepository.InsertAsync(new WOrder_OrderRecord()
+            await _recordRepository.InsertAsync(new WOrder_ORecord()
             {
                 OrderId = order.Id,
                 OrderStatus = status

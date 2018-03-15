@@ -8,83 +8,127 @@ using Newtonsoft.Json;
 
 namespace WOrder.Order
 {
-    /// <summary>
-    /// 返回订单列表
-    /// </summary>
-    /// 
-    [AutoMapFrom(typeof(WOrder_Order))]
-    public class OrderDto : IEntityDto<int>
+
+    [AutoMapTo(typeof(WOrder_Order))]
+    public class CreateOrderDto
     {
+        /// <summary>
+        /// 订单编号
+        /// </summary>
         [Required]
-        public int Id { get; set; }
-
-        [Required]
-        public int CartId { get; set; }
-
-        [Required]
+        [StringLength(20)]
         public string OrderNo { get; set; }
 
         /// <summary>
-        /// 订单状态
+        /// 分类 投诉 稽核  派单
         /// </summary>
-        public OrderStatus OrderStatus { get; set; }
+        [Required]
+        [StringLength(20)]
+        public string Category { get; set; }
+
+        /// <summary>
+        /// 项目名称
+        /// </summary>
+        [Required]
+        [StringLength(200)]
+        public string ItemName { get; set; }
+
+        /// <summary>
+        /// 具体位置
+        /// </summary>
+        [Required]
+        [StringLength(100)]
+        public string OAddress { get; set; }
+
+        /// <summary>
+        /// 描述信息
+        /// </summary>
+        [StringLength(1000)]
+        public string Desciption { get; set; }
+
+        /// <summary>
+        /// 单据的类别 ,默认是0是派单，1是抢单 
+        /// </summary>
+        [Required]
+        public OrderType OrderType { get; set; }
+        /// <summary>
+        /// 当前订单状态
+        /// </summary>
+        [Required]
+        public TStatus TStatus { get; set; }
+        /// <summary>
+        /// 订单状态说明
+        /// </summary>
+        public string TStatusName { get; set; }
 
 
+        /// <summary>
+        /// 申请人
+        /// </summary>
+        public string ApplyName { get; set; }
+
+        /// <summary>
+        /// 创建时间
+        /// </summary>
         [JsonConverter(typeof(WOrderDateFormat))]
         [Required]
         public DateTime CreationTime { get; set; }
 
         /// <summary>
-        /// 创建人
+        /// 处理人
         /// </summary>
-        public string CreatorName { get; set; }
-
-        /// <summary>
-        /// 日期格式话
-        /// </summary>
-        [JsonConverter(typeof(WOrderDateFormat))]
-        public DateTime? ApproveTime { get; set; }
-        /// <summary>
-        /// 审核人
-        /// </summary>
-        public string ApproveUName { get; set; }
-
-        [Required]
-        public decimal AllPrice { get; set; }
+        public List<HandlerDto> Handlers { get; set; }
 
 
-        public string AddressInfo { get; set; }
     }
 
     /// <summary>
-    /// 对订单状态进行变更
+    /// 更新
     /// </summary>
-    public class ChangeOrderInput
+    public class UpdateOrderDto : CreateOrderDto, IEntityDto<int>
     {
-        public List<int> OrderIds { get; set; }
-
-        public OrderStatus OrderStatus { get; set; }
+        public int Id { get; set; }
     }
+    /// <summary>
+    /// 返回订单列表
+    /// </summary>
+    /// 
+
+    public class OrderDto : UpdateOrderDto
+    {
+
+    }
+
+   
 
     public class GetAllOrderInput : PagedAndSortedResultRequestDto
     {
-        public OrderStatus OrderStatus { get; set; }
+        /// <summary>
+        /// 订单状态
+        /// </summary>
+        public TStatus TStatus { get; set; }
 
+        /// <summary>
+        /// 订单类别
+        /// </summary>
+        public string Category { get; set; }
+
+        /// <summary>
+        /// 订单类别 是抢单还是派单
+        /// </summary>
         public OrderType OrderType { get; set; }
+
+        /// <summary>
+        /// 申请人
+        /// </summary>
+        public string ApplyName { get; set; }
+
+        /// <summary>
+        /// 描述信息
+        /// </summary>
+        public string Description { get; set; }
+
     }
 
-    /// <summary>
-    /// 用于查询订单状态
-    /// </summary>
-    public enum OrderType
-    {
-        /// <summary>
-        /// 查询我的订单
-        /// </summary>
-        Me = 0,
-        /// <summary>
-        /// 查询所有订单
-        /// </summary>
-        All
-    }
+    
 }
