@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
 using Abp.Application.Services.Dto;
+using Abp.AutoMapper;
+using WOrder.Domain.Entities;
 
 namespace WOrder.Dictionary
 {
-
+    [AutoMapTo(typeof(WOrder_Dictionary))]
     public class CreateDictDto
     {
         //字典类别
@@ -43,6 +45,8 @@ namespace WOrder.Dictionary
 
     public class GetAllDictDto: PagedAndSortedResultRequestDto
     {
+
+        public string DictType { get; set; }
         public string No { get; set; }
 
         public string Name { get; set; }

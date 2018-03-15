@@ -42,7 +42,7 @@ namespace WOrder.Web.Startup
                          .AddItem(new MenuItemDefinition(
                                     PageNames.User,
                                     L(nameof(PageNames.User)),
-                                    url: "/User/Index",
+                                    url: "User/Index",
                                     icon: "&#xe604;",
                                     requiredPermissionName: PermissionNames.Page_Admin
                                    ))
@@ -55,12 +55,12 @@ namespace WOrder.Web.Startup
                          ).AddItem(new MenuItemDefinition(
                              PageNames.WorkOrder,
                             L(nameof(PageNames.WorkOrder)),
-                            url: "/Order/Index",
+                            url: "Order/Index",
                             icon: ""))
                          .AddItem(new MenuItemDefinition(
                             PageNames.Schedule,
                             L(nameof(PageNames.Schedule)),
-                            url: "/Schedule/Index",
+                            url: "Schedule/Index",
                             icon: ""
                         )));
 

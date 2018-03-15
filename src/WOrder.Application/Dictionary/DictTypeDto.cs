@@ -3,9 +3,12 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
 using Abp.Application.Services.Dto;
+using Abp.AutoMapper;
+using WOrder.Domain.Entities;
 
 namespace WOrder.Dictionary
 {
+    [AutoMapTo(typeof(WOrder_DictType))]
     public class CreateDictTypeDto
     {
         //字典名称
@@ -20,7 +23,7 @@ namespace WOrder.Dictionary
         public string Memo { get; set; }
     }
 
-    public class UpdateDictTypeDto : CreateDictDto, IEntityDto
+    public class UpdateDictTypeDto : CreateDictTypeDto, IEntityDto
     {
 
         public int Id { get; set; }

@@ -26,5 +26,6 @@ namespace WOrder.Domain.Entities
         /// </summary>
         public int SortNo { get; set; }
 
+
     }
 }

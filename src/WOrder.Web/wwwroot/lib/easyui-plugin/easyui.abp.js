@@ -125,11 +125,11 @@ var abp = abp || {};
 
     };
 
-    abp.event.on('abp.dynamicScriptsInitialized', function () {
-        abp.libs.layuiAlert.config.confirm.title = abp.localization.abpWeb('AreYouSure');
-        abp.libs.layuiAlert.config.confirm.cancelButtonText = abp.localization.abpWeb('Cancel');
-        abp.libs.layuiAlert.config.confirm.confirmButtonText = abp.localization.abpWeb('Yes');
-    });
+    //abp.event.on('abp.dynamicScriptsInitialized', function () {
+    //    abp.libs.layuiAlert.config.confirm.title = abp.localization.abpWeb('AreYouSure');
+    //    abp.libs.layuiAlert.config.confirm.cancelButtonText = abp.localization.abpWeb('Cancel');
+    //    abp.libs.layuiAlert.config.confirm.confirmButtonText = abp.localization.abpWeb('Yes');
+    //});
 
 })();
 

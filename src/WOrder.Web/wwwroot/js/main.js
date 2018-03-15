@@ -50,13 +50,8 @@
             pageNumber: 1,
             pageList: [15, 30, 45],
             queryParams: {},
-
-            extractor: function (data) {
-                console.log(data)
-                alert("1")
-            },
             onBeforeLoad: function (param) {
-                param["skipCount"] = param.page;
+                param["skipCount"] = (parseInt(param.page) - 1) * parseInt(param.rows);
                 param["maxResultCount"] = param.rows;
                 param["sorting"] = param.sort;
             },
@@ -331,9 +326,9 @@
     },
     //表单提交
     formSave: function (options) {
-        
+
         //1:校验表单
-        var isValid = $('#'+options.id).form('validate');
+        var isValid = $('#' + options.id).form('validate');
         if (!isValid) {
             $.messager.progress('close');
             return isValid;
@@ -350,7 +345,7 @@
             var isAdd = formObj["id"].length == 0;
             options.action(formObj, isAdd);
         }
-       
+
 
         //$('#' + options.id).form('submit', {
         //    url: options.url,

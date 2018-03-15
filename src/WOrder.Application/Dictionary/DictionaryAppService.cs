@@ -30,6 +30,7 @@ namespace WOrder.Dictionary
         protected override IQueryable<WOrder_Dictionary> CreateFilteredQuery(GetAllDictDto input)
         {
             return base.CreateFilteredQuery(input)
+                .WhereIf(!string.IsNullOrEmpty(input.DictType), u => u.DictType.Contains(input.DictType))
                 .WhereIf(!string.IsNullOrEmpty(input.No), u => u.No.Contains(input.No))
                 .WhereIf(!string.IsNullOrEmpty(input.Name), u => u.Name.Contains(input.Name));
         }
@@ -37,14 +38,14 @@ namespace WOrder.Dictionary
         public async override Task<DictDto> Create(CreateDictDto input)
         {
 
-            await CheckExists(input.Name, input.No);
+            await CheckExists(null, input.Name, input.No);
             return await base.Create(input);
         }
 
-        private async Task CheckExists(string name,string no)
+        private async Task CheckExists(int? id, string name, string no)
         {
             //检查数据库中是否存在同名的字典或标号
-            var exist = await _dictRepository.FirstOrDefaultAsync(u => u.No.Equals(no) || u.Name.Equals(name));
+            var exist = await _dictRepository.FirstOrDefaultAsync(u => (u.No.Equals(no) || u.Name.Equals(name)) && u.Id != id);
             if (exist != null)
             {
                 throw new UserFriendlyException("系统中已经存在该编号或者字典名称");
@@ -53,7 +54,7 @@ namespace WOrder.Dictionary
 
         public async override Task<DictDto> Update(UpdateDictDto input)
         {
-            await CheckExists(input.Name,input.No);
+            await CheckExists(input.Id, input.Name, input.No);
             return await base.Update(input);
         }
     }

@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Abp.Application.Services;
+using Abp.Application.Services.Dto;
+using Abp.Authorization;
 using Abp.Domain.Repositories;
 using Abp.Linq.Extensions;
 using Abp.UI;
@@ -15,19 +17,22 @@ namespace WOrder.Dictionary
     {
     }
 
+    [AbpAuthorize]
     public class DictTypeAppService : AsyncCrudAppService<WOrder_DictType, DictTypeDto, int, GetAllDictTypeDto, CreateDictTypeDto, UpdateDictTypeDto>, IDictTypeAppService
     {
 
         private readonly IRepository<WOrder_DictType> _dictTypeRepository;
-        public DictTypeAppService(IRepository<WOrder_DictType> dictTypeRepository) : base(dictTypeRepository)
+        private readonly IRepository<WOrder_Dictionary> _dictRespository;
+        public DictTypeAppService(IRepository<WOrder_DictType> dictTypeRepository, IRepository<WOrder_Dictionary> dictRespository) : base(dictTypeRepository)
         {
             _dictTypeRepository = dictTypeRepository;
+            _dictRespository = dictRespository;
         }
 
         protected override IQueryable<WOrder_DictType> CreateFilteredQuery(GetAllDictTypeDto input)
         {
             return base.CreateFilteredQuery(input)
-                .WhereIf(string.IsNullOrEmpty(input.Name), u => u.Name.Contains(input.Name));
+                .WhereIf(!string.IsNullOrEmpty(input.Name), u => u.Name.Contains(input.Name));
         }
 
 
@@ -48,10 +53,13 @@ namespace WOrder.Dictionary
             return await base.Create(input);
         }
 
-        public async override Task<DictTypeDto> Update(UpdateDictTypeDto input)
+
+        public async override Task Delete(EntityDto<int> input)
         {
-            await CheckExists(input.Name);
-            return await base.Update(input);
+            var entity = _dictTypeRepository.Get(input.Id);
+            await _dictRespository.DeleteAsync(u => u.DictType.Equals(entity.Name));
+            await base.Delete(input);
+
         }
     }
 }
