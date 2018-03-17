@@ -56,6 +56,17 @@ namespace WOrder.Domain.Entities
         [StringLength(100)]
         public string Photos { get; set; }
 
+        /// <summary>
+        /// 工作方式
+        /// </summary>
+        public string WorkMode { get; set; }
+
+        /// <summary>
+        /// 负责片区
+        /// </summary>
+        [StringLength(1000)]
+        public string AreaName { get; set; }
+
         public WOrder_Account()
         {
             IsLock = false;

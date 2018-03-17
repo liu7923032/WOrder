@@ -73,36 +73,4 @@ namespace WOrder.Web.Startup
     }
 
 
-    public class WOrderPermissionDependency : IPermissionDependency, ITransientDependency
-    {
-        private IConfiguration appConfiguration;
-        private IUserAppService _loginManager;
-        public WOrderPermissionDependency(IHostingEnvironment env, IUserAppService loginManager)
-        {
-            _loginManager = loginManager;
-            appConfiguration = AppConfigurations.Get(env.ContentRootPath, env.EnvironmentName);
-        }
-
-        public async Task<bool> IsSatisfiedAsync(IPermissionDependencyContext context)
-        {
-            //找到有管理员权限的用户
-            var administrators = appConfiguration.GetSection("Authorzation:Administators").Value;
-
-            if (string.IsNullOrEmpty(administrators))
-            {
-                return await Task.FromResult(false);
-            }
-            //检查当前人员是否有在里面
-            var userId = Convert.ToInt32(context.User.UserId);
-            //var user = await _loginManager.GetUserById(userId);
-            if (administrators == "M0679")
-            {
-                return await Task.FromResult(true);
-            }
-            else
-            {
-                return await Task.FromResult(false);
-            }
-        }
-    }
 }

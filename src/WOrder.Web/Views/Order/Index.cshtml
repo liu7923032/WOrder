@@ -212,9 +212,7 @@
 
                                 $('#frm_order').form('clear');
                                 $('#dlg_order').dialog('open');
-                                if (selectNode) {
-                                    $('#txtDeptId').combobox('setValue', selectNode.id);
-                                }
+                              
                             }
                         }, '-', {
                             text: "编辑",
@@ -243,7 +241,7 @@
                                 })
                             }
                         }, '-', {
-                            text: "派单",
+                            text: "移动到抢单池",
                             iconCls: 'icon-redo',
                             handler: function () {
                                 methods.robOrder();
@@ -449,13 +447,14 @@
                                         success: function (resData) {
                                             console.log(resData);
                                             abp.notify.success("派单成功,订单进入<span style='color:blue;'>派单状态</span>", "派单提示");
-                                            $('#tb_order').datagrid('updateRow', {
-                                                index: rowIndex,
-                                                row:{
-                                                    tStatus: 1,
-                                                }
+                                            //$('#tb_order').datagrid('updateRow', {
+                                            //    index: rowIndex,
+                                            //    row:{
+                                            //        tStatus: 1,
+                                            //    }
 
-                                            });
+                                            //});
+                                            methods.query();
                                         }
                                     });
                                 }

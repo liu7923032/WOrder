@@ -150,7 +150,7 @@ namespace WOrder.Order
         public async Task Assign(List<CreateHandlerDto> handlers)
         {
             var orderIds = handlers.Select(u => u.OrderId).ToList();
-            var orderList = _orderRepository.GetAll().Where(u => orderIds.Contains(u.Id)).ToList();
+            var orderList = await _orderRepository.GetAllListAsync(u => orderIds.Contains(u.Id));
             if (orderList.Count == 0)
             {
                 throw new UserFriendlyException("请选择要反派的订单");

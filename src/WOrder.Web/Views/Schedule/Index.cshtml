@@ -1,0 +1,501 @@
+﻿
+@{
+    ViewData["Title"] = "Index";
+    Layout = null;
+}
+
+<style scoped type="text/css">
+    .datagrid-row {
+        height: 32px;
+    }
+</style>
+<div class="easyui-layout" data-options="fit:true,border:false">
+    <div data-options="region:'north',height:48" style="padding:5px 10px;">
+        <table class="query-table">
+            <tr>
+                <td id="txtTime">排班年:</td>
+                <td>
+                    <input type="text" id='txtYear' />
+                </td>
+                <td id="txtTime">排班月:</td>
+                <td>
+                    <input type="text" id='txtMonth' />
+                </td>
+                <td id="txtTime">班别:</td>
+                <td>
+                    <input type="text" id='txtClassType' />
+                </td>
+                <td>关键字:</td>
+                <td>
+                    <input class="easyui-searchbox" id="txtScheduleKey" style="width: 300px; margin-left: 40px;" />
+                </td>
+                <td><a href="javascript:void(0)" id="btnQuerySchedule" class="easyui-linkbutton" data-options="iconCls:'icon-search',plain:true" >查询</a></td>
+            </tr>
+        </table>
+    </div>
+    <div data-options="region:'center'">
+        <table id="tb_scheduling"></table>
+    </div>
+</div>
+<!--右键菜单-->
+<div id="mm_schedule" class="easyui-menu" style="width:120px;display:none;">
+    <div data-options="iconCls:'icon-play'" >开始</div>
+    <div data-options="iconCls:'icon-stop'">结束</div>
+    <div data-options="iconCls:'icon-clear'">取消</div>
+</div>
+
+
+<script type="text/javascript">
+      var scheduleBox = {
+            sDay: 0,
+            eDay: 0,
+            curDay: 0,
+            curRowIndex: -1,
+            changes: [],
+            holidays: "",
+            weekDays: "",
+           //当前班别
+            curType:"",
+            classTypeURL: "/api/services/app/Dictionary/GetAll?dictType=" + encodeURIComponent("人员班别")
+        }
+        $(function () {
+            var _scheduleService = abp.services.app.schedule;
+            var  methods = {
+                init: function () {
+                    $('#txtYear').combobox({
+                        valueField: 'id',
+                        textField: 'text',
+                        editable: false,
+                        width: 80,
+                        data: $.getYearArray()
+                    });
+
+                    $('#txtMonth').combobox({
+                        valueField: 'id',
+                        textField: 'text',
+                        editable: false,
+                        width: 80,
+                        data: $.getMonthArray(),
+                        onClick: function (record) {
+                            methods.queryData(record.id);
+                        }
+                    });
+
+                    $('#txtClassType').combobox({
+                        valueField: 'name',
+                        textField: 'name',
+                        method:'GET',
+                        width: 80,
+                        editable: false,
+                        icons: [{
+                            iconCls: 'icon-clear',
+                            handler: function (e) {
+                                $(e.data.target).textbox('clear');
+                                scheduleBox.curType = '';
+                            }
+                        }],
+                        url: scheduleBox.classTypeURL,
+                        loadFilter: function (resData) {
+                            return resData["result"].items;
+                        },
+                        onHidePanel: function () {
+                            scheduleBox.curType = $("#txtClassType").combobox('getValue');
+                        }
+                    });
+
+                    $('#txtScheduleKey').searchbox({
+                        prompt:'姓名/岗位/班别',
+                        searcher: function () {
+                            methods.queryData();
+                        }
+                    })
+
+                    var date = new Date();
+
+                    $('#txtYear').combobox('setValue', date.getFullYear());
+                    $('#txtMonth').combobox('setValue', date.getMonth() + 1);
+
+                    $('#btnQuerySchedule').linkbutton({
+                        onClick: function () {
+                            methods.queryData();
+                        }
+                    })
+                },
+                initTable: function (jsonData, holidays) {
+                    var newCols = methods.generateCols(holidays);
+                    $.dgInit({
+                        id: "tb_scheduling",
+                        idField: 'userId',
+                        columns: newCols,
+                        data: jsonData,
+                        fitColumns: false,
+                        frozenColumns: [[
+                             { field: 'userId', hidden:true,width:10, align: 'left' },
+                             { field: 'userName', width: 70, title: "姓名", align: 'left' },
+                             { field: 'position', width: 80, title: "岗位", align: 'left' },
+                             { field: 'workMode', width: 80, title: "工作方式", align: 'center' },
+                        ]],
+                        onClickCell: function (index, field, value) {
+                            if (field === "userName" || field === "position" || field === "workMode") {
+                                return;
+                            }
+                            var tempObj = {};
+                            if(scheduleBox.curType==""){
+                                abp.notify.info("请先选择<span style='color:red;'>[班别]</span>,在进行设置","操作提示");
+                                return;
+                            }
+                            if (value === scheduleBox.curType) {
+                                tempObj[field] = "";
+                            } else {
+                                tempObj[field] = scheduleBox.curType;
+                            }
+
+                            $('#tb_scheduling').datagrid('updateRow', {
+                                index: index,
+                                row: tempObj
+                            })
+
+                            methods.saveBy(index, parseInt(field), parseInt(field), function () {
+
+                            });
+                        },
+                        onRowContextMenu: function (e, index, row) {
+                            e.preventDefault();
+                            console.log(e.target)
+                            if (scheduleBox.curType == "") {
+                                abp.notify.info("请先选择<span style='color:red;'>[班别]</span>,在进行设置", "操作提示");
+                                return;
+                            }
+                            var cellIndex = 0;
+                            if (e.target.nodeName == "TD") {
+                                cellIndex = $(e.target).attr('field');
+                            } else {
+                                cellIndex = $(e.target).parent().attr('field');
+                            }
+
+                            scheduleBox.curDay = cellIndex;
+                            scheduleBox.curRowIndex = index;
+                            abp.log.debug("curDate=" + scheduleBox.curDay)
+                            $('#mm_schedule').menu('show', {
+                                left: e.pageX,
+                                top: e.pageY,
+                                onClick: function (item) {
+                                    if (item.text == "开始") {
+                                        methods.start();
+                                    } else if (item.text == "结束") {
+                                        methods.end();
+                                    } else if (item.text == "取消") {
+                                        methods.cancel();
+                                    }
+
+                                }
+                            });
+                        },
+                        toolbar: [{
+                            text: '新增人员',
+                            iconCls: 'icon-add',
+                            handler: function () {
+                                methods.addUser();
+                            }
+                        }, '-', {
+                            text: '<span style="color:blue;">【左键单选】</span>'
+                        },'-', {
+                            text: '<span style="color:red;">【右键范围选择】</span>'
+                        }]
+                    })
+                },
+                getParam: function (month) {
+                    return {
+                        "yFlag": $('#txtYear').combobox('getValue'),
+                        "mFlag": month || $('#txtMonth').combobox('getValue'),
+                        "key": $('#txtScheduleKey').searchbox('getValue')
+                    }
+                },
+                //生成cols
+                generateCols: function () {
+
+                    var holidayArray = [], weekArray = [];
+                    if (scheduleBox.holidays && scheduleBox.holidays.length > 0) {
+                        holidayArray = scheduleBox.holidays.split(',');
+                    }
+
+                    if (scheduleBox.weekDays && scheduleBox.weekDays.length > 0) {
+                        weekArray = scheduleBox.weekDays.split(',');
+                    }
+                    var param = methods.getParam();
+
+                    var dayData = $.dayNumOfMonth(param.yFlag, param.mFlag);
+                    var title = param.mFlag + "月排班表";
+                    var oneRow = [
+
+                         { field: 'months', width: 300, align: 'center', title: '<span style="color:blue;font-size:18px;">' + title + '</span>', colspan: dayData }
+                    ];
+                    var twoRow = [],threeRow=[];
+                    for (var i = 1; i <= dayData; i++) {
+                        //检查该日期是否是周六周日
+                        var curDate = new Date(param.yFlag + "/" + param.mFlag + "/" + i)
+                        , fontColor = "black"
+                        , title = "" + i;
+                        //检查周末
+                        //console.log(holidayArray)
+                        //console.log($.inArray(title, holidayArray));
+                        //if (holidayArray.length > 0 && $.inArray(title, holidayArray) > -1) {
+                        //    fontColor = "green";
+                        //}
+                        var weekName = $.getWeekName(curDate);
+                        if (weekName === "六" || weekName === "日") {
+                            fontColor = "red";
+                        }
+                        //获取第二行
+                        twoRow.push({
+                            title: title,
+                            align: 'center',
+                            width: 40,
+                            align: 'center',
+                            halign: 'center',
+                        });
+
+                        threeRow.push({
+                            field: title,
+                            title: "<span style='color:" + fontColor + "'>" + $.getWeekName(curDate) + "</span>",
+                            width: 40,
+                            align: 'center',
+                            halign: 'center',
+                            editor: {
+                                type:"combobox",
+                                opitions:scheduleBox.editorOpts
+                            }
+                            //formatter: function (value, row, index) {
+                            //    if (!value) {
+                            //        return ""
+                            //    } else {
+                            //        return "<img src='/js/easyui/themes/icons/ok.png' />";
+                            //    }
+                            //}
+                        });
+                    }
+                    return [oneRow, twoRow,threeRow];
+                },
+                start: function () {
+
+                    scheduleBox.sDay = scheduleBox.curDay;
+                    var obj = {
+                    };
+                    obj[scheduleBox.sDay] = scheduleBox.curType;
+                    abp.log.debug(obj)
+                    $('#tb_scheduling').datagrid('updateRow', {
+                        index: scheduleBox.curRowIndex,
+                        row: obj
+                    });
+
+                    scheduleBox.curDay = 0;
+                    scheduleBox.curRowIndex = -1;
+                },
+                end: function () {
+
+                    //检查是否有选择开始日期
+                    if (scheduleBox.sDay == 0) {
+                        $.messager.alert("错误提示", "请先设置开始天");
+                        return;
+                    }
+                    scheduleBox.eDay = scheduleBox.curDay;
+                    var obj = {
+                    };
+                    var sDay = parseInt(scheduleBox.sDay),
+                        eDay = parseInt(scheduleBox.eDay);
+                   
+                    if (eDay > sDay) {
+                        //设置从开始到结束所有列的值
+                        for (var q = sDay; q <= eDay ; q++) {
+                            obj[q] = scheduleBox.curType;
+                            $('#tb_scheduling').datagrid('updateRow', {
+                                index: scheduleBox.curRowIndex,
+                                row: obj
+                            });
+                        }
+                    }
+
+                    methods.saveBy(scheduleBox.curRowIndex, sDay, eDay);
+                    scheduleBox.curDay = 0;
+                    scheduleBox.curRowIndex = -1;
+
+                },
+                cancel: function () {
+                    var obj = {
+                    };
+                    obj[scheduleBox.curDay] = "";
+                    $('#tb_scheduling').datagrid('updateRow', {
+                        index: scheduleBox.curRowIndex,
+                        row: obj
+                    });
+                },
+                createDto:function(userId,userDays){
+                    var params = methods.getParam();
+                    return $.extend(params, {
+                        "userId": userId,
+                        "userDays": userDays
+                    });
+                },
+                saveBy:function(saveIndex,start,end,success){
+                    var row = $('#tb_scheduling').datagrid('getRows')[saveIndex];
+                    var queryParam = methods.getParam();
+                    var userDays = [];
+                    for (var i = start; i <= end;i++){
+                        userDays.push({
+                            classType: row[i],
+                            dFlag: i
+                        });
+                    }
+
+                    var params = methods.createDto(row.userId, userDays);
+                   console.log(params)
+                    //保存成功
+                    _scheduleService.batchSave(params, {
+                        success: function () {
+                            //abp.notify.success("保存成功","信息提示")
+                            if (success&&typeof(success) == "function") success();
+                        }, error: function (errorInfo) {
+                            //清空记录
+                            abp.notify.error(errorInfo, "信息提示")
+                        }
+                    });
+
+                },
+                //保存修改后的数据
+                save: function () {
+                    var rows = $('#tb_scheduling').datagrid('getRows');
+                    var queryParam = methods.getParam();
+                    var result = rows.map(function (item) {
+                        var userId = item.userid;
+                        delete item["userId"];
+                        delete item["userName"];
+                        delete item["position"];
+                        delete item["workMode"];
+                       var result = Object.keys(item).map(function (key) {
+                           var obj= {
+                               "userId": item.userId,
+                               "yFlag": queryParam.yFlag,
+                               "mFlag": queryParam.mFlag,
+                               "DFlag": key,
+                               "ClassType": item[key],
+                               "ClassDate": queryParam.yFlag + "-" + queryParam.mFlag + "-" + key
+                           };
+                        });
+                        //移除不用的key
+
+
+                    });
+
+                    var params = $.extend({
+                        userDate: result
+                    }, methods.getParam());
+
+                    _scheduleService.batchSave(params, {
+                        success: function () {
+                            abp.notify.success("保存成功")
+                        }
+                    });
+
+                },
+                queryData: function (month) {
+                    _scheduleService.getSchedules(methods.getParam(month), {
+                        success: function (data) {
+                            if (data.length == 0) {
+                                return;
+                            }
+                            var formateData = methods.formateData(data);
+                            console.log(formateData)
+                            methods.initTable(formateData);
+                        }
+                    })
+                    return;
+                    $.getJSON("/CService/CallCenter/GetSchedulingData", methods.getParam(month), function (jsonData) {
+                        var data = jsonData.rows;
+                        var holidays = jsonData.holiday;
+
+                        if (holidays) {
+                            scheduleBox.holidays = holidays.Holidays;
+                            scheduleBox.weekDays = holidays.WeekDays;
+                        }
+                        if (data && data.length > 0) {
+                            var obj = {};
+                            var holidays = "", weekDays = "";
+                            var result = data.map(function (item) {
+                                obj = {
+                                    UserId: item.UserId,
+                                    UserName: item.UserName,
+                                    Phone: item.MobilePhone
+                                }
+                                if (item.Days && item.Days.length > 0) {
+                                    var strDays = item.Days.split(',');
+                                    strDays.forEach(function (day) {
+                                        var field = "" + parseInt(day);
+                                        obj[field] = 1;
+                                    });
+                                }
+
+                                return obj;
+                            })
+
+                            methods.initTable(result);
+                        }
+                    })
+                },
+                formateData: function (result) {
+                    return result.map(function (item) {
+                        var userDays = item.userDays;
+                        if (userDays.length == 0) {
+                            return item;
+                        }
+                        userDays.forEach(function (day) {
+                            item[day["dFlag"]] = day.classType;
+                        });
+                        return item;
+                    });
+                },
+                addUser: function () {
+                    //
+                    $.dialogAndDg({
+                        dlgOpts: {
+                            width: 700,
+                            height: 500,
+                            title:'选择人员'
+                        },
+                        tbOpts: {
+                            url: '/api/services/app/user/getAll',
+                            columns: [[
+                                { field: 'id', hidden: true, width: 30 },
+                                //{ field: 'ck',checkbox:true, width: 30 },
+                                { field: 'deptId', hidden: true, width: 30 },
+                                { field: 'account', title: '账号', width: 80, sortable: true },
+                                { field: 'userName', title: '姓名', width: 80 },
+                                { field: 'phone', title: '联系方式', width: 120 },
+                                { field: 'sex', title: '性别', width: 80 },
+                                { field: 'deptName', title: '隶属部门', width: 120 }
+                            ]],
+                            onDblClickRow: function (index, row) {
+                                var param = methods.getParam();
+                                var days = $.dayNumOfMonth(param.yFlag, param.mFlag);
+                                var newRow = {
+                                    "userId": row.id,
+                                    "userName": row.userName,
+                                    "areaName": row.areaName || "",
+                                    "workMode": row.workMode || ""
+                                };
+                                for (var j = 1; j <= days; j++) {
+                                    var name = "" + j;
+                                    newRow[name] = "";
+                                }
+                                $('#tb_scheduling').datagrid("appendRow", newRow)
+                            }
+                        }
+                    })
+                }
+            }
+
+            methods.init();
+            methods.queryData();
+
+        });
+</script>
+

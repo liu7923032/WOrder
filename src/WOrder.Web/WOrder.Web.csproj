@@ -150,6 +150,7 @@
   <ItemGroup>
     <Folder Include="Models\Home\" />
     <Folder Include="Models\Order\" />
+    <Folder Include="wwwroot\lib\easyui-plugin\themes\images\" />
     <Folder Include="wwwroot\lib\layui-extend\css\" />
   </ItemGroup>
   <ProjectExtensions><VisualStudio><UserProperties appsettings_1json__JSONSchema="" /></VisualStudio></ProjectExtensions>

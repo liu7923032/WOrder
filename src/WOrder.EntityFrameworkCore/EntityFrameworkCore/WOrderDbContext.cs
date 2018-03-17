@@ -57,6 +57,9 @@ namespace WOrder.EntityFrameworkCore
         public virtual DbSet<WOrder_Comment> WOrder_Comment { get; set; }
 
 
+        public virtual DbSet<WOrder_Schedule> WOrder_Schedule { get; set; }
+
+
         #endregion
 
         public WOrderDbContext(DbContextOptions<WOrderDbContext> options) 

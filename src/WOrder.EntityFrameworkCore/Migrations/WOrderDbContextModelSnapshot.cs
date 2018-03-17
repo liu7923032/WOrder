@@ -3,7 +3,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
+using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.EntityFrameworkCore.Storage.Internal;
 using System;
+using WOrder.Domain.Entities;
 using WOrder.EntityFrameworkCore;
 
 namespace WOrder.Migrations
@@ -26,6 +29,9 @@ namespace WOrder.Migrations
                     b.Property<string>("Account")
                         .IsRequired()
                         .HasMaxLength(20);
+
+                    b.Property<string>("AreaName")
+                        .HasMaxLength(1000);
 
                     b.Property<DateTime>("CreationTime");
 
@@ -62,6 +68,8 @@ namespace WOrder.Migrations
                     b.Property<string>("UserName")
                         .IsRequired()
                         .HasMaxLength(10);
+
+                    b.Property<string>("WorkMode");
 
                     b.HasKey("Id");
 
@@ -360,6 +368,45 @@ namespace WOrder.Migrations
                     b.ToTable("WOrder_OrderRecord");
                 });
 
+            modelBuilder.Entity("WOrder.Domain.Entities.WOrder_Schedule", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<DateTime>("ClassDate");
+
+                    b.Property<string>("ClassType")
+                        .IsRequired();
+
+                    b.Property<DateTime>("CreationTime");
+
+                    b.Property<long?>("CreatorUserId");
+
+                    b.Property<int>("DFlag");
+
+                    b.Property<long?>("DeleterUserId");
+
+                    b.Property<DateTime?>("DeletionTime");
+
+                    b.Property<bool>("IsDeleted");
+
+                    b.Property<DateTime?>("LastModificationTime");
+
+                    b.Property<long?>("LastModifierUserId");
+
+                    b.Property<int>("MFlag");
+
+                    b.Property<long>("UserId");
+
+                    b.Property<int>("YFlag");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("WOrder_Schedule");
+                });
+
             modelBuilder.Entity("WOrder.Domain.Entities.WOrder_Account", b =>
                 {
                     b.HasOne("WOrder.Domain.Entities.WOrder_Department", "Department")
@@ -413,6 +460,14 @@ namespace WOrder.Migrations
                     b.HasOne("WOrder.Domain.Entities.WOrder_Handler", "Handler")
                         .WithMany("Records")
                         .HasForeignKey("HandlerId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("WOrder.Domain.Entities.WOrder_Schedule", b =>
+                {
+                    b.HasOne("WOrder.Domain.Entities.WOrder_Account", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 #pragma warning restore 612, 618

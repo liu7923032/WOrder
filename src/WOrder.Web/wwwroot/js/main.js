@@ -371,25 +371,8 @@
             options.action(formObj, isAdd);
         }
 
-
-        //$('#' + options.id).form('submit', {
-        //    url: options.url,
-        //    queryParams: options.queryParams,
-        //    onSubmit: function () {
-        //        var isValid = $(this).form('validate');
-        //        if (!isValid) {
-        //            $.messager.progress('close');
-        //        }
-        //        return isValid;
-        //    },
-        //    success: function (data) {
-        //        $.messager.progress('close');
-        //        if (typeof (opitons.success) == "function") {
-        //            options.success(data);
-        //        }
-        //    }
-        //});
     },
+    //日期相关方法
     getYearArray: function () {
         var currentYear = parseInt(new Date().getFullYear());
         var yearArray = [];
@@ -412,9 +395,23 @@
         }
         return array;
     },
+    //获取月的天数
     dayNumOfMonth: function (year, month) {
         var d = new Date(year, month, 0);
         return d.getDate();
+    },
+    //获取周末
+    getWeekName: function (date) {
+        var weekNum = date.getDay()
+        switch (weekNum) {
+            case 0: return "日";
+            case 1: return "一";
+            case 2: return "二";
+            case 3: return "三";
+            case 4: return "四";
+            case 5: return "五";
+            case 6: return "六";
+        }
     },
     //通用方法
     createS4: function () {
