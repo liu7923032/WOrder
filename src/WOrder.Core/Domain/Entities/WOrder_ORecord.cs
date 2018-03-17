@@ -23,7 +23,7 @@ namespace WOrder.Domain.Entities
 
         [ForeignKey("HandlerId")]
         public virtual WOrder_Handler Handler { get; set; }
-        
+
     }
 
     /// <summary>
@@ -45,7 +45,7 @@ namespace WOrder.Domain.Entities
         /// 完结
         /// </summary>
         [Description("处理完")]
-        End
+        Finish
     }
 
 }

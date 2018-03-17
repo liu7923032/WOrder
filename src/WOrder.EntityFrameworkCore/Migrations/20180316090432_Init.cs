@@ -10,32 +10,6 @@ namespace WOrder.Migrations
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
-                name: "WOrder_Account",
-                columns: table => new
-                {
-                    Id = table.Column<long>(nullable: false)
-                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
-                    Account = table.Column<string>(maxLength: 20, nullable: false),
-                    CreationTime = table.Column<DateTime>(nullable: false),
-                    CreatorUserId = table.Column<long>(nullable: true),
-                    Email = table.Column<string>(maxLength: 50, nullable: true),
-                    Integral = table.Column<decimal>(nullable: true),
-                    IsActive = table.Column<bool>(nullable: false),
-                    IsLock = table.Column<bool>(nullable: false),
-                    LastModificationTime = table.Column<DateTime>(nullable: true),
-                    LastModifierUserId = table.Column<long>(nullable: true),
-                    Password = table.Column<string>(maxLength: 100, nullable: true),
-                    Phone = table.Column<string>(maxLength: 40, nullable: true),
-                    Photos = table.Column<string>(maxLength: 100, nullable: true),
-                    Sex = table.Column<string>(maxLength: 10, nullable: true),
-                    UserName = table.Column<string>(maxLength: 10, nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_WOrder_Account", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "WOrder_AttachFile",
                 columns: table => new
                 {
@@ -54,6 +28,29 @@ namespace WOrder.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_WOrder_AttachFile", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "WOrder_Department",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                    CreationTime = table.Column<DateTime>(nullable: false),
+                    CreatorUserId = table.Column<long>(nullable: true),
+                    DeleterUserId = table.Column<long>(nullable: true),
+                    DeletionTime = table.Column<DateTime>(nullable: true),
+                    DeptNo = table.Column<string>(maxLength: 200, nullable: false),
+                    InputCode = table.Column<string>(maxLength: 50, nullable: true),
+                    IsDeleted = table.Column<bool>(nullable: false),
+                    LastModificationTime = table.Column<DateTime>(nullable: true),
+                    LastModifierUserId = table.Column<long>(nullable: true),
+                    Name = table.Column<string>(maxLength: 50, nullable: false),
+                    Position = table.Column<string>(maxLength: 300, nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_WOrder_Department", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -100,6 +97,39 @@ namespace WOrder.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "WOrder_Account",
+                columns: table => new
+                {
+                    Id = table.Column<long>(nullable: false)
+                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                    Account = table.Column<string>(maxLength: 20, nullable: false),
+                    CreationTime = table.Column<DateTime>(nullable: false),
+                    CreatorUserId = table.Column<long>(nullable: true),
+                    DeptId = table.Column<int>(nullable: false),
+                    Email = table.Column<string>(maxLength: 40, nullable: true),
+                    Integral = table.Column<decimal>(nullable: true),
+                    IsLock = table.Column<bool>(nullable: false),
+                    LastModificationTime = table.Column<DateTime>(nullable: true),
+                    LastModifierUserId = table.Column<long>(nullable: true),
+                    Password = table.Column<string>(maxLength: 100, nullable: true),
+                    Phone = table.Column<string>(maxLength: 40, nullable: true),
+                    Photos = table.Column<string>(maxLength: 100, nullable: true),
+                    Position = table.Column<string>(maxLength: 50, nullable: true),
+                    Sex = table.Column<string>(maxLength: 10, nullable: true),
+                    UserName = table.Column<string>(maxLength: 10, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_WOrder_Account", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_WOrder_Account_WOrder_Department_DeptId",
+                        column: x => x.DeptId,
+                        principalTable: "WOrder_Department",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "WOrder_Integral",
                 columns: table => new
                 {
@@ -133,20 +163,21 @@ namespace WOrder.Migrations
                 {
                     Id = table.Column<int>(nullable: false)
                         .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
-                    Address = table.Column<string>(maxLength: 100, nullable: false),
                     Category = table.Column<string>(maxLength: 20, nullable: false),
                     CreationTime = table.Column<DateTime>(nullable: false),
                     CreatorUserId = table.Column<long>(nullable: true),
                     DeleterUserId = table.Column<long>(nullable: true),
                     DeletionTime = table.Column<DateTime>(nullable: true),
-                    Floor = table.Column<string>(maxLength: 100, nullable: false),
-                    GoodName = table.Column<string>(maxLength: 20, nullable: false),
+                    Desciption = table.Column<string>(maxLength: 1000, nullable: true),
                     HandleUId = table.Column<long>(nullable: true),
                     IsDeleted = table.Column<bool>(nullable: false),
+                    ItemName = table.Column<string>(maxLength: 200, nullable: false),
                     LastModificationTime = table.Column<DateTime>(nullable: true),
                     LastModifierUserId = table.Column<long>(nullable: true),
-                    OStatus = table.Column<int>(nullable: false),
-                    OrderNo = table.Column<string>(maxLength: 20, nullable: false)
+                    OAddress = table.Column<string>(maxLength: 100, nullable: false),
+                    OrderNo = table.Column<string>(maxLength: 20, nullable: false),
+                    OrderType = table.Column<int>(nullable: false),
+                    TStatus = table.Column<int>(nullable: false)
                 },
                 constraints: table =>
                 {
@@ -195,6 +226,35 @@ namespace WOrder.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "WOrder_Handler",
+                columns: table => new
+                {
+                    Id = table.Column<int>(nullable: false)
+                        .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
+                    CreationTime = table.Column<DateTime>(nullable: false),
+                    CreatorUserId = table.Column<long>(nullable: true),
+                    HandleId = table.Column<long>(nullable: false),
+                    OStatus = table.Column<int>(nullable: false),
+                    OrderId = table.Column<int>(nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_WOrder_Handler", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_WOrder_Handler_WOrder_Account_HandleId",
+                        column: x => x.HandleId,
+                        principalTable: "WOrder_Account",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_WOrder_Handler_WOrder_Order_OrderId",
+                        column: x => x.OrderId,
+                        principalTable: "WOrder_Order",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "WOrder_OrderRecord",
                 columns: table => new
                 {
@@ -202,23 +262,38 @@ namespace WOrder.Migrations
                         .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
                     CreationTime = table.Column<DateTime>(nullable: false),
                     CreatorUserId = table.Column<long>(nullable: true),
-                    OrderId = table.Column<int>(nullable: false),
-                    OrderStatus = table.Column<int>(nullable: false)
+                    HandlerId = table.Column<int>(nullable: false),
+                    OStatus = table.Column<int>(nullable: false)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_WOrder_OrderRecord", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_WOrder_OrderRecord_WOrder_Order_OrderId",
-                        column: x => x.OrderId,
-                        principalTable: "WOrder_Order",
+                        name: "FK_WOrder_OrderRecord_WOrder_Handler_HandlerId",
+                        column: x => x.HandlerId,
+                        principalTable: "WOrder_Handler",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateIndex(
+                name: "IX_WOrder_Account_DeptId",
+                table: "WOrder_Account",
+                column: "DeptId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_WOrder_Comment_OrderId",
                 table: "WOrder_Comment",
+                column: "OrderId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WOrder_Handler_HandleId",
+                table: "WOrder_Handler",
+                column: "HandleId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_WOrder_Handler_OrderId",
+                table: "WOrder_Handler",
                 column: "OrderId");
 
             migrationBuilder.CreateIndex(
@@ -242,9 +317,9 @@ namespace WOrder.Migrations
                 column: "LastModifierUserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_WOrder_OrderRecord_OrderId",
+                name: "IX_WOrder_OrderRecord_HandlerId",
                 table: "WOrder_OrderRecord",
-                column: "OrderId");
+                column: "HandlerId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
@@ -268,10 +343,16 @@ namespace WOrder.Migrations
                 name: "WOrder_OrderRecord");
 
             migrationBuilder.DropTable(
+                name: "WOrder_Handler");
+
+            migrationBuilder.DropTable(
                 name: "WOrder_Order");
 
             migrationBuilder.DropTable(
                 name: "WOrder_Account");
+
+            migrationBuilder.DropTable(
+                name: "WOrder_Department");
         }
     }
 }

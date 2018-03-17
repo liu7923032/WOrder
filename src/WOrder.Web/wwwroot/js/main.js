@@ -35,11 +35,11 @@
             rownumbers: true,
             border: 0,
             nowrap: false,
-            idField:'id',
+            idField: 'id',
             loadMsg: '正在加载数据...',
             emptyMsg: "未加载到数据",
             //滚动条的宽度
-            scrollbarSize:10,
+            scrollbarSize: 10,
             striped: true,
             showFooter: true,
             method: "GET",
@@ -60,6 +60,10 @@
                 param["sorting"] = param.sort;
             },
             loadFilter: function (abpData) {
+                //如果不是url请求,那么就直接返回data
+                if (!options.url) {
+                    return abpData;
+                }
                 if (!abpData.success) {
                     return { total: 0, rows: [] }
                 }
@@ -171,7 +175,7 @@
             return;
         }
         if (func && typeof (func) == "function") {
-            var rowIndex = $('#' + id).datagrid('getRowIndex',row);
+            var rowIndex = $('#' + id).datagrid('getRowIndex', row);
             func(row, rowIndex);
         }
     },
@@ -183,6 +187,7 @@
             lines: true,
             method: "GET",
             loadFilter: function (resData, parent) {
+
                 var subNodes = resData["result"].items.map(function (item) {
                     return {
                         id: item.id,
@@ -190,16 +195,17 @@
                         attributes: item
                     }
                 });
-                return {
+                return [{
                     id: 0,
                     text: "全部",
                     state: "open",
                     children: subNodes
-                };
+                }];
             },
         }
 
         $.extend(true, defaultOpts, options);
+        console.log(defaultOpts)
         $('#' + options.id).tree(defaultOpts)
     },
     //弹出tb选项对话框
@@ -244,7 +250,7 @@
             }
         }
 
-        if (opts.tbOpts.url.length == 0) {
+        if (!opts.tbOpts.url && opts.tbOpts.data.length == 0) {
             $.messager.alert("错误提示", "请输入请求地址");
             return;
         }

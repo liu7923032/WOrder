@@ -41,7 +41,7 @@ namespace WOrder.Domain.Events
                 var user = _userRepository.Get(order.CreatorUserId.Value);
                 if (!string.IsNullOrEmpty(user.Email))
                 {
-                    var body = $"<div>订单编号:<a href='https://e.mdsd.cn:9100/Order/Index'>{order.OrderNo}</a></div><div>状态变更:<span style='color:blue;'>{eventData.OldStatus.GetDescription()}</span>-><span style='color:blue;'>{order.OStatus.GetDescription()}</span></div>";
+                    var body = $"<div>订单编号:<a href='https://e.mdsd.cn:9100/Order/Index'>{order.OrderNo}</a></div><div>状态变更:<span style='color:blue;'>{eventData.OldStatus.GetDescription()}</span>-><span style='color:blue;'>{order.TStatus.GetDescription()}</span></div>";
                     Task.Run(() =>
                     {
                         //1：邮箱通知

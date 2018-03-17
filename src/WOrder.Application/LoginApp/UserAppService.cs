@@ -22,6 +22,7 @@ using WOrder.Domain.Entities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Abp.UI;
+using Microsoft.EntityFrameworkCore;
 
 namespace WOrder.UserApp
 {
@@ -133,7 +134,8 @@ namespace WOrder.UserApp
         {
             return base.CreateFilteredQuery(input)
                  .WhereIf(!string.IsNullOrEmpty(input.Account), u => u.Account.Contains(input.Account))
-                 .WhereIf(!string.IsNullOrEmpty(input.UserName), u => u.UserName.Contains(input.UserName));
+                 .WhereIf(!string.IsNullOrEmpty(input.UserName), u => u.UserName.Contains(input.UserName))
+                 .WhereIf(input.DeptId.HasValue, u => u.DeptId.Equals(input.DeptId)).Include("Department");
         }
 
 

@@ -24,9 +24,7 @@ namespace WOrder.Web.Controllers
         /// <returns></returns>
         public async Task<IActionResult> Index()
         {
-
-
-            return View();
+            return await Task.FromResult(View());
         }
 
         /// <summary>
@@ -62,7 +60,6 @@ namespace WOrder.Web.Controllers
         /// <returns></returns>
         public async Task<ActionResult> Approve()
         {
-            ViewBag.WaitNum = await _orderAppService.GetOrderCount(OrderStatus.Init);
 
             return View();
         }

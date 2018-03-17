@@ -42,7 +42,7 @@ namespace WOrder.Domain.Entities
         /// 描述信息
         /// </summary>
         [StringLength(1000)]
-        public string Desciption { get; set; }
+        public string Description { get; set; }
 
         
         /// <summary>
@@ -63,14 +63,10 @@ namespace WOrder.Domain.Entities
         [ForeignKey("CreatorUserId")]
         public virtual WOrder_Account CreatorUser { get; set; }
 
+
         [ForeignKey("LastModifierUserId")]
         public virtual WOrder_Account LastModifierUser { get; set; }
-        /// <summary>
-        /// 处理人
-        /// </summary>
-        [ForeignKey("HandleUId")]
-        public virtual WOrder_Account HandleUser { get; set; }
-
+       
         /// <summary>
         /// 工单的处理人
         /// </summary>
@@ -90,11 +86,11 @@ namespace WOrder.Domain.Entities
         /// <summary>
         /// 抢单
         /// </summary>
-        Grap
+        Rob
     }
 
     /// <summary>
-    /// 工单状态
+    /// 任务状态
     /// </summary>
     public enum TStatus
     {
@@ -107,13 +103,12 @@ namespace WOrder.Domain.Entities
         /// 待接单
         /// </summary>
         [Description("进程中")]
-        Process,
+        Running,
         /// <summary>
         /// 完成
         /// </summary>
         [Description("完成")]
-        Complete,
-
+        Finish,
     }
 
 }

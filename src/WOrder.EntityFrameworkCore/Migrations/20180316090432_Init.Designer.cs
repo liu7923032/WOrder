@@ -12,7 +12,7 @@ using WOrder.EntityFrameworkCore;
 namespace WOrder.Migrations
 {
     [DbContext(typeof(WOrderDbContext))]
-    [Migration("20180313113720_Init")]
+    [Migration("20180316090432_Init")]
     partial class Init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -35,12 +35,12 @@ namespace WOrder.Migrations
 
                     b.Property<long?>("CreatorUserId");
 
+                    b.Property<int>("DeptId");
+
                     b.Property<string>("Email")
-                        .HasMaxLength(50);
+                        .HasMaxLength(40);
 
                     b.Property<decimal?>("Integral");
-
-                    b.Property<bool>("IsActive");
 
                     b.Property<bool>("IsLock");
 
@@ -57,6 +57,9 @@ namespace WOrder.Migrations
                     b.Property<string>("Photos")
                         .HasMaxLength(100);
 
+                    b.Property<string>("Position")
+                        .HasMaxLength(50);
+
                     b.Property<string>("Sex")
                         .HasMaxLength(10);
 
@@ -65,6 +68,8 @@ namespace WOrder.Migrations
                         .HasMaxLength(10);
 
                     b.HasKey("Id");
+
+                    b.HasIndex("DeptId");
 
                     b.ToTable("WOrder_Account");
                 });
@@ -123,6 +128,44 @@ namespace WOrder.Migrations
                     b.HasIndex("OrderId");
 
                     b.ToTable("WOrder_Comment");
+                });
+
+            modelBuilder.Entity("WOrder.Domain.Entities.WOrder_Department", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<DateTime>("CreationTime");
+
+                    b.Property<long?>("CreatorUserId");
+
+                    b.Property<long?>("DeleterUserId");
+
+                    b.Property<DateTime?>("DeletionTime");
+
+                    b.Property<string>("DeptNo")
+                        .IsRequired()
+                        .HasMaxLength(200);
+
+                    b.Property<string>("InputCode")
+                        .HasMaxLength(50);
+
+                    b.Property<bool>("IsDeleted");
+
+                    b.Property<DateTime?>("LastModificationTime");
+
+                    b.Property<long?>("LastModifierUserId");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(50);
+
+                    b.Property<string>("Position")
+                        .HasMaxLength(300);
+
+                    b.HasKey("Id");
+
+                    b.ToTable("WOrder_Department");
                 });
 
             modelBuilder.Entity("WOrder.Domain.Entities.WOrder_Dictionary", b =>
@@ -193,6 +236,30 @@ namespace WOrder.Migrations
                     b.ToTable("WOrder_DictType");
                 });
 
+            modelBuilder.Entity("WOrder.Domain.Entities.WOrder_Handler", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<DateTime>("CreationTime");
+
+                    b.Property<long?>("CreatorUserId");
+
+                    b.Property<long>("HandleId");
+
+                    b.Property<int>("OStatus");
+
+                    b.Property<int>("OrderId");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("HandleId");
+
+                    b.HasIndex("OrderId");
+
+                    b.ToTable("WOrder_Handler");
+                });
+
             modelBuilder.Entity("WOrder.Domain.Entities.WOrder_Integral", b =>
                 {
                     b.Property<int>("Id")
@@ -231,10 +298,6 @@ namespace WOrder.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<string>("Address")
-                        .IsRequired()
-                        .HasMaxLength(100);
-
                     b.Property<string>("Category")
                         .IsRequired()
                         .HasMaxLength(20);
@@ -247,27 +310,32 @@ namespace WOrder.Migrations
 
                     b.Property<DateTime?>("DeletionTime");
 
-                    b.Property<string>("Floor")
-                        .IsRequired()
-                        .HasMaxLength(100);
-
-                    b.Property<string>("GoodName")
-                        .IsRequired()
-                        .HasMaxLength(20);
+                    b.Property<string>("Desciption")
+                        .HasMaxLength(1000);
 
                     b.Property<long?>("HandleUId");
 
                     b.Property<bool>("IsDeleted");
 
+                    b.Property<string>("ItemName")
+                        .IsRequired()
+                        .HasMaxLength(200);
+
                     b.Property<DateTime?>("LastModificationTime");
 
                     b.Property<long?>("LastModifierUserId");
 
-                    b.Property<int>("OStatus");
+                    b.Property<string>("OAddress")
+                        .IsRequired()
+                        .HasMaxLength(100);
 
                     b.Property<string>("OrderNo")
                         .IsRequired()
                         .HasMaxLength(20);
+
+                    b.Property<int>("OrderType");
+
+                    b.Property<int>("TStatus");
 
                     b.HasKey("Id");
 
@@ -280,7 +348,7 @@ namespace WOrder.Migrations
                     b.ToTable("WOrder_Order");
                 });
 
-            modelBuilder.Entity("WOrder.Domain.Entities.WOrder_OrderRecord", b =>
+            modelBuilder.Entity("WOrder.Domain.Entities.WOrder_ORecord", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
@@ -289,21 +357,42 @@ namespace WOrder.Migrations
 
                     b.Property<long?>("CreatorUserId");
 
-                    b.Property<int>("OrderId");
+                    b.Property<int>("HandlerId");
 
-                    b.Property<int>("OrderStatus");
+                    b.Property<int>("OStatus");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("OrderId");
+                    b.HasIndex("HandlerId");
 
                     b.ToTable("WOrder_OrderRecord");
+                });
+
+            modelBuilder.Entity("WOrder.Domain.Entities.WOrder_Account", b =>
+                {
+                    b.HasOne("WOrder.Domain.Entities.WOrder_Department", "Department")
+                        .WithMany("Accounts")
+                        .HasForeignKey("DeptId")
+                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("WOrder.Domain.Entities.WOrder_Comment", b =>
                 {
                     b.HasOne("WOrder.Domain.Entities.WOrder_Order", "Order")
                         .WithMany()
+                        .HasForeignKey("OrderId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("WOrder.Domain.Entities.WOrder_Handler", b =>
+                {
+                    b.HasOne("WOrder.Domain.Entities.WOrder_Account", "Handler")
+                        .WithMany()
+                        .HasForeignKey("HandleId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("WOrder.Domain.Entities.WOrder_Order", "Order")
+                        .WithMany("Handlers")
                         .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
@@ -331,11 +420,11 @@ namespace WOrder.Migrations
                         .HasForeignKey("LastModifierUserId");
                 });
 
-            modelBuilder.Entity("WOrder.Domain.Entities.WOrder_OrderRecord", b =>
+            modelBuilder.Entity("WOrder.Domain.Entities.WOrder_ORecord", b =>
                 {
-                    b.HasOne("WOrder.Domain.Entities.WOrder_Order", "Order")
-                        .WithMany()
-                        .HasForeignKey("OrderId")
+                    b.HasOne("WOrder.Domain.Entities.WOrder_Handler", "Handler")
+                        .WithMany("Records")
+                        .HasForeignKey("HandlerId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 #pragma warning restore 612, 618

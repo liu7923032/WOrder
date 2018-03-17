@@ -21,6 +21,9 @@ namespace WOrder.Domain.Entities
         [StringLength(40)]
         public string Phone { get; set; }
 
+        [StringLength(40)]
+        public string Email { get; set; }
+
         /// <summary>
         /// 岗位
         /// </summary>

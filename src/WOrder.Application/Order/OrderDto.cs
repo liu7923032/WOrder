@@ -15,7 +15,6 @@ namespace WOrder.Order
         /// <summary>
         /// 订单编号
         /// </summary>
-        [Required]
         [StringLength(20)]
         public string OrderNo { get; set; }
 
@@ -44,7 +43,7 @@ namespace WOrder.Order
         /// 描述信息
         /// </summary>
         [StringLength(1000)]
-        public string Desciption { get; set; }
+        public string Description { get; set; }
 
         /// <summary>
         /// 单据的类别 ,默认是0是派单，1是抢单 
@@ -56,30 +55,6 @@ namespace WOrder.Order
         /// </summary>
         [Required]
         public TStatus TStatus { get; set; }
-        /// <summary>
-        /// 订单状态说明
-        /// </summary>
-        public string TStatusName { get; set; }
-
-
-        /// <summary>
-        /// 申请人
-        /// </summary>
-        public string ApplyName { get; set; }
-
-        /// <summary>
-        /// 创建时间
-        /// </summary>
-        [JsonConverter(typeof(WOrderDateFormat))]
-        [Required]
-        public DateTime CreationTime { get; set; }
-
-        /// <summary>
-        /// 处理人
-        /// </summary>
-        public List<HandlerDto> Handlers { get; set; }
-
-
     }
 
     /// <summary>
@@ -96,17 +71,37 @@ namespace WOrder.Order
 
     public class OrderDto : UpdateOrderDto
     {
+        /// <summary>
+        /// 订单状态说明
+        /// </summary>
+        public string TStatusName { get; set; }
+        /// <summary>
+        /// 订单创建人
+        /// </summary>
+        public string CreatorName { get; set; }
+
+        /// <summary>
+        /// 创建时间
+        /// </summary>
+        [JsonConverter(typeof(WOrderDateFormat))]
+        [Required]
+        public DateTime CreationTime { get; set; }
+
+        ///// <summary>
+        ///// 处理人
+        ///// </summary>
+        public List<HandlerDto> Handlers { get; set; }
 
     }
 
-   
+
 
     public class GetAllOrderInput : PagedAndSortedResultRequestDto
     {
         /// <summary>
         /// 订单状态
         /// </summary>
-        public TStatus TStatus { get; set; }
+        public TStatus? TStatus { get; set; }
 
         /// <summary>
         /// 订单类别
@@ -116,17 +111,15 @@ namespace WOrder.Order
         /// <summary>
         /// 订单类别 是抢单还是派单
         /// </summary>
-        public OrderType OrderType { get; set; }
+        public OrderType? OrderType { get; set; }
 
-        /// <summary>
-        /// 申请人
-        /// </summary>
-        public string ApplyName { get; set; }
+        public DateTime? SDate { get; set; }
 
+        public DateTime? EDate { get; set; }
         /// <summary>
-        /// 描述信息
+        /// 项目描述
         /// </summary>
-        public string Description { get; set; }
+        public string ItemName { get; set; }
 
     }
 

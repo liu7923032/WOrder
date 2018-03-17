@@ -15,6 +15,11 @@ namespace WOrder.EntityFrameworkCore
         public virtual DbSet<WOrder_Order> WOrder_Order { get; set; }
 
         /// <summary>
+        /// 订单处理人
+        /// </summary>
+        public virtual DbSet<WOrder_Handler> WOrder_Handler { get; set; }
+
+        /// <summary>
         /// 订单记录变更表
         /// </summary>
         public virtual DbSet<WOrder_ORecord> WOrder_OrderRecord { get; set; }
@@ -29,6 +34,8 @@ namespace WOrder.EntityFrameworkCore
         /// </summary>
         public virtual DbSet<WOrder_Dictionary> WOrder_Dictionary { get; set; }
 
+
+        public virtual DbSet<WOrder_Department> WOrder_Department { get; set; }
         /// <summary>
         /// 订单账号
         /// </summary>

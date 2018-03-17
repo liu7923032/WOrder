@@ -8,11 +8,7 @@ using WOrder.Domain.Entities;
 
 namespace WOrder.UserApp
 {
-    [AutoMapFrom(typeof(WOrder_Account))]
-    public class UserDto : UpdateUserInput
-    {
-
-    }
+   
 
 
 
@@ -27,6 +23,13 @@ namespace WOrder.UserApp
         [StringLength(10)]
         public string UserName { get; set; }
 
+        [StringLength(20)]
+        public string Email { get; set; }
+
+        [StringLength(30)]
+        public string Position { get; set; }
+        
+
         [StringLength(13)]
         public string Phone { get; set; }
 
@@ -36,7 +39,7 @@ namespace WOrder.UserApp
         public string Sex { get; set; }
 
         [Required]
-        [StringLength(maximumLength: 4, ErrorMessage = "最长20,最短4", ErrorMessageResourceName = "", ErrorMessageResourceType = null, MinimumLength = 5)]
+        [StringLength(maximumLength: 20, ErrorMessage = "最长20,最短4", ErrorMessageResourceName = "", ErrorMessageResourceType = null, MinimumLength = 4)]
         public string Password { get; set; }
 
         /// <summary>
@@ -45,8 +48,7 @@ namespace WOrder.UserApp
         [Required]
         public int DeptId { get; set; }
 
-        public string DeptName { get; set; }
-
+       
     }
 
     public class UpdateUserInput : CreateUserInput, IEntityDto<long>
@@ -54,6 +56,10 @@ namespace WOrder.UserApp
         public long Id { get; set; }
     }
 
+    public class UserDto : UpdateUserInput
+    {
+        public string DeptName { get; set; }
+    }
     /// <summary>
     /// 查询
     /// </summary>
@@ -61,13 +67,11 @@ namespace WOrder.UserApp
     {
         public string Account { get; set; }
 
-
         public string UserName { get; set; }
-
         /// <summary>
         /// 部门
         /// </summary>
-        public int DeptId { get; set; }
+        public int? DeptId { get; set; }
     }
 
     /// <summary>

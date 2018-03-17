@@ -10,6 +10,7 @@ using Abp.AutoMapper;
 using Abp.Domain.Repositories;
 using Abp.Linq.Extensions;
 using Abp.Timing;
+using Microsoft.AspNetCore.Http;
 using WOrder.Domain.Entities;
 
 namespace WOrder.File
@@ -22,6 +23,8 @@ namespace WOrder.File
         /// <param name="pId"></param>
         /// <returns></returns>
         Task<List<FileDto>> GetFilesById(int pId);
+
+        
     }
 
     [AbpAuthorize]

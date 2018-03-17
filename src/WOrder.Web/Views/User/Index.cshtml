@@ -6,8 +6,8 @@
 }
 
 
-<div class="easyui-layout" id="ly_dict" data-options="fit:true,border:false">
-    <div data-options="region:'west',width:200,title:'部门信息'" style="padding:5px 0px;">
+<div class="easyui-layout" id="ly_dept" data-options="fit:true,border:false">
+    <div data-options="region:'west',width:200,title:'部门信息',tools:[{iconCls:'icon-add',handler:function(){$('#dlg_dept').dialog('open');$('#frm_dept').form('clear')}}]" style="padding:5px 0px;">
         <ul class="easyui-tree" id="tree_dept"></ul>
     </div>
     <div data-options="region:'center'">
@@ -26,15 +26,15 @@
                 </td>
             </tr>
             <tr>
-                <td class="tdLabel">部门简称</td>
+                <td class="tdLabel">部门编号</td>
                 <td>
-                    <input class="easyui-textbox" name="inputCode" data-options="width:300,required:true" />
+                    <input class="easyui-textbox" name="deptNo" data-options="width:300,required:true,prompt:'LC001'" />
                 </td>
             </tr>
             <tr>
-                <td class="tdLabel">部门编号</td>
+                <td class="tdLabel">拼音简称</td>
                 <td>
-                    <input class="easyui-numberbox" name="deptNo" data-options="width:300,required:true,prompt:'LC001'" />
+                    <input class="easyui-textbox" name="inputCode" data-options="width:300,required:true" />
                 </td>
             </tr>
             <tr>
@@ -51,16 +51,41 @@
 <div id="dlg_user" class="easyui-dialog" data-options="width:700,height:400,closed:true,title:'人员信息'">
     <form id="frm_user" method="POST">
         <input type="hidden" name="id">
-        <input type="hidden" name="isDelete" value="0">
         <table class="form-table">
             <tr>
                 <td class="tdLabel">账号</td>
                 <td>
                     <input class="easyui-textbox" name="account" data-options="width:200,required:true" />
                 </td>
+                <td class="tdLabel">密码</td>
+                <td>
+                    <input class="easyui-textbox" name="password" data-options="width:200,required:true,prompt:'最短4位,最长20位',validType:{
+		                    length:[4,20]
+	                    }" />
+                </td>
+                
+            </tr>
+            <tr>
                 <td class="tdLabel">姓名</td>
                 <td>
                     <input class="easyui-textbox" name="userName" data-options="width:200,required:true" />
+                </td>
+                <td class="tdLabel">部门</td>
+                <td>
+                    <input class="easyui-combobox" id="txtDeptId" name="deptId" data-options="width:200,required:true,valueField:'text',textField:'text',editable:false" />
+                </td>
+               
+
+            </tr>
+
+            <tr>
+                <td class="tdLabel">岗位名称</td>
+                <td>
+                    <input class="easyui-textbox" name="position" data-options="width:200,required:true" />
+                </td>
+                <td class="tdLabel">性别</td>
+                <td>
+                    <input class="easyui-combobox" name="sex" data-options="width:200,required:true,valueField:'text',textField:'text',editable:false,data:[{text:'男'},{text:'女'}]" />
                 </td>
             </tr>
             <tr>
@@ -68,38 +93,18 @@
                 <td>
                     <input class="easyui-textbox" name="phone" data-options="width:200,required:true,prompt:'185xx'" />
                 </td>
-                <td class="tdLabel">性别</td>
+                <td class="tdLabel">邮箱</td>
                 <td>
-                    <input class="easyui-combobox" name="sex" data-options="width:200,required:true,valueField:'text',textField:'text',editable:false,data:[{text:'男'},{text:'女'}]" />
+                    <input class="easyui-textbox" name="email" data-options="width:200,validType:['email','length[0,20]']" />
                 </td>
             </tr>
-
-            <tr>
-                <td class="tdLabel">部门</td>
-                <td>
-                    <input class="easyui-combobox" id="txtDeptId" name="deptId" data-options="width:200,required:true,valueField:'text',textField:'text',editable:false" />
-                </td>
-            </tr>
-            <tr>
-                <td class="tdLabel">字典序号</td>
-                <td>
-                    <input class="easyui-numberbox" name="sortNo" data-options="width:300,required:true,prompt:'10/20'" />
-                </td>
-            </tr>
-
-            <tr>
-                <td class="tdLabel">字典备注</td>
-                <td>
-                    <input class="easyui-textbox" name="memo" data-options="width:300,multiline:true,height:100" />
-                </td>
-            </tr>
+           
         </table>
     </form>
 </div>
 
 <!-- 字典类别的右键菜单 -->
 <div id="mm_dict" class="easyui-menu" style="width:120px;">
-    <div data-options="iconCls:'icon-add'">新增</div>
     <div data-options="iconCls:'icon-edit'">编辑</div>
     <div data-options="iconCls:'icon-remove'">删除</div>
 </div>
@@ -108,23 +113,25 @@
 <script type="text/javascript">
     $(function () {
         var selectNode
-            , deptUrl = "/api/services/app/dept/GetAll?maxResultCount=10000&skipCount=0"
-            , _typeService = abp.services.app.dept
+            , deptUrl = "/api/services/app/Dept/GetAll?maxResultCount=10000&skipCount=0"
+            , _deptService = abp.services.app.dept
             , _userService = abp.services.app.user;
         var methods = {
             init: function () {
+
+                $.parser.parse('#ly_dept')
                 $.parser.parse('#dlg_dept');
                 $.parser.parse('#dlg_user');
 
 
                 $('#dlg_dept').dialog({
-                    width: 500, height: 300, closed: true, title: '字典类别',
+                    width: 500, height: 300, closed: true, title: '部门信息',
                     buttons: [
                         {
                             text: '保存',
                             iconCls: 'icon-save',
                             handler: function () {
-                                methods.saveDictType();
+                                methods.saveDept();
                             }
                         }, {
                             text: '关闭',
@@ -142,7 +149,7 @@
                             text: '保存',
                             iconCls: 'icon-save',
                             handler: function () {
-                                methods.saveDict();
+                                methods.saveUser();
                             }
                         }, {
                             text: '关闭',
@@ -155,21 +162,19 @@
                 });
 
                 $('#txtDeptId').combobox({
+                    method:"GET",
                     url: deptUrl,
+                    valueField: 'id',
+                    textField:'name',
                     loadFilter: function (result) {
-                        return result["result"].items.map(function (item) {
-                            return {
-                                id: item.id,
-                                text: item.name
-                            }
-                        });
+                        return result["result"].items;
                     }
                 });
             },
             initTree: function () {
                 $.treeInit({
                     id: 'tree_dept',
-                    url: treeUrl,
+                    url: deptUrl,
                    
                     onClick: function (node) {
                         selectNode = node;
@@ -191,10 +196,11 @@
                                 }
                                 else if (item.text == "编辑") {
                                     $('#frm_dept').form('load', node.attributes);
+                                    console.log(node.attributes)
                                     $('#dlg_dept').dialog('open')
                                 } else {
                                     abp.message.confirm("确定要删除部门<span style='color:red;'>" + node.text + "</span>?", function () {
-                                        _typeService.delete({ id: node.id }, {
+                                        _deptService.delete({ id: node.id }, {
                                             success: function (data) {
                                                 $("#tree_dept").tree('reload');
                                             }
@@ -215,9 +221,10 @@
                         { field: 'deptId', hidden: true, width: 30 },
                         { field: 'account', title: '账号', width: 80, sortable: true },
                         { field: 'userName', title: '姓名', width: 80 },
+                        { field: 'deptName', title: '隶属部门', width: 120 },
+                        { field: 'position', title: '岗位', width: 80 },
                         { field: 'phone', title: '联系方式', width: 120 },
                         { field: 'sex', title: '性别', width: 80 },
-                        { field: 'deptName', title: '隶属部门', width: 120 }
                     ]],
                     toolbar: [
                         {
@@ -257,18 +264,6 @@
                                     });
                                 })
                             }
-                        }, '-', {
-                            text: "初始密码",
-                            iconCls: 'icon-undo',
-                            handler: function () {
-                                $.rowSelectCheck('tb_user', "请先选择要初始的人员", function (row) {
-                                    _userService.initPassword({ id: row.id }, {
-                                        success: function (data) {
-                                            abp.notify.success("密码初始成功");
-                                        }
-                                    })
-                                })
-                            }
                         }
                     ]
                 });
@@ -281,19 +276,19 @@
                 }
                 $('#tb_user').datagrid('reload', param);
             },
-            saveDictType: function () {
+            saveDept: function () {
                 $.formSave({
                     id: 'frm_dept',
                     action: function (data, isAdd) {
                         if (isAdd) {
-                            _typeService.create(data, {
+                            _deptService.create(data, {
                                 success: function (data) {
                                     $('#dlg_dept').dialog('close');
                                     $('#tree_dept').tree('reload');
                                 }
                             })
                         } else {
-                            _typeService.update(data, {
+                            _deptService.update(data, {
                                 success: function (data) {
                                     $('#dlg_dept').dialog('close');
                                     $('#tree_dept').tree('reload');
@@ -303,20 +298,21 @@
                     }
                 });
             },
-            saveDict: function () {
+            saveUser: function () {
 
                 $.formSave({
                     id: 'frm_user',
-                    action: function (data, isAdd) {
+                    action: function (fields, isAdd) {
+                        console.log(fields)
                         if (isAdd) {
-                            _userService.create(data, {
+                            _userService.create(fields, {
                                 success: function (data) {
                                     $('#dlg_user').dialog('close');
                                     methods.queryUser(data.dictType);
                                 }
                             })
                         } else {
-                            _userService.update(data, {
+                            _userService.update(fields, {
                                 success: function (data) {
                                     $('#dlg_user').dialog('close')
                                     methods.queryUser(data.dictType);
