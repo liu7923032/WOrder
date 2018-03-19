@@ -58,11 +58,26 @@ namespace WOrder.Web.Startup
                             url: "Order/Index",
                             icon: ""))
                          .AddItem(new MenuItemDefinition(
+                             PageNames.Audit,
+                            L(nameof(PageNames.Audit)),
+                            url: "Order/Audit",
+                            icon: ""))
+                         .AddItem(new MenuItemDefinition(
+                             PageNames.Feedback,
+                            L(nameof(PageNames.Feedback)),
+                            url: "Order/Feedback",
+                            icon: ""))
+
+                         .AddItem(new MenuItemDefinition(
                             PageNames.Schedule,
                             L(nameof(PageNames.Schedule)),
                             url: "Schedule/Index",
                             icon: ""
-                        )));
+                        )).AddItem(new MenuItemDefinition(
+                             PageNames.Complaint,
+                            L(nameof(PageNames.Complaint)),
+                            url: "Order/Complaint",
+                            icon: "")));
 
         }
 

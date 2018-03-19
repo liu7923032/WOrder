@@ -11,14 +11,18 @@
     <div data-options="region:'north',height:50" style="padding:7px 10px;">
         <table class="query-table">
             <tr>
-                <td>故障分类</td>
-                <td><input class="easyui-combobox" id="txtCategory" /></td>
-                <td>任务状态</td>
+                <td>反馈状态</td>
                 <td><input class="easyui-combobox" id="txtTStatus" value="0" /></td>
-                <td>提交日期</td>
+                <td>反馈日期</td>
                 <td><input class="easyui-datebox" id="txtSDate" /></td>
                 <td>-</td>
                 <td><input class="easyui-datebox" id="txtEDate" /></td>
+                <td>
+                    关键字
+                </td>
+                <td>
+                    <input class="easyui-searchbox" id="txtKey" />
+                </td>
                 <td>
                     <a id="btnQuery" class="easui-linkbutton">查询</a>
                 </td>
@@ -28,38 +32,33 @@
     </div>
     <div data-options="region:'center'">
         <div class="easyui-tabs" id="tabs_order" data-options="fit:true,border:false,tabWidth:150,tabPosition:'bottom'">
-            <div title="派单池">
-                <table id="tb_order"></table>
-            </div>
-            <div title="抢单池">
-                <table id="tb_rob"></table>
-            </div>
+            <table id="tb_feedback"></table>
         </div>
     </div>
 </div>
 
 
 <!-- 字典信息增删该查 -->
-<div id="dlg_order" class="easyui-dialog" data-options="width:700,height:450,closed:true,title:'任务信息'">
-    <form id="frm_order" method="POST">
+<div id="dlg_feedback" class="easyui-dialog" data-options="width:700,height:450,closed:true,title:'任务信息'">
+    <form id="frm_feedback" method="POST">
         <input type="hidden" name="id">
         <input type="hidden" name="orderNo" />
+        
         <table class="form-table">
             <tr>
                 <td class="tdLabel">任务类别</td>
                 <td>
-                    <input class="easyui-combobox" id="txtTCategory" name="category" data-options="width:200,required:true,valueField:'name',textField: 'name',
-                    method: 'GET',editable:false" />
+                    <input class="easyui-textbox" id="frm_category" name="category" data-options="width:200,required:true,editable:false,value:'在线反馈'" />
                 </td>
-                <td class="tdLabel">状态</td>
+                <td class="tdLabel">反馈状态</td>
                 <td>
                     <input class="easyui-combobox" data-options="valueField: 'id',textField:'name',editable:false,
                     width:200,
-                    data: [{ id: 0, name: '待分配' }, { id: 1, name: '处理中' }, { id: 2, name: '已完成' }]" />
+                    data: [{ id: 0, name: '待处理' }, { id: 1, name: '处理中' }, { id: 2, name: '已完成' }]" />
                 </td>
             </tr>
             <tr>
-                <td class="tdLabel">项目名称</td>
+                <td class="tdLabel">反馈标题</td>
                 <td colspan="3">
                     <input class="easyui-textbox" name="itemName" data-options="width:500,required:true,prompt:'最短4位,最长20位'" />
                 </td>
@@ -71,7 +70,7 @@
                 </td>
             </tr>
             <tr>
-                <td class="tdLabel">项目描述</td>
+                <td class="tdLabel">反馈描述</td>
                 <td colspan="3">
                     <input class="easyui-textbox" name="description" data-options="width:500,required:true,height:'100',multiline:true" />
                 </td>
@@ -85,13 +84,14 @@
     $(function () {
         var _orderService = abp.services.app.order
         , categoryURL = "/api/services/app/Dictionary/GetAll?dictType=" + encodeURIComponent("任务分类")
-        ,curIndex=0;
+        , curIndex = 0
+        , category="在线反馈";
         var methods = {
             init: function () {
                 $.parser.parse('#ly_order')
-                $.parser.parse('#dlg_order');
+                $.parser.parse('#dlg_feedback');
 
-                $('#dlg_order').dialog({
+                $('#dlg_feedback').dialog({
                     buttons: [
                         {
                             text: '保存',
@@ -103,7 +103,7 @@
                             text: '关闭',
                             iconCls: 'icon-cancel',
                             handler: function () {
-                                $('#dlg_order').dialog('close');
+                                $('#dlg_feedback').dialog('close');
                             }
                         }
                     ]
@@ -112,7 +112,7 @@
                 var baseOption = {
                     textField: 'name',
                     method: "GET",
-                    editable:false,
+                    editable: false,
                     icons: [{
                         iconCls: 'icon-clear',
                         handler: function (e) {
@@ -121,31 +121,10 @@
                     }]
                 }
 
-                $('#txtCategory').combobox($.extend({
-                    url: categoryURL,
-                    valueField: 'name',
-                    width:100,
-                    loadFilter: function (resData) {
-                        return resData["result"].items;
-                    }, onHidePanel: function () {
-                        methods.query();
-                    }
-                }, baseOption));
-
-                $('#txtTCategory').combobox($.extend({
-                    url: categoryURL,
-                    valueField: 'name',
-                    width:200,
-                    loadFilter: function (resData) {
-                        return resData["result"].items;
-                    },
-
-                }, baseOption));
-
                 $('#txtTStatus').combobox($.extend({
                     valueField: 'id',
                     width:90,
-                    data: [{ id: 0, name: '待分配' },
+                    data: [{ id: 0, name: '待处理' },
                             { id: 1, name: '处理中' },
                             { id: 2, name: '已完成' }],
                     onHidePanel: function () {
@@ -184,12 +163,14 @@
                     }
                 });
 
-                $('#tabs_order').tabs({
-                    onSelect: function (title, index) {
-                        curIndex = index;
+
+                $('#txtKey').searchbox({
+                    width: 250,
+                    searchbox: function () {
                         methods.query();
                     }
-                });
+                })
+
             },
             initTable: function (queryParam) {
 
@@ -198,11 +179,10 @@
                     checkOnSelect: false,
                     selectOnCheck: false,
                     queryParams: queryParam
-
                 };
                 //初始化正常表
                 $.dgInit($.extend({
-                    id: "tb_order",
+                    id: "tb_feedback",
                     url: '/api/services/app/order/getAll?orderType=0',
                     toolbar: [
                         {
@@ -210,18 +190,19 @@
                             iconCls: 'icon-add',
                             handler: function () {
 
-                                $('#frm_order').form('clear');
-                                $('#dlg_order').dialog('open');
+                                $('#frm_feedback').form('clear');
+                                $('#dlg_feedback').dialog('open');
 
+                                $('#frm_category').textbox('setValue', category);
                             }
                         }, '-', {
                             text: "编辑",
                             iconCls: 'icon-edit',
                             handler: function () {
 
-                                $.rowSelectCheck('tb_order', "请先要编辑的人员", function (row) {
-                                    $('#frm_order').form('load', row);
-                                    $('#dlg_order').dialog('open')
+                                $.rowSelectCheck('tb_feedback', "请先要编辑的人员", function (row) {
+                                    $('#frm_feedback').form('load', row);
+                                    $('#dlg_feedback').dialog('open')
                                     //将no设置未只读
                                 })
                             }
@@ -229,12 +210,12 @@
                             text: "删除",
                             iconCls: 'icon-remove',
                             handler: function () {
-                                $.rowSelectCheck('tb_order', "请先选择要删除的人员", function (row,rowIndex) {
+                                $.rowSelectCheck('tb_feedback', "请先选择要删除的人员", function (row,rowIndex) {
                                     abp.message.confirm("确定要删除人员:" + row.name, function (r) {
                                         _userService.delete({ id: row.id }, {
                                             success: function (data) {
                                                 abp.notify.success("删除成功");
-                                                $('#tb_order').datagrid('deleteRow', rowIndex)
+                                                $('#tb_feedback').datagrid('deleteRow', rowIndex)
                                             }
                                         })
                                     });
@@ -251,7 +232,6 @@
                     columns: [[
                         { field: 'id', hidden: true, width: 30 },
                         { field: 'tStatus', hidden: true, width: 30 },
-                        { field: 'ck', checkbox: true, width: 30 },
                         {
                             field: 'assign', title: '处理人', width: 60,align:'center',
                             formatter: function (value, row, index) {
@@ -262,9 +242,8 @@
                                 }
                             }
                         },
-                        { field: 'orderNo', title: '编号', width: 100 },
-                        { field: 'category', title: '任务分类', width: 80 },
-                        { field: 'itemName', title: '项目名称', width: 150, formatter: function (value, row, index) { return "<a class='easyui-tips'>" + value + "<a>" } },
+                        { field: 'orderNo', title: '反馈编号', width: 100 },
+                        { field: 'itemName', title: '反馈标题', width: 150, formatter: function (value, row, index) { return "<a class='easyui-tips'>" + value + "<a>" } },
                         {
                             field: 'tStatusName', title: '状态', align: 'center', width: 80,
                             styler: function (value, row, index) {
@@ -280,7 +259,7 @@
                         { field: 'creatorName', title: '提出人', align: 'center', width: 80 },
                         { field: 'creationTime', title: '提出时间', align: 'center', width: 110, sortable: true },
                         { field: 'oAddress', title: '具体位置', width: 150 },
-                        { field: 'description', title: '项目描述', width: 200 },
+                        { field: 'description', title: '反馈描述', width: 200 },
                     ]],
                     onLoadSuccess: function (data) {
                         var rows = data.rows;
@@ -297,47 +276,8 @@
                                 return item.id == orderId;
                             })[0].handlers;
                             methods.showProcess(result)
-
                         });
                     }
-                }, dgOptions));
-                //初始化抢单表
-                $.dgInit($.extend({
-                    id: "tb_rob",
-                    url: '/api/services/app/order/getAll?orderType=1',
-                    columns: [[
-                        { field: 'id', hidden: true, width: 30 },
-                        { field: 'tStatus', hidden: true, width: 30 },
-                        {
-                            field: 'assign', title: '抢单人', width: 60, align: 'center',
-                            formatter: function (value, row, index) {
-                                if (row.handlers.length == 0) {
-                                    return "<span style='color:red;'>待抢</span>";
-                                } else {
-                                    return "<span style='color:blue;'>" + row.handlers[0].userName + "</span>"
-                                }
-                            }
-                        },
-                        { field: 'orderNo', title: '编号', width: 100 },
-                        { field: 'category', title: '任务分类', width: 80 },
-                        { field: 'itemName', title: '项目名称', width: 150, formatter: function (value, row, index) { return "<a class='easyui-tips'>" + value + "<a>" } },
-                        {
-                            field: 'tStatusName', title: '工单状态', align: 'center', width: 80,
-                            styler: function (value, row, index) {
-                                if (row.tStatus == 0) {
-                                    return "color:red;"
-                                } else if (row.tStatus == 1) {
-                                    return "color:blue;"
-                                } else if (row.tStatus == 2) {
-                                    return "color:green;"
-                                }
-                            }
-                        },
-                        { field: 'creatorName', title: '提出人', align: 'center', width: 80 },
-                        { field: 'creationTime', title: '提出时间', align: 'center', width: 110, sortable: true },
-                        { field: 'oAddress', title: '具体位置', width: 150 },
-                        { field: 'description', title: '项目描述', width: 200 },
-                    ]],
                 }, dgOptions));
             },
             getParam:function(){
@@ -345,34 +285,31 @@
                     "tStatus": $('#txtTStatus').combobox("getValue"),
                     "sDate": $('#txtSDate').datebox("getValue"),
                     "eDate": $('#txtEDate').datebox("getValue"),
+                    "category": category,
+                    "itemName":$('#txtKey').searchbox('getValue')
                 }
             },
             query: function (param) {
                 var queryParam=$.extend(methods.getParam(), param);
-                if (curIndex == 0) {
-                    $('#tb_order').datagrid('reload', queryParam);
-                } else {
-                    $('#tb_rob').datagrid('reload', queryParam);
-                }
+                $('#tb_feedback').datagrid('reload', queryParam);
             },
 
             save: function () {
-
                 $.formSave({
-                    id: 'frm_order',
+                    id: 'frm_feedback',
                     action: function (fields, isAdd) {
                         console.log(fields)
                         if (isAdd) {
                             _orderService.create(fields, {
                                 success: function (data) {
-                                    $('#dlg_order').dialog('close');
+                                    $('#dlg_feedback').dialog('close');
                                     methods.query();
                                 }
                             })
                         } else {
                             _orderService.update(fields, {
                                 success: function (data) {
-                                    $('#dlg_order').dialog('close')
+                                    $('#dlg_feedback').dialog('close')
                                     methods.query();
                                 }
                             })
@@ -382,28 +319,10 @@
                     }
                 });
             },
-            robOrder: function () {
-                var checkRows = $('#tb_order').datagrid('getChecked');
-                if (checkRows.length == 0) {
-                    $.errorMsg("请选择要调整到抢单池的工单");
-                    return;
-                }
-                abp.message.confirm("确认要将订单调整到抢单池中?", function () {
-                    var ids = checkRows.map(function (item) {
-                        return item.id;
-                    })
-                    _orderService.changeToRob(ids, {
-                        success: function (data) {
-                            console.log(data);
-                            methods.query();
-                        }
-                    });
-                });
-            },
             assign: function (rowIndex,oId) {
                 $.dialogAndDg({
                     dlgOpts: {
-                        title: "派单员",
+                        title: "处理人",
                         width: 700,
                         height: 400,
                         id:'dlg_assign'
@@ -411,13 +330,9 @@
                     tbOpts: {
                         id: "tb_assignU",
                         url: '/api/services/app/user/getAll',
-                        singleSelect: false,
-                        selectOnCheck: false,
-                        checkOnSelect:false,
                         columns: [[
                             { field: 'id', hidden: true, width: 30 },
                             { field: 'deptId', hidden: true, width: 30 },
-                            { field: 'ck', checkbox: true, width: 30 },
                             { field: 'account', title: '账号', width: 80, sortable: true },
                             { field: 'userName', title: '姓名', width: 80 },
                             //{ field: 'deptName', title: '隶属部门', width: 120 },
@@ -425,41 +340,18 @@
                             { field: 'phone', title: '联系方式', width: 120 },
                             { field: 'sex', title: '性别', width: 80 },
                         ]],
-                        toolbar: [
-                            {
-                                text: "选择",
-                                iconCls: 'icon-ok',
-                                handler: function () {
-                                    var checkRows = $('#tb_assignU').datagrid('getChecked');
-                                    if (checkRows == 0) {
-                                        abp.notify.info("请勾选人员","信息提示");
-                                        return;
-                                    }
-                                    $('#dlg_assign').dialog('close');
-                                    var handlers = checkRows.map(function (item) {
-                                        return {
-                                            handleId: item.id,
-                                            orderId: oId,
-                                            oStatus:0
-                                        }
-                                    });
-                                    _orderService.assign(handlers, {
-                                        success: function (resData) {
-                                            console.log(resData);
-                                            abp.notify.success("派单成功,订单进入<span style='color:blue;'>派单状态</span>", "派单提示");
-                                            //$('#tb_order').datagrid('updateRow', {
-                                            //    index: rowIndex,
-                                            //    row:{
-                                            //        tStatus: 1,
-                                            //    }
-
-                                            //});
-                                            methods.query();
-                                        }
-                                    });
+                        onDblClickRow:function(index,row){
+                            _orderService.assign([{
+                                handleId: row.id,
+                                orderId: oId,
+                                oStatus:0
+                            }], {
+                                success: function (resData) {
+                                    abp.notify.success("派人成功,单据进入<span style='color:blue;'>处理状态</span>", "反馈提示");
+                                    methods.query();
                                 }
-                            }
-                        ]
+                            });
+                        }
                     }
                 });
             },

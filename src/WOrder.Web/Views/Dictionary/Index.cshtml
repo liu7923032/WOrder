@@ -1,7 +1,7 @@
 ﻿@using WOrder.Web.Startup
 @{
     ViewBag.ActiveMenu = PageNames.Dictionary;
-    Layout = null;
+    //Layout = null;
 }
 
 
@@ -89,8 +89,8 @@
 </div>
 
 
-
-<script type="text/javascript">
+@section Scripts{
+    <script type="text/javascript">
     $(function () {
         var  selectNode
             , treeUrl = "/api/services/app/DictType/GetAll?maxResultCount=10000&skipCount=0"
@@ -291,5 +291,6 @@
         methods.initTable();
         methods.initTree()
     })
-</script>
+    </script>
 
+}

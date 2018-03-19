@@ -1,7 +1,7 @@
 ﻿
 @{
     ViewData["Title"] = "Index";
-    Layout = null;
+    //Layout = null;
 }
 
 <style scoped type="text/css">
@@ -29,7 +29,7 @@
                 <td>
                     <input class="easyui-searchbox" id="txtScheduleKey" style="width: 300px; margin-left: 40px;" />
                 </td>
-                <td><a href="javascript:void(0)" id="btnQuerySchedule" class="easyui-linkbutton" data-options="iconCls:'icon-search',plain:true" >查询</a></td>
+                <td><a href="javascript:void(0)" id="btnQuerySchedule" class="easyui-linkbutton" data-options="iconCls:'icon-search',plain:true">查询</a></td>
             </tr>
         </table>
     </div>
@@ -39,13 +39,13 @@
 </div>
 <!--右键菜单-->
 <div id="mm_schedule" class="easyui-menu" style="width:120px;display:none;">
-    <div data-options="iconCls:'icon-play'" >开始</div>
+    <div data-options="iconCls:'icon-play'">开始</div>
     <div data-options="iconCls:'icon-stop'">结束</div>
     <div data-options="iconCls:'icon-clear'">取消</div>
 </div>
 
-
-<script type="text/javascript">
+@section Scripts{
+    <script type="text/javascript">
       var scheduleBox = {
             sDay: 0,
             eDay: 0,
@@ -303,7 +303,7 @@
                     };
                     var sDay = parseInt(scheduleBox.sDay),
                         eDay = parseInt(scheduleBox.eDay);
-                   
+
                     if (eDay > sDay) {
                         //设置从开始到结束所有列的值
                         for (var q = sDay; q <= eDay ; q++) {
@@ -497,5 +497,6 @@
             methods.queryData();
 
         });
-</script>
+    </script>
 
+    }

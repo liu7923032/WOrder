@@ -16,6 +16,9 @@
   <Reference Include="Microsoft.AspNetCore.Authentication.Cookies">
     <HintPath>C:\Program Files\dotnet\sdk\NuGetFallbackFolder\microsoft.aspnetcore.authentication.cookies\2.0.0\lib\netstandard2.0\Microsoft.AspNetCore.Authentication.Cookies.dll</HintPath>
   </Reference>
+  <Reference Include="Microsoft.IdentityModel.Tokens">
+    <HintPath>C:\Program Files\dotnet\sdk\NuGetFallbackFolder\microsoft.identitymodel.tokens\5.1.4\lib\netstandard1.4\Microsoft.IdentityModel.Tokens.dll</HintPath>
+  </Reference>
 </ItemGroup><ItemGroup>
   <EmbeddedResource Update="Localization\SourceFiles\WOrder.json">
     <CopyToOutputDirectory>Always</CopyToOutputDirectory>

@@ -8,6 +8,9 @@
     "WorkOrder": "派单管理",
     "User": "用户管理",
     "Schedule": "排班管理",
-    "SysManage": "业务管理"
+    "SysManage": "业务管理",
+    "Feedback": "反馈管理",
+    "Complaint": "投诉管理",
+    "Audit": "稽核管理"
   }
 }

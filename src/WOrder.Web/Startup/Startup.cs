@@ -13,11 +13,15 @@ using Swashbuckle.AspNetCore.Swagger;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Extensions.Configuration;
 using WOrder.Configuration;
+using WOrder.Authorization.JwtBearer;
+using System.Linq;
+using Abp.Extensions;
 
 namespace WOrder.Web.Startup
 {
     public class Startup
     {
+        private const string DefaultCorsPolicyName = "localhost";
         public static string CookieScheme = "AppAuthenticationScheme";
 
         private readonly IConfigurationRoot _appConfiguration;
@@ -53,7 +57,18 @@ namespace WOrder.Web.Startup
                 options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute());
             });
 
-
+            //Configure CORS for angular2 UI
+            services.AddCors(options =>
+            {
+                options.AddPolicy(DefaultCorsPolicyName, builder =>
+                {
+                    //App:CorsOrigins in appsettings.json can contain more than one address with splitted by comma.
+                    builder
+                        .WithOrigins(_appConfiguration["App:CorsOrigins"].Split(",", StringSplitOptions.RemoveEmptyEntries).Select(o => o.RemovePostFix("/")).ToArray())
+                        .AllowAnyHeader()
+                        .AllowAnyMethod();
+                });
+            });
 
             //添加swagger
             services.AddSwaggerGen(options =>
@@ -97,7 +112,8 @@ namespace WOrder.Web.Startup
 
             app.UseAuthentication();
             //处理jwt的中间件
-         
+            //app.UseJwtTokenMiddleware();
+
             app.UseMvc(routes =>
             {
                 routes.MapRoute(

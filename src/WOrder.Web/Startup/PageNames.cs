@@ -24,7 +24,21 @@
         /// 排程管理
         /// </summary>
         public const string Schedule = "Schedule";
+        
         /// <summary>
+        /// 反馈管理
+        /// </summary>
+        public const string Feedback = "Feedback";
+
+        /// <summary>
+        /// 投诉管理
+        /// </summary>
+        public const string Complaint = "Complaint";
+
+        /// <summary>
+        /// 稽核管理
+        /// </summary>
+        public const string Audit = "Audit";
 
     }
 }

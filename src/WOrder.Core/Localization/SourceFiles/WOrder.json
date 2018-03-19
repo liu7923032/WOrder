@@ -8,6 +8,9 @@
     "WorkOrder": "WorkOrder",
     "User": "User",
     "Schedule": "Schedule",
-    "SysManage": "SysManage"
+    "SysManage": "SysManage",
+    "Feedback": "Feedback",
+    "Complaint": "Complaint",
+    "Audit": "Audit"
   }
 }

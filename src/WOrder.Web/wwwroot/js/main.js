@@ -18,16 +18,29 @@
             var existTab = $tab.tabs('getTab', title);
 
             $tab.tabs('select', title);
-            existTab.panel('refresh', url)
+            //existTab.panel('refresh', url)
+            $('#tabs_page').tabs('update', {
+                tab: existTab,
+                options: {
+                    title: title,
+                    boder: false,
+                    content: $.createHtml(url),
+                    closable: true
+                }
+            });
         } else {
             $tab.tabs('add', {
                 title: title,
                 selected: true,
                 closable: true,
-                href: url,
-                //content: "<iframe style='width:100%;height:100%; border:0px solid #000;'  fit='true' scrolling='yes' src='" + url + " '></iframe>"
+                boder:false,
+                //href: url,
+                content:$.createHtml(url)
             });
         }
+    },
+    createHtml:function(url){
+        return '<iframe frameborder="0" src="' + url + '" scrolling="auto" style="width:100%; height:100%;"></iframe>';
     },
     //easyui datagrid 方法
     dgInit: function (options) {

@@ -10,7 +10,9 @@
             <a href="javascript:void(0)">@Model.UserName</a>
         </div>
         <div class="signout">
-            <a href="@Url.Action("SignOut", "Account")">系统退出</a>
+            <a href="@Url.Action("SignOut", "Account")">
+                @*<img src="~/image/logout.png" />*@
+            </a>
         </div>
     }
     else

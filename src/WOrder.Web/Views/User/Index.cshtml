@@ -2,7 +2,7 @@
 
 @{
     ViewBag.ActiveMenu = PageNames.User;
-    Layout = null;
+    //Layout = null;
 }
 
 
@@ -63,7 +63,7 @@
 		                    length:[4,20]
 	                    }" />
                 </td>
-                
+
             </tr>
             <tr>
                 <td class="tdLabel">姓名</td>
@@ -74,7 +74,7 @@
                 <td>
                     <input class="easyui-combobox" id="txtDeptId" name="deptId" data-options="width:200,required:true,valueField:'text',textField:'text',editable:false" />
                 </td>
-               
+
 
             </tr>
 
@@ -98,7 +98,7 @@
                     <input class="easyui-textbox" name="email" data-options="width:200,validType:['email','length[0,20]']" />
                 </td>
             </tr>
-           
+
         </table>
     </form>
 </div>
@@ -109,8 +109,8 @@
     <div data-options="iconCls:'icon-remove'">删除</div>
 </div>
 
-
-<script type="text/javascript">
+@section Scripts{
+    <script type="text/javascript">
     $(function () {
         var selectNode
             , deptUrl = "/api/services/app/Dept/GetAll?maxResultCount=10000&skipCount=0"
@@ -175,7 +175,7 @@
                 $.treeInit({
                     id: 'tree_dept',
                     url: deptUrl,
-                   
+
                     onClick: function (node) {
                         selectNode = node;
                         //通过类型来获取字典数据
@@ -231,7 +231,7 @@
                             text: "新增",
                             iconCls: 'icon-add',
                             handler: function () {
-                                
+
                                 $('#frm_user').form('clear');
                                 $('#dlg_user').dialog('open');
                                 if (selectNode) {
@@ -268,7 +268,7 @@
                     ]
                 });
             },
-           
+
             queryUser: function () {
                 var param = {};
                 if (selectNode) {
@@ -330,5 +330,6 @@
         methods.initTable();
         methods.initTree()
     })
-</script>
+    </script>
 
+}
