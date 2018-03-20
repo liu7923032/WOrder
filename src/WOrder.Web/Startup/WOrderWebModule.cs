@@ -15,6 +15,9 @@ using WOrder.QuartzJob.Jobs;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Quartz;
+using WOrder.Web.Startup.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace WOrder.Web.Startup
 {
@@ -62,9 +65,22 @@ namespace WOrder.Web.Startup
         public override void Initialize()
         {
             IocManager.RegisterAssemblyByConvention(typeof(WOrderWebModule).GetAssembly());
+
+            //配置tokenAuthen
+            ConfigureTokenAuth();
         }
 
-        
 
+        private void ConfigureTokenAuth()
+        {
+            IocManager.Register<TokenAuthConfiguration>();
+            var tokenAuthConfig = IocManager.Resolve<TokenAuthConfiguration>();
+
+            tokenAuthConfig.SecurityKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(_appConfiguration["Authentication:JwtBearer:SecurityKey"]));
+            tokenAuthConfig.Issuer = _appConfiguration["Authentication:JwtBearer:Issuer"];
+            tokenAuthConfig.Audience = _appConfiguration["Authentication:JwtBearer:Audience"];
+            tokenAuthConfig.SigningCredentials = new SigningCredentials(tokenAuthConfig.SecurityKey, SecurityAlgorithms.HmacSha256);
+            tokenAuthConfig.Expiration = TimeSpan.FromDays(1);
+        }
     }
 }

@@ -6,9 +6,11 @@ using Abp.AspNetCore.Mvc.Authorization;
 using WOrder.Domain.Entities;
 using WOrder.Order;
 using Microsoft.AspNetCore.Mvc;
+using WOrder.Authorization;
 
 namespace WOrder.Web.Controllers
 {
+    [AbpMvcAuthorize(PermissionNames.Page_Admin)]
     public class OrderController : WOrderControllerBase
     {
         private IOrderAppService _orderAppService;

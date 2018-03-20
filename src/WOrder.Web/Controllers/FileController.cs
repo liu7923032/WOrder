@@ -13,9 +13,11 @@ using WOrder.File;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Abp.AspNetCore.Mvc.Authorization;
 
 namespace WOrder.Web.Controllers
 {
+    [AbpMvcAuthorize]
     public class FileController : WOrderControllerBase
     {
         private IHostingEnvironment hostingEnv;

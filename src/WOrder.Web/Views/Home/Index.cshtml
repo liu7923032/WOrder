@@ -7,42 +7,6 @@
 }
 
 
-<div class="easyui-layout" data-options="fit:true,border:false" id="ly_main">
-    <div class="" data-options="region:'north',height:52">
-        <div class="header">
-            <div class="logo">
-                后台管理系统
-            </div>
-            <div class="left">
-
-            </div>
-            <div class="right">
-                @await Component.InvokeAsync(typeof(UserViewComponent))
-            </div>
-        </div>
-    </div>
-
-    <div data-options="region:'west',width:140,title:'菜单'">
-        @await Component.InvokeAsync(typeof(TopMenuViewComponent), new { activeMenu = ViewBag.ActiveMenu })
-    </div>
-    <div class="" data-options="region:'center',border:false">
-        <div class="easyui-tabs" id="tabs_main" data-options="fit:true,border:false,tabHeight:30">
-            <div title="系统首页">
-
-            </div>
-        </div>
-    </div>
-    <div data-options="region:'south',height:25">
-        <div class="p-bottom">
-            <div>
-                当前人员:
-                <span>18</span>
-            </div>
-        </div>
-    </div>
-</div>
-
-
 @section Scripts{
 
     <script type="text/javascript">
@@ -78,4 +42,41 @@
 
 
 }
+
+
+<div class="easyui-layout" data-options="fit:true,border:false" id="ly_main">
+    <div class="" data-options="region:'north',height:52">
+        <div class="header">
+            <div class="logo">
+                后台管理系统
+            </div>
+            <div class="left">
+
+            </div>
+            <div class="right">
+                @await Component.InvokeAsync(typeof(UserViewComponent))
+            </div>
+        </div>
+    </div>
+
+    <div data-options="region:'west',width:140,title:'菜单'">
+        @await Component.InvokeAsync(typeof(TopMenuViewComponent), new { activeMenu = ViewBag.ActiveMenu })
+    </div>
+    <div class="" data-options="region:'center',border:false">
+        <div class="easyui-tabs" id="tabs_main" data-options="fit:true,border:false,tabHeight:30">
+            <div title="系统首页">
+
+            </div>
+        </div>
+    </div>
+    <div data-options="region:'south',height:25">
+        <div class="p-bottom">
+            <div>
+                当前人员:
+                <span>18</span>
+            </div>
+        </div>
+    </div>
+</div>
+
 

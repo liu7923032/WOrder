@@ -5,81 +5,6 @@
     //Layout = null;
 }
 
-
-
-<div class="easyui-layout" id="ly_order" data-options="fit:true,border:false">
-    <div data-options="region:'north',height:50" style="padding:7px 10px;">
-        <table class="query-table">
-            <tr>
-                <td>故障分类</td>
-                <td><input class="easyui-combobox" id="txtCategory" /></td>
-                <td>任务状态</td>
-                <td><input class="easyui-combobox" id="txtTStatus" value="0" /></td>
-                <td>提交日期</td>
-                <td><input class="easyui-datebox" id="txtSDate" /></td>
-                <td>-</td>
-                <td><input class="easyui-datebox" id="txtEDate" /></td>
-                <td>
-                    <a id="btnQuery" class="easui-linkbutton">查询</a>
-                </td>
-
-            </tr>
-        </table>
-    </div>
-    <div data-options="region:'center'">
-        <div class="easyui-tabs" id="tabs_order" data-options="fit:true,border:false,tabWidth:150,tabPosition:'bottom'">
-            <div title="派单池">
-                <table id="tb_order"></table>
-            </div>
-            <div title="抢单池">
-                <table id="tb_rob"></table>
-            </div>
-        </div>
-    </div>
-</div>
-
-
-<!-- 字典信息增删该查 -->
-<div id="dlg_order" class="easyui-dialog" data-options="width:700,height:450,closed:true,title:'任务信息'">
-    <form id="frm_order" method="POST">
-        <input type="hidden" name="id">
-        <input type="hidden" name="orderNo" />
-        <table class="form-table">
-            <tr>
-                <td class="tdLabel">任务类别</td>
-                <td>
-                    <input class="easyui-combobox" id="txtTCategory" name="category" data-options="width:200,required:true,valueField:'name',textField: 'name',
-                    method: 'GET',editable:false" />
-                </td>
-                <td class="tdLabel">状态</td>
-                <td>
-                    <input class="easyui-combobox" data-options="valueField: 'id',textField:'name',editable:false,
-                    width:200,
-                    data: [{ id: 0, name: '待分配' }, { id: 1, name: '处理中' }, { id: 2, name: '已完成' }]" />
-                </td>
-            </tr>
-            <tr>
-                <td class="tdLabel">项目名称</td>
-                <td colspan="3">
-                    <input class="easyui-textbox" name="itemName" data-options="width:500,required:true,prompt:'最短4位,最长20位'" />
-                </td>
-            </tr>
-            <tr>
-                <td class="tdLabel">具体位置</td>
-                <td colspan="3">
-                    <input class="easyui-textbox" name="oAddress" data-options="width:500,required:true,prompt:'问题的位置信息'" />
-                </td>
-            </tr>
-            <tr>
-                <td class="tdLabel">项目描述</td>
-                <td colspan="3">
-                    <input class="easyui-textbox" name="description" data-options="width:500,required:true,height:'100',multiline:true" />
-                </td>
-            </tr>
-        </table>
-    </form>
-</div>
-
 @section Scripts{
     <script type="text/javascript">
     $(function () {
@@ -498,3 +423,77 @@
     </script>
 
 }
+
+<div class="easyui-layout" id="ly_order" data-options="fit:true,border:false">
+    <div data-options="region:'north',height:50" style="padding:7px 10px;">
+        <table class="query-table">
+            <tr>
+                <td>故障分类</td>
+                <td><input class="easyui-combobox" id="txtCategory" /></td>
+                <td>任务状态</td>
+                <td><input class="easyui-combobox" id="txtTStatus" value="0" /></td>
+                <td>提交日期</td>
+                <td><input class="easyui-datebox" id="txtSDate" /></td>
+                <td>-</td>
+                <td><input class="easyui-datebox" id="txtEDate" /></td>
+                <td>
+                    <a id="btnQuery" class="easui-linkbutton">查询</a>
+                </td>
+
+            </tr>
+        </table>
+    </div>
+    <div data-options="region:'center'">
+        <div class="easyui-tabs" id="tabs_order" data-options="fit:true,border:false,tabWidth:150,tabPosition:'bottom'">
+            <div title="派单池">
+                <table id="tb_order"></table>
+            </div>
+            <div title="抢单池">
+                <table id="tb_rob"></table>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<!-- 字典信息增删该查 -->
+<div id="dlg_order" class="easyui-dialog" data-options="width:700,height:450,closed:true,title:'任务信息'">
+    <form id="frm_order" method="POST">
+        <input type="hidden" name="id">
+        <input type="hidden" name="orderNo" />
+        <table class="form-table">
+            <tr>
+                <td class="tdLabel">任务类别</td>
+                <td>
+                    <input class="easyui-combobox" id="txtTCategory" name="category" data-options="width:200,required:true,valueField:'name',textField: 'name',
+                    method: 'GET',editable:false" />
+                </td>
+                <td class="tdLabel">状态</td>
+                <td>
+                    <input class="easyui-combobox" data-options="valueField: 'id',textField:'name',editable:false,
+                    width:200,
+                    data: [{ id: 0, name: '待分配' }, { id: 1, name: '处理中' }, { id: 2, name: '已完成' }]" />
+                </td>
+            </tr>
+            <tr>
+                <td class="tdLabel">项目名称</td>
+                <td colspan="3">
+                    <input class="easyui-textbox" name="itemName" data-options="width:500,required:true,prompt:'最短4位,最长20位'" />
+                </td>
+            </tr>
+            <tr>
+                <td class="tdLabel">具体位置</td>
+                <td colspan="3">
+                    <input class="easyui-textbox" name="oAddress" data-options="width:500,required:true,prompt:'问题的位置信息'" />
+                </td>
+            </tr>
+            <tr>
+                <td class="tdLabel">项目描述</td>
+                <td colspan="3">
+                    <input class="easyui-textbox" name="description" data-options="width:500,required:true,height:'100',multiline:true" />
+                </td>
+            </tr>
+        </table>
+    </form>
+</div>
+

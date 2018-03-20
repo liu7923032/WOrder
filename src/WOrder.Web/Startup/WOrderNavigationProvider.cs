@@ -56,27 +56,32 @@ namespace WOrder.Web.Startup
                              PageNames.WorkOrder,
                             L(nameof(PageNames.WorkOrder)),
                             url: "Order/Index",
+                            requiredPermissionName: PermissionNames.Page_Admin,
                             icon: ""))
                          .AddItem(new MenuItemDefinition(
                              PageNames.Audit,
                             L(nameof(PageNames.Audit)),
                             url: "Order/Audit",
+                            requiredPermissionName: PermissionNames.Page_Admin,
                             icon: ""))
                          .AddItem(new MenuItemDefinition(
                              PageNames.Feedback,
                             L(nameof(PageNames.Feedback)),
                             url: "Order/Feedback",
+                            requiredPermissionName: PermissionNames.Page_Admin,
                             icon: ""))
 
                          .AddItem(new MenuItemDefinition(
                             PageNames.Schedule,
                             L(nameof(PageNames.Schedule)),
                             url: "Schedule/Index",
+                            requiredPermissionName: PermissionNames.Page_Admin,
                             icon: ""
                         )).AddItem(new MenuItemDefinition(
                              PageNames.Complaint,
                             L(nameof(PageNames.Complaint)),
                             url: "Order/Complaint",
+                            requiredPermissionName: PermissionNames.Page_Admin,
                             icon: "")));
 
         }

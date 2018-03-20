@@ -27,7 +27,8 @@
                     content: $.createHtml(url),
                     closable: true
                 }
-            });
+            });
+
         } else {
             $tab.tabs('add', {
                 title: title,

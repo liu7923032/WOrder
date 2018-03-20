@@ -2,6 +2,7 @@
 using Abp.Localization.Sources;
 using Abp.Modules;
 using Abp.Reflection.Extensions;
+using Microsoft.IdentityModel.Tokens;
 using WOrder.Localization;
 
 namespace WOrder
@@ -21,6 +22,10 @@ namespace WOrder
         public override void Initialize()
         {
             IocManager.RegisterAssemblyByConvention(typeof(WOrderCoreModule).GetAssembly());
+
+
         }
+
+        
     }
 }

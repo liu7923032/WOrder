@@ -14,6 +14,8 @@ using WOrder.UserApp;
 using System.Net.Http;
 using Newtonsoft.Json;
 using Dark.Common.Utils;
+using Abp.Authorization;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace WOrder.Web.Controllers
 {
@@ -22,6 +24,7 @@ namespace WOrder.Web.Controllers
         private IUserAppService _userAppService;
 
         private static readonly string CookieScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+        //private static readonly string CookieScheme = JwtBearerDefaults.AuthenticationScheme;
 
         private readonly IConfigurationRoot _appConfiguration;
         private IIntegralAppService _integralService;
@@ -34,17 +37,14 @@ namespace WOrder.Web.Controllers
             _env = env;
         }
 
-        [AllowAnonymous]
-        public ActionResult Login()
+        public async Task<ActionResult> Login()
         {
-            return View();
+            return await Task.FromResult(View());
         }
 
-      
 
 
 
-        [AllowAnonymous]
         [HttpPost]
         public async Task<JsonResult> LoginAsync([FromBody]LoginModel login)
         {
@@ -67,7 +67,7 @@ namespace WOrder.Web.Controllers
 
             await HttpContext.SignOutAsync(CookieScheme);
             //系统登陆
-            await HttpContext.SignInAsync(CookieScheme, claimPrincipal, new AuthenticationProperties() { IsPersistent = login.IsRemember });
+            await HttpContext.SignInAsync(CookieScheme,claimPrincipal, new AuthenticationProperties() { IsPersistent = login.IsRemember });
 
         }
 
@@ -81,7 +81,6 @@ namespace WOrder.Web.Controllers
         /// 通过其他方式登陆
         /// </summary>
         /// <returns></returns>
-        [AllowAnonymous]
         public async Task<ActionResult> ExternalLogin()
         {
             string account = Request.Query["gongHao"];
@@ -118,7 +117,6 @@ namespace WOrder.Web.Controllers
         /// <returns></returns>
         [DontWrapResult]
         [HttpPost]
-        [AllowAnonymous]
         public async Task<IntegralDto> SyncIntegral(CreateIntegralInput input)
         {
             return await _integralService.Create(input);

@@ -2,9 +2,10 @@
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 
-namespace WOrder.Authorization.JwtBearer
+namespace WOrder.Web.Startup.JwtBearer
 {
     public static class JwtTokenMiddleware
     {
@@ -14,7 +15,7 @@ namespace WOrder.Authorization.JwtBearer
             {
                 if (ctx.User.Identity?.IsAuthenticated != true)
                 {
-                    var result = await ctx.AuthenticateAsync("Bearer");
+                    var result = await ctx.AuthenticateAsync(JwtBearerDefaults.AuthenticationScheme);
                     if (result.Succeeded && result.Principal != null)
                     {
                         ctx.User = result.Principal;

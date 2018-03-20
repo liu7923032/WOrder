@@ -9,9 +9,11 @@ using WOrder.File;
 using WOrder.Web.Startup;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using WOrder.Authorization;
 
 namespace WOrder.Web.Controllers
 {
+    [AbpMvcAuthorize(PermissionNames.Page_Admin)]
     public class HomeController : WOrderControllerBase
     {
 
@@ -25,12 +27,10 @@ namespace WOrder.Web.Controllers
 
         public async Task<ActionResult> Index()
         {
-
-            
-            return View();
+            return await Task.FromResult(View());
         }
 
-      
+
 
     }
 }

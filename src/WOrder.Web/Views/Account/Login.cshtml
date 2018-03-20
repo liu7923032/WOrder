@@ -68,7 +68,7 @@
             form.on('submit(btnLogin)', function (data) {
                 abp.ajax({
                     url: "/Account/LoginAsync",
-                    data: JSON.stringify(data.field)
+                    data: JSON.stringify(data.field),
                 });
             });
 

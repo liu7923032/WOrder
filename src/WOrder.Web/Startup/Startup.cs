@@ -13,9 +13,10 @@ using Swashbuckle.AspNetCore.Swagger;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Extensions.Configuration;
 using WOrder.Configuration;
-using WOrder.Authorization.JwtBearer;
 using System.Linq;
 using Abp.Extensions;
+using WOrder.Web.Startup.JwtBearer;
+using Microsoft.AspNetCore.Mvc.Cors.Internal;
 
 namespace WOrder.Web.Startup
 {
@@ -38,6 +39,8 @@ namespace WOrder.Web.Startup
                 DbContextOptionsConfigurer.Configure(options.DbContextOptions, options.ConnectionString);
             });
 
+
+
             services.AddAuthentication(authOpts =>
             {
                 //authOpts.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
@@ -49,12 +52,15 @@ namespace WOrder.Web.Startup
             });
 
 
+
             //AuthConfigurer.Configure(services, _appConfiguration);
 
             services.AddMvc(options =>
             {
                 //添加防伪过滤器
                 options.Filters.Add(new AutoValidateAntiforgeryTokenAttribute());
+                //跨域过滤器
+                options.Filters.Add(new CorsAuthorizationFilterFactory(DefaultCorsPolicyName));
             });
 
             //Configure CORS for angular2 UI

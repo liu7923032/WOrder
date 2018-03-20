@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace WOrder.Web.Controllers
 {
-    [AbpMvcAuthorize]
     public abstract class WOrderControllerBase : AbpController
     {
         protected WOrderControllerBase()

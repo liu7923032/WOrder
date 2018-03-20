@@ -10,14 +10,14 @@ using Abp.AutoMapper;
 using Abp.MultiTenancy;
 using Abp.Runtime.Security;
 using Abp.UI;
-
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WOrder.Authorization;
-using WOrder.Authorization.JwtBearer;
 using WOrder.Domain.Entities;
 using WOrder.UserApp;
 using WOrder.Web.Controllers;
 using WOrder.Web.Models.TokenAuth;
+using WOrder.Web.Startup.JwtBearer;
 
 namespace StandardTrain.Controllers
 {
@@ -37,6 +37,7 @@ namespace StandardTrain.Controllers
         }
 
         [HttpPost]
+        [AllowAnonymous]
         public async Task<AuthenticateResultModel> Authenticate([FromBody] LoginModel model)
         {
             var userEntity = await _logInManager.SignAsync(model);
