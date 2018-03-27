@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 
-namespace WOrder.Web.Startup.JwtBearer
+namespace WOrder.Web.Core
 {
     public static class JwtTokenMiddleware
     {
@@ -21,6 +21,7 @@ namespace WOrder.Web.Startup.JwtBearer
                         ctx.User = result.Principal;
                     }
                 }
+
                 await next();
             });
         }

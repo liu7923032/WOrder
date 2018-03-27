@@ -55,6 +55,9 @@ namespace WOrder.Order
         /// </summary>
         [Required]
         public TStatus TStatus { get; set; }
+
+        //图片信息
+        public string FileIds { get; set; }
     }
 
     /// <summary>

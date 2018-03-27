@@ -84,16 +84,18 @@ namespace WOrder.Order
         private readonly IRepository<WOrder_Order> _orderRepository;
         private readonly IRepository<WOrder_ORecord> _recordRepository;
         private readonly IRepository<WOrder_Handler> _handlerRepository;
-
+        private readonly IRepository<WOrder_AttachFile> _fileRepository;
 
         public OrderAppService(IRepository<WOrder_Order> orderRepository,
             IRepository<WOrder_Handler> handlerRepository,
-            IRepository<WOrder_ORecord> recordRepository
+            IRepository<WOrder_ORecord> recordRepository,
+            IRepository<WOrder_AttachFile> fileRepository
           ) : base(orderRepository)
         {
             _orderRepository = orderRepository;
             _handlerRepository = handlerRepository;
             _recordRepository = recordRepository;
+            _fileRepository = fileRepository;
         }
 
 
@@ -136,7 +138,24 @@ namespace WOrder.Order
         public async override Task<OrderDto> Create(CreateOrderDto input)
         {
             input.OrderNo = GenerateOrderNo();
-            return await base.Create(input);
+            WOrder_Order order = input.MapTo<WOrder_Order>();
+            await _orderRepository.InsertAsync(order);
+            await CurrentUnitOfWork.SaveChangesAsync();
+            if (!string.IsNullOrEmpty(input.FileIds))
+            {
+                string[] strFileIds = input.FileIds.Split(',');
+                List<int> fileIds = new List<int>();
+                foreach (var item in strFileIds)
+                {
+                    fileIds.Add(Convert.ToInt32(item));
+                }
+                var fileList = await _fileRepository.GetAllListAsync(u => fileIds.Contains(u.Id));
+                fileList.ForEach(u =>
+                {
+                    u.ParentId = order.Id.ToString();
+                });
+            }
+            return await Task.FromResult(order.MapTo<OrderDto>());
         }
         #endregion
 

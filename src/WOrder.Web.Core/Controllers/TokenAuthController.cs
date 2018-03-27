@@ -1,25 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
-using System.Linq;
 using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks;
-using Abp;
-using Abp.Authorization;
 using Abp.AutoMapper;
-using Abp.MultiTenancy;
 using Abp.Runtime.Security;
-using Abp.UI;
-using Microsoft.AspNetCore.Authorization;
+using Abp.Web.Models;
 using Microsoft.AspNetCore.Mvc;
 using WOrder.Authorization;
 using WOrder.Domain.Entities;
 using WOrder.UserApp;
-using WOrder.Web.Controllers;
-using WOrder.Web.Models.TokenAuth;
-using WOrder.Web.Startup.JwtBearer;
+using WOrder.Web.Core.Model;
 
-namespace StandardTrain.Controllers
+namespace WOrder.Web.Core.Controllers
 {
     [Route("api/[controller]/[action]")]
     public class TokenAuthController : WOrderControllerBase
@@ -36,12 +30,11 @@ namespace StandardTrain.Controllers
 
         }
 
+        
         [HttpPost]
-        [AllowAnonymous]
-        public async Task<AuthenticateResultModel> Authenticate([FromBody] LoginModel model)
+        public async Task<AuthenticateResultModel> Authenticate([FromQuery]LoginModel model)
         {
             var userEntity = await _logInManager.SignAsync(model);
-
 
             var accessToken = CreateAccessToken(CreateJwtClaims(userEntity));
 
@@ -50,7 +43,7 @@ namespace StandardTrain.Controllers
                 AccessToken = accessToken,
                 EncryptedAccessToken = GetEncrpyedAccessToken(accessToken),
                 ExpireInSeconds = (int)_configuration.Expiration.TotalSeconds,
-                UserId = userEntity.Id
+                UserDto = userEntity.MapTo<UserDto>()
             };
         }
 

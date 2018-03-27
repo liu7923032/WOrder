@@ -15,17 +15,16 @@ using WOrder.QuartzJob.Jobs;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Quartz;
-using WOrder.Web.Startup.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using WOrder.Web.Core;
 
 namespace WOrder.Web.Startup
 {
     [DependsOn(
-        typeof(WOrderApplicationModule),
-        typeof(WOrderEntityFrameworkCoreModule),
-        typeof(AbpAspNetCoreModule),
-        typeof(WOrderQuartzJobModule)
+      
+        typeof(WOrderWebCoreModule)
+        
        )]
     public class WOrderWebModule : AbpModule
     {
@@ -39,20 +38,12 @@ namespace WOrder.Web.Startup
         public override void PreInitialize()
         {
 
-            //1.0 配置连接字符串
-            Configuration.DefaultNameOrConnectionString = _appConfiguration.GetConnectionString(WOrderConsts.ConnectionStringName);
-
             //2.0 添加导航菜单
             Configuration.Navigation.Providers.Add<WOrderNavigationProvider>();
 
             //3.0 添加自定义的setting
             Configuration.Settings.Providers.Add<WOrderSettingProvider>();
 
-            //3.0 将Application 程序集注册到服务
-            Configuration.Modules.AbpAspNetCore()
-                .CreateControllersForAppServices(
-                    typeof(WOrderApplicationModule).GetAssembly()
-                );
 
             //5.0 配置默认的缓存过期时间是10个小时
             Configuration.Caching.ConfigureAll((cache) =>
@@ -65,22 +56,10 @@ namespace WOrder.Web.Startup
         public override void Initialize()
         {
             IocManager.RegisterAssemblyByConvention(typeof(WOrderWebModule).GetAssembly());
-
-            //配置tokenAuthen
-            ConfigureTokenAuth();
+          
         }
 
 
-        private void ConfigureTokenAuth()
-        {
-            IocManager.Register<TokenAuthConfiguration>();
-            var tokenAuthConfig = IocManager.Resolve<TokenAuthConfiguration>();
-
-            tokenAuthConfig.SecurityKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(_appConfiguration["Authentication:JwtBearer:SecurityKey"]));
-            tokenAuthConfig.Issuer = _appConfiguration["Authentication:JwtBearer:Issuer"];
-            tokenAuthConfig.Audience = _appConfiguration["Authentication:JwtBearer:Audience"];
-            tokenAuthConfig.SigningCredentials = new SigningCredentials(tokenAuthConfig.SecurityKey, SecurityAlgorithms.HmacSha256);
-            tokenAuthConfig.Expiration = TimeSpan.FromDays(1);
-        }
+        
     }
 }

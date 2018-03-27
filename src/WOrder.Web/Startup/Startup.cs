@@ -15,11 +15,13 @@ using Microsoft.Extensions.Configuration;
 using WOrder.Configuration;
 using System.Linq;
 using Abp.Extensions;
-using WOrder.Web.Startup.JwtBearer;
 using Microsoft.AspNetCore.Mvc.Cors.Internal;
+using WOrder.Web.Core;
+
 
 namespace WOrder.Web.Startup
 {
+    
     public class Startup
     {
         private const string DefaultCorsPolicyName = "localhost";
@@ -53,7 +55,7 @@ namespace WOrder.Web.Startup
 
 
 
-            //AuthConfigurer.Configure(services, _appConfiguration);
+            AuthConfigurer.Configure(services, _appConfiguration);
 
             services.AddMvc(options =>
             {
@@ -95,8 +97,11 @@ namespace WOrder.Web.Startup
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory)
         {
-            app.UseAbp(); //Initializes ABP framework.
-
+            app.UseAbp(options=>
+            {
+                options.UseAbpRequestLocalization = false;
+            }); //Initializes ABP framework.
+            app.UseAbpRequestLocalization();
             if (env.IsDevelopment())
             {
                 app.UseSwagger();
@@ -118,7 +123,7 @@ namespace WOrder.Web.Startup
 
             app.UseAuthentication();
             //处理jwt的中间件
-            //app.UseJwtTokenMiddleware();
+            app.UseJwtTokenMiddleware();
 
             app.UseMvc(routes =>
             {

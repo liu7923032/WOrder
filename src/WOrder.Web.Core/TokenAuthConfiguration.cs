@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 
-namespace WOrder.Web.Startup.JwtBearer
+namespace WOrder.Web.Core
 {
     public class TokenAuthConfiguration
     {

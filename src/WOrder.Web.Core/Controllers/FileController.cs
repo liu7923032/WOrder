@@ -18,6 +18,7 @@ using WOrder.Web.Core.Controllers;
 
 namespace WOrder.Web.Controllers
 {
+    [Route("api/[controller]/[action]")]
     [AbpMvcAuthorize]
     public class FileController : WOrderControllerBase
     {

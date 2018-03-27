@@ -2,10 +2,10 @@
 {
     public class WOrderConsts
     {
-        public const string LocalizationSourceName = "WOrder-cn";
+        public const string LocalizationSourceName = "zh-CN";
 
         public const string ConnectionStringName = "Default";
 
-        public const string SecurityCode = "MDSD_SecurityCode";
+        public const string SecurityCode = "WOrder_SecurityCode";
     }
 }

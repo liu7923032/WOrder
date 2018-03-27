@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Abp.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WOrder.Authorization;
+using WOrder.Web.Core.Controllers;
 
 namespace WOrder.Web.Controllers
 {

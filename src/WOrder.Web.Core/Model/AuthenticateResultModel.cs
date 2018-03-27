@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+using System.Text;
+using WOrder.UserApp;
 
-namespace WOrder.Web.Models.TokenAuth
+namespace WOrder.Web.Core.Model
 {
     public class AuthenticateResultModel
     {
@@ -13,6 +13,6 @@ namespace WOrder.Web.Models.TokenAuth
 
         public int ExpireInSeconds { get; set; }
 
-        public long UserId { get; set; }
+        public UserDto UserDto { get; set; }
     }
 }

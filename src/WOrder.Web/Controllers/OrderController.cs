@@ -7,6 +7,7 @@ using WOrder.Domain.Entities;
 using WOrder.Order;
 using Microsoft.AspNetCore.Mvc;
 using WOrder.Authorization;
+using WOrder.Web.Core.Controllers;
 
 namespace WOrder.Web.Controllers
 {

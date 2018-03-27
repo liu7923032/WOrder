@@ -16,6 +16,7 @@ using Newtonsoft.Json;
 using Dark.Common.Utils;
 using Abp.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using WOrder.Web.Core.Controllers;
 
 namespace WOrder.Web.Controllers
 {

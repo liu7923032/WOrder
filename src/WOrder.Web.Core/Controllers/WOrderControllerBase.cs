@@ -1,10 +1,12 @@
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
-using Abp.AspNetCore.Mvc.Authorization;
+using System.Text;
 using Abp.AspNetCore.Mvc.Controllers;
 using Abp.Timing;
 using Microsoft.AspNetCore.Mvc;
 
-namespace WOrder.Web.Controllers
+namespace WOrder.Web.Core.Controllers
 {
     public abstract class WOrderControllerBase : AbpController
     {

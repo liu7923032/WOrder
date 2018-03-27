@@ -1,5 +1,6 @@
 ﻿using System.Collections.Concurrent;
 using Abp.Extensions;
+using Abp.Reflection.Extensions;
 using Microsoft.Extensions.Configuration;
 
 namespace WOrder.Configuration
@@ -15,12 +16,13 @@ namespace WOrder.Configuration
 
         public static IConfigurationRoot Get(string path, string environmentName = null)
         {
-            var cacheKey = path + "#" + environmentName;
+            var cacheKey = path + "#" + environmentName ;
             return ConfigurationCache.GetOrAdd(
                 cacheKey,
                 _ => BuildConfiguration(path, environmentName)
             );
         }
+
 
         private static IConfigurationRoot BuildConfiguration(string path, string environmentName = null)
         {
@@ -32,8 +34,9 @@ namespace WOrder.Configuration
             {
                 builder = builder.AddJsonFile($"appsettings.{environmentName}.json", optional: true);
             }
-            
+
             builder = builder.AddEnvironmentVariables();
+
 
             return builder.Build();
         }
