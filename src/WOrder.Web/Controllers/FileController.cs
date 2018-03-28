@@ -58,7 +58,7 @@ namespace WOrder.Web.Controllers
             #endregion
 
             #region 2.0 创建文件的存放路径
-            string relativeFilePath = $"\\upload\\product\\{Clock.Now.ToString("yyyy_MM")}\\";
+            string relativeFilePath = $"\\upload\\order\\{Clock.Now.ToString("yyyy_MM")}\\";
             string fileDir = hostingEnv.WebRootPath + relativeFilePath;
             if (!Directory.Exists(fileDir))
             {

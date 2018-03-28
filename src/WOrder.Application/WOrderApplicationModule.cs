@@ -5,6 +5,7 @@ using Abp.Reflection.Extensions;
 using WOrder.Authorization;
 using WOrder.Email;
 using Abp.Configuration.Startup;
+using WOrder.Extension;
 
 namespace WOrder
 {
@@ -36,6 +37,9 @@ namespace WOrder
                 // Scan the assembly for classes which inherit from AutoMapper.Profile
                 cfg.AddProfiles(thisAssembly);
             });
+
+            //注册jpush帮助类
+            IocManager.Register(typeof(JPushHelper), Abp.Dependency.DependencyLifeStyle.Transient);
         }
     }
 }

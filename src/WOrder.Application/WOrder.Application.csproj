@@ -21,6 +21,7 @@
     <PackageReference Include="Abp.EntityFrameworkCore" Version="3.2.5" />
     <PackageReference Include="Abp.AutoMapper" Version="3.2.5" />
     <PackageReference Include="Abp.MailKit" Version="3.2.5" />
+    <PackageReference Include="binbin.cn.jpush.api" Version="1.0.0" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'net461' ">
     <Reference Include="System" />

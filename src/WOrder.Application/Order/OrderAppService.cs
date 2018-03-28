@@ -24,6 +24,7 @@ using WOrder.Domain.Service;
 using Abp.Application.Services;
 using Abp.Authorization;
 using Abp.Domain.Uow;
+using WOrder.Extension;
 
 namespace WOrder.Order
 {
@@ -86,16 +87,20 @@ namespace WOrder.Order
         private readonly IRepository<WOrder_Handler> _handlerRepository;
         private readonly IRepository<WOrder_AttachFile> _fileRepository;
 
+        private readonly JPushHelper _jpushHelper;
+
         public OrderAppService(IRepository<WOrder_Order> orderRepository,
             IRepository<WOrder_Handler> handlerRepository,
             IRepository<WOrder_ORecord> recordRepository,
-            IRepository<WOrder_AttachFile> fileRepository
+            IRepository<WOrder_AttachFile> fileRepository,
+            JPushHelper jpushHelper
           ) : base(orderRepository)
         {
             _orderRepository = orderRepository;
             _handlerRepository = handlerRepository;
             _recordRepository = recordRepository;
             _fileRepository = fileRepository;
+            _jpushHelper = jpushHelper;
         }
 
 
@@ -180,6 +185,10 @@ namespace WOrder.Order
                 u.TStatus = TStatus.Running;
             });
 
+            //生成消息类容
+            var strData = string.Join(',', orderList.Select(u => u.Category));
+
+
             //添加抢单人
             handlers.ForEach(async u =>
            {
@@ -187,10 +196,13 @@ namespace WOrder.Order
                var newEntity = u.MapTo<WOrder_Handler>();
                u.OStatus = OStatus.Init;
                _handlerRepository.Insert(newEntity);
+
                //将新增记录保存
                UnitOfWorkManager.Current.SaveChanges();
                //添加记录
                await InsertRecordAsync(newEntity);
+               //执行推送消息
+               await _jpushHelper.PushToAlias($"新任务来了", strData, u.HandleId.ToString());
            });
 
         }
@@ -249,6 +261,8 @@ namespace WOrder.Order
             order.TStatus = TStatus.Finish;
 
             await UnitOfWorkManager.Current.SaveChangesAsync();
+
+            //5.看看后面是否需要通知管理员
         }
 
 

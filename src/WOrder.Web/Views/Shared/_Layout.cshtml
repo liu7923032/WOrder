@@ -14,13 +14,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <meta name="description" content="">
     <meta name="author" content="dark.liu">
 
-    <link rel="shortcut icon" href="~/favicon.ico">
+    @*<link rel="shortcut icon" href="~/favicon.ico">*@
 
     <title>后台管理系统</title>
 
@@ -33,6 +33,9 @@
         <link rel="stylesheet" href="~/lib/easyui-plugin/themes/icon.css" />
         <link rel="stylesheet" href="~/lib/easyui/themes/default/easyui.css" />
         <link rel="stylesheet" href="~/lib/easyui-plugin/themes/easyui-extend.css" />
+
+        <link rel="stylesheet" href="~/lib/pekeUpload/css/custom.css" />
+
         <link rel="stylesheet" href="~/css/main.css" />
     </environment>
 
@@ -56,10 +59,14 @@
         <script src="~/lib/easyui/jquery.easyui.min.js"></script>
         <script src="~/lib/easyui/locale/easyui-lang-zh_CN.js"></script>
         <script src="~/js/main.js"></script>
+
         <!-- abp js文件 -->
         <script src="~/lib/abp-web-resources/Abp/Framework/scripts/abp.js"></script>
         <script src="~/lib/abp-web-resources/Abp/Framework/scripts/libs/abp.jquery.js"></script>
         <script src="~/lib/easyui-plugin/easyui.abp.js"></script>
+        <!-- 图片上传组件 -->
+        <script src="~/lib/pekeUpload/js/pekeUpload.js"></script>
+
     </environment>
 
     <environment names="Staging,Production">

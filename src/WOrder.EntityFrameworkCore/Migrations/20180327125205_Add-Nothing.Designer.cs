@@ -12,9 +12,10 @@ using WOrder.EntityFrameworkCore;
 namespace WOrder.Migrations
 {
     [DbContext(typeof(WOrderDbContext))]
-    partial class WOrderDbContextModelSnapshot : ModelSnapshot
+    [Migration("20180327125205_Add-Nothing")]
+    partial class AddNothing
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

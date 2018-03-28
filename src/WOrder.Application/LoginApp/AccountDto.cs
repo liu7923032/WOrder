@@ -33,6 +33,7 @@ namespace WOrder.UserApp
         [StringLength(13)]
         public string Phone { get; set; }
 
+
         public string Photos { get; set; }
 
         [StringLength(4)]
@@ -48,7 +49,13 @@ namespace WOrder.UserApp
         [Required]
         public int DeptId { get; set; }
 
-       
+        /// <summary>
+        /// 工作方式
+        /// </summary>
+        public string WorkMode { get; set; }
+
+        public string AreaName { get; set; }
+        
     }
 
     public class UpdateUserInput : CreateUserInput, IEntityDto<long>
