@@ -18,13 +18,13 @@ using Quartz;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using WOrder.Web.Core;
+using Abp.AspNetCore.SignalR;
 
 namespace WOrder.Web.Startup
 {
     [DependsOn(
-      
-        typeof(WOrderWebCoreModule)
-        
+        typeof(WOrderWebCoreModule),
+        typeof(AbpAspNetCoreSignalRModule)
        )]
     public class WOrderWebModule : AbpModule
     {
@@ -55,6 +55,9 @@ namespace WOrder.Web.Startup
 
         public override void Initialize()
         {
+            //定义web api 在返回数据时，不要对数据进行包裹
+            Configuration.Modules.AbpAspNetCore().DefaultWrapResultAttribute.WrapOnSuccess = false;
+
             IocManager.RegisterAssemblyByConvention(typeof(WOrderWebModule).GetAssembly());
           
         }

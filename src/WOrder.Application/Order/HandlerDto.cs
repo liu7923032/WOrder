@@ -15,14 +15,14 @@ namespace WOrder.Order
         /// </summary>
         public long HandleId { get; set; }
 
-        public int OrderId { get; set; }
+        public long OrderId { get; set; }
 
         public OStatus OStatus { get; set; }
     }
 
-    public class UpdateHandlerDto : CreateHandlerDto, IEntityDto<int>
+    public class UpdateHandlerDto : CreateHandlerDto, IEntityDto<long>
     {
-        public int Id { get; set; }
+        public long Id { get; set; }
     }
 
     public class HandlerDto : UpdateHandlerDto

@@ -16,35 +16,44 @@ using WOrder.Domain.Entities;
 namespace WOrder.Schedule
 {
 
-    public interface IScheduleAppService : IApplicationService
+    public interface IScheduleAppService : IAsyncCrudAppService<ScheduleDto, long, GetAllScheduleDto, CreateScheduleDto, UpdateScheduleDto>
     {
         /// <summary>
         /// 批量保存
         /// </summary>
         /// <param name="batchSaveDto"></param>
         /// <returns></returns>
-        Task BatchSave(BatchSaveDto saveAll);
+        Task<bool> BatchSave(BatchSaveDto saveAll);
 
         Task<List<GetScheduleDto>> GetSchedules(GetAllScheduleDto dto);
     }
 
-    [AbpAuthorize(PermissionNames.Page_Admin)]
-    public class ScheduleAppService : WOrderAppServiceBase, IScheduleAppService
+    [AbpAuthorize]
+    public class ScheduleAppService : AsyncCrudAppService<WOrder_Schedule, ScheduleDto, long, GetAllScheduleDto, CreateScheduleDto, UpdateScheduleDto>, IScheduleAppService
     {
         private readonly IRepository<WOrder_Schedule, long> _scheduleRepository;
 
-        public ScheduleAppService(IRepository<WOrder_Schedule, long> scheduleRepository) 
+        public ScheduleAppService(IRepository<WOrder_Schedule, long> scheduleRepository) : base(scheduleRepository)
         {
             _scheduleRepository = scheduleRepository;
         }
 
+
+        protected override IQueryable<WOrder_Schedule> CreateFilteredQuery(GetAllScheduleDto input)
+        {
+            return base.CreateFilteredQuery(input).Where(u => u.YFlag.Equals(input.YFlag) && u.MFlag.Equals(input.MFlag))
+                    .WhereIf(!string.IsNullOrEmpty(input.ClassType), u => u.ClassType.Equals(input.ClassType))
+                    .WhereIf(input.UserId.HasValue, u => u.UserId == input.UserId);
+                
+        }
 
         /// <summary>
         /// 批量保存
         /// </summary>
         /// <param name="saveDto"></param>
         /// <returns></returns>
-        public async Task BatchSave(BatchSaveDto saveDto)
+        [AbpAuthorize(PermissionNames.Page_Admin)]
+        public async Task<bool> BatchSave(BatchSaveDto saveDto)
         {
             var dateList = saveDto.UserDays.Select(u => u.DFlag).ToList();
             //1.删除已经由的记录
@@ -62,6 +71,8 @@ namespace WOrder.Schedule
                 await _scheduleRepository.InsertAsync(newEntity);
             });
 
+            return await Task.FromResult(true);
+
         }
 
         /// <summary>
@@ -69,6 +80,7 @@ namespace WOrder.Schedule
         /// </summary>
         /// <param name="dto"></param>
         /// <returns></returns>
+        [AbpAuthorize(PermissionNames.Page_Admin)]
         public async Task<List<GetScheduleDto>> GetSchedules(GetAllScheduleDto input)
         {
             //1.查询结果

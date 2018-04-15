@@ -44,7 +44,7 @@ namespace WOrder.Domain.Entities
         /// <summary>
         /// 完结
         /// </summary>
-        [Description("处理完")]
+        [Description("已完结")]
         Finish
     }
 

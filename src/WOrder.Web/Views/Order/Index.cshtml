@@ -6,16 +6,13 @@
 }
 
 
-@section Styles{ 
-   
-}
+
 
 <div class="easyui-layout" id="ly_order" data-options="fit:true,border:false">
     <div data-options="region:'north',height:50" style="padding:7px 10px;">
         <table class="query-table">
             <tr>
-                <td>故障分类</td>
-                <td><input class="easyui-combobox" id="txtCategory" /></td>
+
                 <td>任务状态</td>
                 <td><input class="easyui-combobox" id="txtTStatus" value="0" /></td>
                 <td>提交日期</td>
@@ -34,9 +31,9 @@
             <div title="派单池">
                 <table id="tb_order"></table>
             </div>
-            <div title="抢单池">
-                <table id="tb_rob"></table>
-            </div>
+            @*<div title="抢单池">
+                    <table id="tb_rob"></table>
+                </div>*@
         </div>
     </div>
 </div>
@@ -47,22 +44,10 @@
     <form id="frm_order" method="POST" enctype="multipart/form-data">
         <input type="hidden" name="id">
         <input type="hidden" name="orderNo" />
+        <input type="hidden" name="fileIds" id="txtFileIds" />
         <table class="form-table">
             <tr>
-                <td class="tdLabel">任务类别</td>
-                <td>
-                    <input class="easyui-combobox" id="txtTCategory" name="category" data-options="width:200,required:true,valueField:'name',textField: 'name',
-                    method: 'GET',editable:false" />
-                </td>
-                <td class="tdLabel">状态</td>
-                <td>
-                    <input class="easyui-combobox" data-options="valueField: 'id',textField:'name',editable:false,
-                    width:200,
-                    data: [{ id: 0, name: '待分配' }, { id: 1, name: '处理中' }, { id: 2, name: '已完成' }]" />
-                </td>
-            </tr>
-            <tr>
-                <td class="tdLabel">项目名称</td>
+                <td class="tdLabel">标题</td>
                 <td colspan="3">
                     <input class="easyui-textbox" name="itemName" data-options="width:500,required:true,prompt:'最短4位,最长20位'" />
                 </td>
@@ -80,10 +65,15 @@
                 </td>
             </tr>
             <tr>
-                <td class="tdLabel">上传图片</td>
+                <td>上传图片</td>
                 <td colspan="3">
-                   <input type="file" name="file" id="uploader"/>
-                    <input type="button" id="btnChoose" value="选择" />
+                    <input id="file_upload" />
+                </td>
+            </tr>
+            <tr>
+                <td>图片</td>
+                <td colspan="3">
+                    <ul class="img-list"></ul>
                 </td>
             </tr>
         </table>
@@ -93,10 +83,15 @@
 
 @section Scripts{
     <script type="text/javascript">
+
+
+
         $(function () {
             var _orderService = abp.services.app.order
                 , categoryURL = "/api/services/app/Dictionary/GetAll?dictType=" + encodeURIComponent("任务分类")
-                , curIndex = 0;
+                , curIndex = 0
+                , _fileService = abp.services.app.file
+                , category = "故障报修";
             var methods = {
                 init: function () {
                     $.parser.parse('#ly_order')
@@ -132,33 +127,15 @@
                         }]
                     }
 
-                    $('#txtCategory').combobox($.extend({
-                        url: categoryURL,
-                        valueField: 'name',
-                        width: 100,
-                        loadFilter: function (resData) {
-                            return resData["result"].items;
-                        }, onHidePanel: function () {
-                            methods.query();
-                        }
-                    }, baseOption));
 
-                    $('#txtTCategory').combobox($.extend({
-                        url: categoryURL,
-                        valueField: 'name',
-                        width: 200,
-                        loadFilter: function (resData) {
-                            return resData["result"].items;
-                        },
-
-                    }, baseOption));
 
                     $('#txtTStatus').combobox($.extend({
                         valueField: 'id',
                         width: 90,
                         data: [{ id: 0, name: '待分配' },
-                        { id: 1, name: '处理中' },
-                        { id: 2, name: '已完成' }],
+                        { id: 1, name: '待接单' },
+                        { id: 2, name: '处理中' },
+                        { id: 3, name: '已完成' }],
                         onHidePanel: function () {
                             methods.query();
                         }
@@ -202,36 +179,23 @@
                         }
                     });
 
-                    $('#uploader').pekeUpload({
-                        //btnText: "选择文件",
-                        //onSubmit: true,
-                        //url: "/File/Upload",
-                        //allowedExtensions: 'jpg|jpeg|png|gif',
-                        //maxSize:5,
-                        //delfiletext:"删除文件",
-                        //errorOnResponse: "上传失败",
-                        //onFileSuccess: function (file, data) {
-                        //    console.log("success")
-                        //},
-                        //onFileError: function (file, error) {
-                        //    console.log("error")
-                        //}
-                        
-                    })
-
-                    //$('#btnChoose').click(function () { 
-
-                    //    $('#uploader').click();
-                    //})
-                    //$(document).on('change', '#uploader', function () { 
-                    //    alert('11')
-                    //})
-                    
+                    $.fileUpload({
+                        id: 'file_upload',
+                        success: function (file) {
+                            //设置fileIds
+                            var srcValue = $('#txtFileIds').val();
+                            if (srcValue.length > 0) {
+                                srcValue += ',';
+                            }
+                            srcValue += file.id;
+                            $('#txtFileIds').val(srcValue);
+                        }
+                    });
                 },
                 initTable: function (queryParam) {
 
                     var dgOptions = {
-                        singleSelect: false,
+                        singleSelect: true,
                         checkOnSelect: false,
                         selectOnCheck: false,
                         queryParams: queryParam
@@ -248,6 +212,7 @@
                                 handler: function () {
 
                                     $('#frm_order').form('clear');
+                                    $('.img-list').children().remove();
                                     $('#dlg_order').dialog('open');
 
                                 }
@@ -260,6 +225,12 @@
                                         $('#frm_order').form('load', row);
                                         $('#dlg_order').dialog('open')
                                         //将no设置未只读
+                                        $.showFiles({
+                                            parentId: row.id,
+                                            success: function (files) {
+                                                $('#txtFileIds').val(files.map(function (file) { return file.id }).join(','));
+                                            }
+                                        });
                                     })
                                 }
                             }, '-', {
@@ -278,17 +249,17 @@
                                     })
                                 }
                             }, '-', {
-                                text: "移动到抢单池",
-                                iconCls: 'icon-redo',
+                                //text: "移动到抢单池",
+                                //iconCls: 'icon-redo',
                                 handler: function () {
-                                    methods.robOrder();
+                                    //methods.robOrder();
                                 }
                             }
                         ],
                         columns: [[
                             { field: 'id', hidden: true, width: 30 },
                             { field: 'tStatus', hidden: true, width: 30 },
-                            { field: 'ck', checkbox: true, width: 30 },
+                            //{ field: 'ck', checkbox: true, width: 30 },
                             {
                                 field: 'assign', title: '处理人', width: 60, align: 'center',
                                 formatter: function (value, row, index) {
@@ -299,9 +270,9 @@
                                     }
                                 }
                             },
-                            { field: 'orderNo', title: '编号', width: 100 },
-                            { field: 'category', title: '任务分类', width: 80 },
-                            { field: 'itemName', title: '项目名称', width: 150, formatter: function (value, row, index) { return "<a class='easyui-tips'>" + value + "<a>" } },
+                            { field: 'orderNo', title: '任务编号', width: 100 },
+                            //{ field: 'category', title: '任务分类', width: 80 },
+                            { field: 'itemName', title: '标题', width: 150, formatter: function (value, row, index) { return "<a class='easyui-tips'>" + value + "<a>" } },
                             {
                                 field: 'tStatusName', title: '状态', align: 'center', width: 80,
                                 styler: function (value, row, index) {
@@ -333,6 +304,7 @@
                                 var result = rows.filter(function (item) {
                                     return item.id == orderId;
                                 })[0].handlers;
+
                                 methods.showProcess(result)
 
                             });
@@ -357,7 +329,7 @@
                             },
                             { field: 'orderNo', title: '编号', width: 100 },
                             { field: 'category', title: '任务分类', width: 80 },
-                            { field: 'itemName', title: '项目名称', width: 150, formatter: function (value, row, index) { return "<a class='easyui-tips'>" + value + "<a>" } },
+                            { field: 'itemName', title: '标题', width: 150, formatter: function (value, row, index) { return "<a class='easyui-tips'>" + value + "<a>" } },
                             {
                                 field: 'tStatusName', title: '工单状态', align: 'center', width: 80,
                                 styler: function (value, row, index) {
@@ -382,6 +354,8 @@
                         "tStatus": $('#txtTStatus').combobox("getValue"),
                         "sDate": $('#txtSDate').datebox("getValue"),
                         "eDate": $('#txtEDate').datebox("getValue"),
+                        "isCurrent": 1,
+                        "category":category
                     }
                 },
                 query: function (param) {
@@ -392,14 +366,14 @@
                         $('#tb_rob').datagrid('reload', queryParam);
                     }
                 },
-
                 save: function () {
 
                     $.formSave({
                         id: 'frm_order',
                         action: function (fields, isAdd) {
-                            console.log(fields)
+                            fields["category"] = category;
                             if (isAdd) {
+
                                 _orderService.create(fields, {
                                     success: function (data) {
                                         $('#dlg_order').dialog('close');
@@ -452,15 +426,14 @@
                             selectOnCheck: false,
                             checkOnSelect: false,
                             columns: [[
+                                { field:'ck', checkbox:true },
                                 { field: 'id', hidden: true, width: 30 },
                                 { field: 'deptId', hidden: true, width: 30 },
-                                { field: 'ck', checkbox: true, width: 30 },
                                 { field: 'account', title: '账号', width: 80, sortable: true },
                                 { field: 'userName', title: '姓名', width: 80 },
-                                //{ field: 'deptName', title: '隶属部门', width: 120 },
+                                { field: 'deptName', title: '部门', width: 120 },
                                 { field: 'position', title: '岗位', width: 80 },
                                 { field: 'phone', title: '联系方式', width: 120 },
-                                { field: 'sex', title: '性别', width: 80 },
                             ]],
                             toolbar: [
                                 {
@@ -482,15 +455,7 @@
                                         });
                                         _orderService.assign(handlers, {
                                             success: function (resData) {
-                                                console.log(resData);
                                                 abp.notify.success("派单成功,订单进入<span style='color:blue;'>派单状态</span>", "派单提示");
-                                                //$('#tb_order').datagrid('updateRow', {
-                                                //    index: rowIndex,
-                                                //    row:{
-                                                //        tStatus: 1,
-                                                //    }
-
-                                                //});
                                                 methods.query();
                                             }
                                         });

@@ -61,6 +61,8 @@ namespace WOrder.Schedule
         public string AreaName { get; set; }
 
         public string WorkMode { get; set; }
+
+        public int Week { get; set; }
     }
 
 
@@ -71,6 +73,8 @@ namespace WOrder.Schedule
         public int MFlag { get; set; }
 
         public string ClassType { get; set; }
+
+        public long? UserId { get; set; }
     }
 
     /// <summary>

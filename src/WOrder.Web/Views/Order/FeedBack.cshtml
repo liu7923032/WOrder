@@ -6,13 +6,87 @@
 }
 
 
+
+
+<div class="easyui-layout" id="ly_order" data-options="fit:true,border:false">
+    <div data-options="region:'north',height:50" style="padding:7px 10px;">
+        <table class="query-table">
+            <tr>
+                <td>反馈状态</td>
+                <td><input class="easyui-combobox" id="txtTStatus" value="0" /></td>
+                <td>反馈日期</td>
+                <td><input class="easyui-datebox" id="txtSDate" /></td>
+                <td>-</td>
+                <td><input class="easyui-datebox" id="txtEDate" /></td>
+                <td>
+                    关键字
+                </td>
+                <td>
+                    <input class="easyui-searchbox" id="txtKey" />
+                </td>
+                <td>
+                    <a id="btnQuery" class="easui-linkbutton">查询</a>
+                </td>
+
+            </tr>
+        </table>
+    </div>
+    <div data-options="region:'center'">
+        <table id="tb_feedback"></table>
+    </div>
+</div>
+
+
+<!-- 字典信息增删该查 -->
+<div id="dlg_feedback" class="easyui-dialog" data-options="width:700,height:500,closed:true,title:'任务信息'">
+    <form id="frm_feedback" method="POST">
+        <input type="hidden" name="id">
+        <input type="hidden" name="orderNo" />
+        <input type="hidden" name="fileIds" id="txtFileIds" />
+        <input type="hidden" name="category" />
+        <table class="form-table">
+            <tr>
+                <td class="tdLabel">反馈标题</td>
+                <td colspan="3">
+                    <input class="easyui-textbox" name="itemName" data-options="width:500,required:true,prompt:'最短4位,最长20位'" />
+                </td>
+            </tr>
+            <tr>
+                <td class="tdLabel">具体位置</td>
+                <td colspan="3">
+                    <input class="easyui-textbox" name="oAddress" data-options="width:500,required:true,prompt:'问题的位置信息'" />
+                </td>
+            </tr>
+            <tr>
+                <td class="tdLabel">反馈描述</td>
+                <td colspan="3">
+                    <input class="easyui-textbox" name="description" data-options="width:500,required:true,height:'100',multiline:true" />
+                </td>
+            </tr>
+            <tr>
+                <td class="tdLabel">上传图片</td>
+                <td colspan="3">
+                    <input id="uploader" />
+                </td>
+            </tr>
+            <tr>
+                <td class="tdLabel">图片</td>
+                <td>
+                    <ul class="img-list"></ul>
+                </td>
+            </tr>
+        </table>
+    </form>
+</div>
+
+
 @section Scripts{
     <script type="text/javascript">
     $(function () {
         var _orderService = abp.services.app.order
         , categoryURL = "/api/services/app/Dictionary/GetAll?dictType=" + encodeURIComponent("任务分类")
         , curIndex = 0
-        , category="在线反馈";
+        , category = "在线反馈";
         var methods = {
             init: function () {
                 $.parser.parse('#ly_order')
@@ -51,9 +125,10 @@
                 $('#txtTStatus').combobox($.extend({
                     valueField: 'id',
                     width:90,
-                    data: [{ id: 0, name: '待处理' },
-                            { id: 1, name: '处理中' },
-                            { id: 2, name: '已完成' }],
+                    data: [{ id: 0, name: '待分配' },
+                        { id: 1, name: '待接单' },
+                        { id: 2, name: '处理中' },
+                        { id: 3, name: '已完成' }],
                     onHidePanel: function () {
                         methods.query();
                     }
@@ -96,15 +171,29 @@
                     searchbox: function () {
                         methods.query();
                     }
-                })
+                });
+
+                //上传文件
+                $.fileUpload({
+                    success: function (file) {
+                        //设置fileIds
+                        var srcValue = $('#txtFileIds').val();
+                        if (srcValue.length > 0) {
+                            srcValue += ',';
+                        }
+                        srcValue += file.id;
+                        $('#txtFileIds').val(srcValue);
+                        //添加图片
+                    }
+                });
 
             },
             initTable: function (queryParam) {
 
                 var dgOptions = {
-                    singleSelect: false,
-                    checkOnSelect: false,
-                    selectOnCheck: false,
+                    singleSelect: true,
+                    //checkOnSelect: false,
+                    //selectOnCheck: false,
                     queryParams: queryParam
                 };
                 //初始化正常表
@@ -119,8 +208,6 @@
 
                                 $('#frm_feedback').form('clear');
                                 $('#dlg_feedback').dialog('open');
-
-                                $('#frm_category').textbox('setValue', category);
                             }
                         }, '-', {
                             text: "编辑",
@@ -131,6 +218,12 @@
                                     $('#frm_feedback').form('load', row);
                                     $('#dlg_feedback').dialog('open')
                                     //将no设置未只读
+                                    $.showFiles({
+                                        parentId: row.id,
+                                        success: function (files) {
+                                            $('#txtFileIds').val(files.map(function (file) { return file.id }).join(','));
+                                        }
+                                    });
                                 })
                             }
                         }, '-', {
@@ -147,12 +240,6 @@
                                         })
                                     });
                                 })
-                            }
-                        }, '-', {
-                            text: "移动到抢单池",
-                            iconCls: 'icon-redo',
-                            handler: function () {
-                                methods.robOrder();
                             }
                         }
                     ],
@@ -225,7 +312,7 @@
                 $.formSave({
                     id: 'frm_feedback',
                     action: function (fields, isAdd) {
-                        console.log(fields)
+                        fields["category"] = category;
                         if (isAdd) {
                             _orderService.create(fields, {
                                 success: function (data) {
@@ -262,10 +349,9 @@
                             { field: 'deptId', hidden: true, width: 30 },
                             { field: 'account', title: '账号', width: 80, sortable: true },
                             { field: 'userName', title: '姓名', width: 80 },
-                            //{ field: 'deptName', title: '隶属部门', width: 120 },
+                            { field: 'deptName', title: '部门', width: 120 },
                             { field: 'position', title: '岗位', width: 80 },
                             { field: 'phone', title: '联系方式', width: 120 },
-                            { field: 'sex', title: '性别', width: 80 },
                         ]],
                         onDblClickRow:function(index,row){
                             _orderService.assign([{
@@ -317,75 +403,3 @@
     </script>
 
 }
-
-<div class="easyui-layout" id="ly_order" data-options="fit:true,border:false">
-    <div data-options="region:'north',height:50" style="padding:7px 10px;">
-        <table class="query-table">
-            <tr>
-                <td>反馈状态</td>
-                <td><input class="easyui-combobox" id="txtTStatus" value="0" /></td>
-                <td>反馈日期</td>
-                <td><input class="easyui-datebox" id="txtSDate" /></td>
-                <td>-</td>
-                <td><input class="easyui-datebox" id="txtEDate" /></td>
-                <td>
-                    关键字
-                </td>
-                <td>
-                    <input class="easyui-searchbox" id="txtKey" />
-                </td>
-                <td>
-                    <a id="btnQuery" class="easui-linkbutton">查询</a>
-                </td>
-
-            </tr>
-        </table>
-    </div>
-    <div data-options="region:'center'">
-        <div class="easyui-tabs" id="tabs_order" data-options="fit:true,border:false,tabWidth:150,tabPosition:'bottom'">
-            <table id="tb_feedback"></table>
-        </div>
-    </div>
-</div>
-
-
-<!-- 字典信息增删该查 -->
-<div id="dlg_feedback" class="easyui-dialog" data-options="width:700,height:450,closed:true,title:'任务信息'">
-    <form id="frm_feedback" method="POST">
-        <input type="hidden" name="id">
-        <input type="hidden" name="orderNo" />
-
-        <table class="form-table">
-            <tr>
-                <td class="tdLabel">任务类别</td>
-                <td>
-                    <input class="easyui-textbox" id="frm_category" name="category" data-options="width:200,required:true,editable:false,value:'在线反馈'" />
-                </td>
-                <td class="tdLabel">反馈状态</td>
-                <td>
-                    <input class="easyui-combobox" data-options="valueField: 'id',textField:'name',editable:false,
-                    width:200,
-                    data: [{ id: 0, name: '待处理' }, { id: 1, name: '处理中' }, { id: 2, name: '已完成' }]" />
-                </td>
-            </tr>
-            <tr>
-                <td class="tdLabel">反馈标题</td>
-                <td colspan="3">
-                    <input class="easyui-textbox" name="itemName" data-options="width:500,required:true,prompt:'最短4位,最长20位'" />
-                </td>
-            </tr>
-            <tr>
-                <td class="tdLabel">具体位置</td>
-                <td colspan="3">
-                    <input class="easyui-textbox" name="oAddress" data-options="width:500,required:true,prompt:'问题的位置信息'" />
-                </td>
-            </tr>
-            <tr>
-                <td class="tdLabel">反馈描述</td>
-                <td colspan="3">
-                    <input class="easyui-textbox" name="description" data-options="width:500,required:true,height:'100',multiline:true" />
-                </td>
-            </tr>
-        </table>
-    </form>
-</div>

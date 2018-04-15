@@ -7,7 +7,10 @@ using System.Threading.Tasks;
 using Abp.AutoMapper;
 using Abp.Runtime.Security;
 using Abp.Web.Models;
+using Dark.Common.Web;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using WOrder.Authorization;
 using WOrder.Domain.Entities;
 using WOrder.UserApp;
@@ -18,15 +21,18 @@ namespace WOrder.Web.Core.Controllers
     [Route("api/[controller]/[action]")]
     public class TokenAuthController : WOrderControllerBase
     {
+        private readonly IConfigurationRoot _appConfiguration;
         private readonly IUserAppService _logInManager;
         private readonly TokenAuthConfiguration _configuration;
 
         public TokenAuthController(
             IUserAppService logInManager,
-            TokenAuthConfiguration configuration)
+            TokenAuthConfiguration configuration,
+            IHostingEnvironment env)
         {
             _logInManager = logInManager;
             _configuration = configuration;
+            _appConfiguration = AppConfigurations.Get(env.ContentRootPath, env.EnvironmentName);
 
         }
 
@@ -47,7 +53,17 @@ namespace WOrder.Web.Core.Controllers
             };
         }
 
-
+        [HttpGet]
+        public async Task<ActionResult> GetAppVersion()
+        {
+            return await Task.FromResult(Json(new
+            {
+                VCode = _appConfiguration["AppVersion:VCode"],
+                VName = _appConfiguration["AppVersion:VName"],
+                Info = _appConfiguration["AppVersion:Info"]
+            }
+            ));
+        }
 
 
         private string CreateAccessToken(IEnumerable<Claim> claims, TimeSpan? expiration = null)
@@ -66,7 +82,7 @@ namespace WOrder.Web.Core.Controllers
             return new JwtSecurityTokenHandler().WriteToken(jwtSecurityToken);
         }
 
-        private static List<Claim> CreateJwtClaims(WOrder_Account account)
+        private static List<Claim> CreateJwtClaims(UserDto account)
         {
             var claims = new List<Claim>();
 

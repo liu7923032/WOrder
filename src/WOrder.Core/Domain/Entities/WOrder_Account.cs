@@ -9,7 +9,6 @@ namespace WOrder.Domain.Entities
 {
     public class WOrder_Account : AuditedEntity<long>
     {
-        [Required]
         [StringLength(20)]
         public string Account { get; set; }
 
@@ -47,6 +46,11 @@ namespace WOrder.Domain.Entities
         //是否被锁
         public bool IsLock { get; set; }
 
+        /// <summary>
+        /// 是否被审核通过
+        /// </summary>
+        public bool IsActive { get; set; }
+
         [StringLength(10)]
         public string Sex { get; set; }
 
@@ -66,6 +70,12 @@ namespace WOrder.Domain.Entities
         /// </summary>
         [StringLength(1000)]
         public string AreaName { get; set; }
+
+        /// <summary>
+        /// 身份证
+        /// </summary>
+        [StringLength(20)]
+        public string IdCard { get; set; }
 
         public WOrder_Account()
         {

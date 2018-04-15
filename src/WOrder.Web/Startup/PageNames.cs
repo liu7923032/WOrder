@@ -16,7 +16,7 @@
 
         public const string SysManage = "SysManage";
         /// <summary>
-        /// 订单管理
+        /// 报修管理
         /// </summary>
         public const string WorkOrder = "WorkOrder";
 
@@ -39,6 +39,21 @@
         /// 稽核管理
         /// </summary>
         public const string Audit = "Audit";
+
+        /// <summary>
+        /// 巡检管理
+        /// </summary>
+        public const string Inspect = "Inspect";
+
+        /// <summary>
+        /// 运送管理
+        /// </summary>
+        public const string Transport = "Transport";
+
+
+        public const string Report = "Report";
+        //人员工作量统计
+        public const string UserWorkCount = "UserWorkCount";
 
     }
 }

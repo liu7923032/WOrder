@@ -56,6 +56,12 @@ namespace WOrder.Order
         [Required]
         public TStatus TStatus { get; set; }
 
+        /// <summary>
+        /// 到达时间
+        /// </summary>
+        //[JsonConverter(typeof(WOrderDateFormat))]
+        public DateTime? ArriveDate { get; set; }
+
         //图片信息
         public string FileIds { get; set; }
     }
@@ -63,9 +69,9 @@ namespace WOrder.Order
     /// <summary>
     /// 更新
     /// </summary>
-    public class UpdateOrderDto : CreateOrderDto, IEntityDto<int>
+    public class UpdateOrderDto : CreateOrderDto, IEntityDto<long>
     {
-        public int Id { get; set; }
+        public long Id { get; set; }
     }
     /// <summary>
     /// 返回订单列表
@@ -83,6 +89,8 @@ namespace WOrder.Order
         /// </summary>
         public string CreatorName { get; set; }
 
+        public string Phone { get; set; }
+
         /// <summary>
         /// 创建时间
         /// </summary>
@@ -95,12 +103,36 @@ namespace WOrder.Order
         ///// </summary>
         public List<HandlerDto> Handlers { get; set; }
 
+        [JsonConverter(typeof(WOrderDateFormat))]
+        public new DateTime? ArriveDate { get; set; }
+
     }
 
+    public class GetMyOrderInput: PagedAndSortedResultRequestDto
+    {
 
+        //0是待处理的，包含待接单和待完成   1是已完成
+        public int UserStatus { get; set; }
+
+
+        public OStatus? OStatus { get; set; }
+
+        /// <summary>
+        /// 订单类别
+        /// </summary>
+        public string Category { get; set; }
+
+        /// <summary>
+        /// 订单类别 是抢单还是派单
+        /// </summary>
+        public OrderType? OrderType { get; set; }
+
+        public string ItemName { get; set; }
+    }
 
     public class GetAllOrderInput : PagedAndSortedResultRequestDto
     {
+      
         /// <summary>
         /// 订单状态
         /// </summary>
@@ -124,6 +156,10 @@ namespace WOrder.Order
         /// </summary>
         public string ItemName { get; set; }
 
+        /// <summary>
+        /// 通过创建人来查找订单
+        /// </summary>
+        public int? CreatorId { get; set; }
     }
 
     

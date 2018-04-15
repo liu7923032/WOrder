@@ -50,5 +50,9 @@ namespace WOrder.Domain.Entities
         [Required]
         public string ClassType { get; set; }
 
+        /// <summary>
+        /// 内容描述
+        /// </summary>
+        public string Description { get; set; }
     }
 }

@@ -70,7 +70,19 @@ namespace WOrder.Web.Startup
                             url: "Order/Feedback",
                             requiredPermissionName: PermissionNames.Page_Admin,
                             icon: ""))
-
+                        .AddItem(new MenuItemDefinition(
+                            PageNames.Inspect,
+                            L(nameof(PageNames.Inspect)),
+                            url: "Order/Inspect",
+                            requiredPermissionName: PermissionNames.Page_Admin,
+                            icon: ""
+                        )).AddItem(new MenuItemDefinition(
+                            PageNames.Transport,
+                            L(nameof(PageNames.Transport)),
+                            url: "Order/Transport",
+                            requiredPermissionName: PermissionNames.Page_Admin,
+                            icon: ""
+                        ))
                          .AddItem(new MenuItemDefinition(
                             PageNames.Schedule,
                             L(nameof(PageNames.Schedule)),
@@ -82,7 +94,18 @@ namespace WOrder.Web.Startup
                             L(nameof(PageNames.Complaint)),
                             url: "Order/Complaint",
                             requiredPermissionName: PermissionNames.Page_Admin,
-                            icon: "")));
+                            icon: "")))
+                 .AddItem(
+                            new MenuItemDefinition(
+                                PageNames.Report,
+                                L(nameof(PageNames.Report)),
+                                url: "")
+                            .AddItem(
+                                new MenuItemDefinition(
+                                    PageNames.UserWorkCount,
+                                    L(nameof(PageNames.UserWorkCount)),
+                                    url: "Report/WorkHour",
+                                    requiredPermissionName: PermissionNames.Page_Admin, icon: "")));
 
         }
 

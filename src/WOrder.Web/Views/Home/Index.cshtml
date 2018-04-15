@@ -7,48 +7,13 @@
 }
 
 
-@section Scripts{
-
-    <script type="text/javascript">
-
-        $(function () {
-            var methods = {
-                init: function () {
-                    $.parser.parse('#ly_main')
-                    methods.initMenu();
-                },
-                initMenu: function () {
-
-                    //$('#accordon_menu').accordion({
-                    //    title: "菜单",
-                    //    width: 80,
-                    //    fit: true,
-                    //    border: false
-                    //});
-
-                    $('.submenu>li>a').bind('click', function () {
-                        var url = $(this).attr('_href');
-                        var title = $(this).text();
-                        $.tabAdd(title, url);
-                    })
-                }
-            }
-
-
-            methods.init();
-        })
-
-    </script>
-
-
-}
-
 
 <div class="easyui-layout" data-options="fit:true,border:false" id="ly_main">
     <div class="" data-options="region:'north',height:52">
         <div class="header">
             <div class="logo">
-                后台管理系统
+                <img src="~/image/logo_tran.png"/>
+                <label>天翔物业</label>
             </div>
             <div class="left">
 
@@ -59,24 +24,216 @@
         </div>
     </div>
 
-    <div data-options="region:'west',width:140,title:'菜单'">
+    <div data-options="region:'west',width:180,title:'菜单信息'">
         @await Component.InvokeAsync(typeof(TopMenuViewComponent), new { activeMenu = ViewBag.ActiveMenu })
     </div>
     <div class="" data-options="region:'center',border:false">
         <div class="easyui-tabs" id="tabs_main" data-options="fit:true,border:false,tabHeight:30">
-            <div title="系统首页">
-
+            <div title="系统首页" style="overflow:auto;">
+                <div id="ly_portal" style="padding:10px;margin-bottom:20px;">
+                    <div style="width:55%;float:left;">
+                        <div class="block-num">
+                            <div class="block-title">待分配数</div>
+                            <div class="block-body" id="btnAllocate">@ViewBag.AllocateNum</div>
+                        </div>
+                        <div class="block-num">
+                            <div class="block-title">待接单数</div>
+                            <div class="block-body" id="btnAccept">@ViewBag.AcceptNum</div>
+                        </div>
+                        <div class="block-num">
+                            <div class="block-title">进行中数</div>
+                            <div class="block-body" id="btnRunning">@ViewBag.ProcessNum</div>
+                        </div>
+                    </div>
+                    <div style="width:42%;float:left;border:1px solid lightblue;padding:10px;">
+                        <div style="width:auto;height:250px;" id="echart_detail"></div>
+                    </div>
+                    <div style="clear:both;border:1px solid lightblue;padding:10px;margin-top:5px;width:auto;width:600px;">
+                        <div id="echart_category" style="height:250px;width:550px;">
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
     <div data-options="region:'south',height:25">
-        <div class="p-bottom">
-            <div>
-                当前人员:
-                <span>18</span>
-            </div>
+        @*<div class="p-bottom">
+                <div>
+                    当前人员:
+                    <span></span>
+                </div>
+            </div>*@
+        <div style="text-align:center;">
+            天翔物业管理平台V1.0(请使用IE9以上浏览器) 版权所有 © 2018
         </div>
     </div>
 </div>
 
+
+
+@section Scripts{
+
+    <script type="text/javascript">
+
+    //    {
+    //        "userId": 2,
+    //        "state": 0,
+    //        "notification": {
+    //            "notificationName": "System.LowDisk",
+    //            "data": {
+    //                "message": {
+    //                    "sourceName": "MyLocalizationSourceName",
+    //                    "name": "LowDiskWarningMessage"
+    //                },
+    //                "type": "Abp.Notifications.LocalizableMessageNotificationData",
+    //                "properties": {
+    //                    "remainingDiskInMb": "42"
+    //                }
+    //            },
+    //            "entityType": null,
+    //            "entityTypeName": null,
+    //            "entityId": null,
+    //            "severity": 0,
+    //            "creationTime": "2016-02-09T17:03:32.13",
+    //            "id": "0263d581-3d8a-476b-8e16-4f6a6f10a632"
+    //        },
+    //"id": "4a546baf-bf17-4924-b993-32e420a8d468"
+    //    }
+        //监听信息
+        abp.event.on('abp.notifications.received', function (userNotification) {
+
+            var data = userNotification.notification.data;
+            var info = "<div ><label>类型：</label><span style='color:red;'>" + data.properties["category"] + "</span></div>" +
+                       "<div ><label>标题：</label><span style='color:blue;'>" + data.properties["title"] + "</span></div>";
+            abp.message.info(info, "来新任务拉!");
+
+            //重新加载数据
+            abp.services.app.order.getTStatusCount(0, {
+                success: function (data) {
+                    console.log(data);
+                    $('#btnAllocate').text(data);
+                }
+            });
+            
+        });
+
+        $(function () {
+            var cateEchart = echarts.init(document.getElementById('echart_category'))
+            , detailEchart = echarts.init(document.getElementById('echart_detail'))
+            , _orderService = abp.services.app.order;
+            var methods = {
+                init: function () {
+                    $.parser.parse('#ly_main')
+                    methods.initMenu();
+
+                    $('#btnAllocate').click(function () {
+                        methods.initByStatus(0,"待分配订单");
+                    });
+                    $('#btnAccept').click(function () {
+                        methods.initByStatus(1, "待接单订单");
+                    });
+                    $('#btnRunning').click(function () {
+                        methods.initByStatus(2, "进行中订单");
+                    });
+                },
+                initMenu: function () {
+                    $('.submenu>li>a').bind('click', function () {
+                        var url = $(this).attr('_href');
+                        var title = $(this).text();
+                        $.tabAdd(title, url);
+                    });
+                },
+                initPortal: function () {
+                    $('#ly_portal').portal({
+                        border: false,
+                        fit: true
+                    });
+                    $('#ly_portal').portal('resize');
+                    $(window).resize(function () {
+                        $('#ly_main').layout('resize');
+                        $('#ly_portal').portal('resize');
+                    });
+                },
+                initChart: function () {
+
+                    abp.ajax({
+                        url: '/Home/GetBoardData',
+                        success: function (jsonData) {
+                            var option = $.getPieOption({
+                                title: {
+                                    text: "最近一周各类完成订单数"
+                                },
+                                series: [{
+                                    name: '订单',
+                                    data: jsonData,
+                                    itemStyle: {
+                                        emphasis: {
+                                            shadowBlur: 10,
+                                            shadowOffsetX: 0,
+                                            shadowColor: 'rgba(0, 0, 0, 0.5)'
+                                        }
+                                    }
+                                }],
+                            });
+                            cateEchart.setOption(option);
+                        }
+                    });
+                },
+                initByStatus:function(status,name){
+                    _orderService.getCategoryCount({
+                        tStatus: status
+                    }, {
+                        success: function (data) {
+                            var option = $.getPieOption({
+                                title: {
+                                    text: name
+                                },
+                                series: [{
+                                    name: '订单',
+                                    data: data,
+                                    itemStyle: {
+                                        emphasis: {
+                                            shadowBlur: 10,
+                                            shadowOffsetX: 0,
+                                            shadowColor: 'rgba(0, 0, 0, 0.5)'
+                                        }
+                                    }
+                                }],
+                            });
+                            detailEchart.setOption(option);
+                            detailEchart.on('click', function (params) {
+                                //TODO
+                                switch (params.name) {
+                                    case "故障报修":
+                                        $.tabAdd(params.name, "/order/index");
+                                        break;
+                                    case "品质稽核":
+                                        $.tabAdd(params.name, "/order/audit");
+                                        break;
+                                    case "投诉建议":
+                                        $.tabAdd(params.name, "/order/complaint");
+                                        break;
+                                    case "项目巡检":
+                                        $.tabAdd(params.name, "/order/inspect");
+                                        break;
+                                    case "物品运送":
+                                        $.tabAdd(params.name, "/order/transport");
+                                        break;
+                                    case "在线反馈":
+                                        $.tabAdd(params.name, "/order/feedBack");
+                                        break;
+                                }
+                            });
+                        }
+                    });
+                },
+            }
+            methods.init();
+            methods.initChart();
+        });
+
+    </script>
+
+
+}
 

@@ -29,6 +29,8 @@ namespace WOrder.File
 
         public string Describe { get; set; }
 
+        public string Module { get; set; }
+
     }
 
     public class UpdateFileInput : CreateFileInput, IEntityDto<int>
@@ -44,6 +46,8 @@ namespace WOrder.File
 
     public class GetFilesInput
     {
-        public string ParentId { get; set; }
+        public string PId { get; set; }
+
+        public string Module { get; set; }
     }
 }

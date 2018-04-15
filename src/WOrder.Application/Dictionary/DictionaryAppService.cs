@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Abp.Application.Services;
+using Abp.Authorization;
 using Abp.Domain.Repositories;
 using Abp.Linq.Extensions;
 using Abp.UI;
@@ -17,6 +18,7 @@ namespace WOrder.Dictionary
 
     }
 
+    [AbpAuthorize]
     public class DictionaryAppService : AsyncCrudAppService<WOrder_Dictionary, DictDto, int, GetAllDictDto, CreateDictDto, UpdateDictDto>, IDictionaryAppService
     {
 

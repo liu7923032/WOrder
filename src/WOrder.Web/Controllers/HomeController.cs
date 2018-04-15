@@ -11,6 +11,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using WOrder.Authorization;
 using WOrder.Web.Core.Controllers;
+using WOrder.Order;
+using Abp.Timing;
+using WOrder.Domain.Entities;
 
 namespace WOrder.Web.Controllers
 {
@@ -18,20 +21,57 @@ namespace WOrder.Web.Controllers
     public class HomeController : WOrderControllerBase
     {
 
+
+
         private IFileAppService _fileAppService;
+        private IOrderAppService _orderAppService;
 
-
-        public HomeController(IFileAppService fileAppService)
+        public HomeController(IFileAppService fileAppService, IOrderAppService orderAppService)
         {
             _fileAppService = fileAppService;
+            _orderAppService = orderAppService;
         }
 
         public async Task<ActionResult> Index()
         {
+            //1：待分配信息
+            var allocateNum = await _orderAppService.GetTStatusCount(TStatus.Init);
+            //2：待接单
+            var acceptNum = await _orderAppService.GetTStatusCount(TStatus.Wait);
+            //2：进行中
+            var processNum = await _orderAppService.GetTStatusCount(TStatus.Running);
+
+            ViewBag.AllocateNum = allocateNum;
+            ViewBag.AcceptNum = acceptNum;
+            ViewBag.ProcessNum = processNum;
+
             return await Task.FromResult(View());
         }
 
 
+        /// <summary>
+        /// 报表统计
+        /// </summary>
+        /// <returns></returns>
+        public async Task<ActionResult> GetBoardData()
+        {
+            //4：各个问题分类统计
+            var categoryEnd = await _orderAppService.GetCategoryCount(new GetDateInput()
+            {
+                SDate = Clock.Now.AddDays(-7),
+                EDate = Clock.Now,
+                TStatus=TStatus.Finish
+            });
+            return Json(categoryEnd);
+        }
 
+        /// <summary>
+        /// 查看详细订单信息
+        /// </summary>
+        /// <returns></returns>
+        public async Task<ActionResult> OrderDetails()
+        {
+            return await Task.FromResult(View());
+        }
     }
 }

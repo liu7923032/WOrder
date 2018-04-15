@@ -8,7 +8,7 @@ using Abp.Domain.Entities.Auditing;
 
 namespace WOrder.Domain.Entities
 {
-    public class WOrder_Order : FullAuditedEntity
+    public class WOrder_Order : FullAuditedEntity<long>
     {
         /// <summary>
         /// 订单编号
@@ -44,7 +44,11 @@ namespace WOrder.Domain.Entities
         [StringLength(1000)]
         public string Description { get; set; }
 
-        
+        /// <summary>
+        /// 到达时间
+        /// </summary>
+        public DateTime? ArriveDate { get; set; }
+
         /// <summary>
         /// 单据的类别 ,默认是0是派单，1是抢单 
         /// </summary>
@@ -66,7 +70,7 @@ namespace WOrder.Domain.Entities
 
         [ForeignKey("LastModifierUserId")]
         public virtual WOrder_Account LastModifierUser { get; set; }
-       
+
         /// <summary>
         /// 工单的处理人
         /// </summary>
@@ -97,17 +101,22 @@ namespace WOrder.Domain.Entities
         /// <summary>
         /// 待接收
         /// </summary>
-        [Description("初始")]
+        [Description("待派单")]
         Init = 0,
         /// <summary>
         /// 待接单
         /// </summary>
-        [Description("进程中")]
+        [Description("待接单")]
+        Wait,
+        /// <summary>
+        /// 处理中
+        /// </summary>
+        [Description("处理中")]
         Running,
         /// <summary>
         /// 完成
         /// </summary>
-        [Description("完成")]
+        [Description("已完成")]
         Finish,
     }
 

@@ -17,7 +17,7 @@ using System.Linq;
 using Abp.Extensions;
 using Microsoft.AspNetCore.Mvc.Cors.Internal;
 using WOrder.Web.Core;
-
+using Abp.AspNetCore.SignalR.Hubs;
 
 namespace WOrder.Web.Startup
 {
@@ -85,6 +85,8 @@ namespace WOrder.Web.Startup
                 options.DocInclusionPredicate((docName, description) => true);
             });
 
+
+            services.AddSignalR();
             //Configure Abp and Dependency Injection
             return services.AddAbp<WOrderWebModule>(options =>
             {
@@ -125,6 +127,12 @@ namespace WOrder.Web.Startup
             //处理jwt的中间件
             app.UseJwtTokenMiddleware();
 
+            app.UseSignalR(routes =>
+            {
+                routes.MapHub<AbpCommonHub>("/signalr");
+                //routes.MapHub<MyChatHub>("/signalr-myChatHub"); // Prefix with '/signalr'
+            });
+
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
@@ -132,5 +140,7 @@ namespace WOrder.Web.Startup
                     template: "{controller=Home}/{action=Index}/{id?}");
             });
         }
+
+       
     }
 }

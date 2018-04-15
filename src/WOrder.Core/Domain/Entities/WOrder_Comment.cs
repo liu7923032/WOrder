@@ -25,7 +25,7 @@ namespace WOrder.Domain.Entities
         public string Comment { get; set; }
 
         [Required]
-        public int OrderId { get; set; }
+        public long OrderId { get; set; }
         [ForeignKey("OrderId")]
         public virtual WOrder_Order Order { get; set; }
     }

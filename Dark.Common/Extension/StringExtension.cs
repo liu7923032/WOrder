@@ -11,5 +11,22 @@ namespace Dark.Common.Extension
         {
             return JsonTools.ToObject<T>(input);
         }
+
+
+        public static List<int> ToListBySplit(this string input, char split = ',')
+        {
+            List<int> ids = new List<int>();
+            if (string.IsNullOrEmpty(input))
+            {
+                return ids;
+            }
+
+            string[] strList = input.Split(split);
+            foreach (var str in strList)
+            {
+                ids.Add(Convert.ToInt32(str));
+            }
+            return ids;
+        }
     }
 }

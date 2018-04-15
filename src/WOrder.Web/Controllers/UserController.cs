@@ -34,6 +34,8 @@ namespace WOrder.Web.Controllers
             return await Task.FromResult(View());
         }
 
+
+
         public async Task<ActionResult> Create(CreateUserInput input, IFormFile file)
         {
             string filePath = string.Empty;
@@ -105,6 +107,15 @@ namespace WOrder.Web.Controllers
             #endregion
 
             return await Task.FromResult(attachFile.FilePath);
+        }
+
+        /// <summary>
+        /// 审核页面
+        /// </summary>
+        /// <returns></returns>
+        public async Task<ActionResult> Approve()
+        {
+            return await Task.FromResult(View());
         }
     }
 }

@@ -56,8 +56,15 @@ namespace WOrder.EntityFrameworkCore
         /// </summary>
         public virtual DbSet<WOrder_Comment> WOrder_Comment { get; set; }
 
-
+        /// <summary>
+        /// 排班信息
+        /// </summary>
         public virtual DbSet<WOrder_Schedule> WOrder_Schedule { get; set; }
+
+        /// <summary>
+        /// 位置信息
+        /// </summary>
+        public virtual DbSet<WOrder_Location> WOrder_Location { get; set; }
 
 
         #endregion

@@ -8,6 +8,10 @@ using WOrder.Order;
 using Microsoft.AspNetCore.Mvc;
 using WOrder.Authorization;
 using WOrder.Web.Core.Controllers;
+using Microsoft.AspNetCore.Http;
+using WOrder.File;
+using System.Net.Http.Headers;
+using System.IO;
 
 namespace WOrder.Web.Controllers
 {
@@ -20,6 +24,7 @@ namespace WOrder.Web.Controllers
         {
             _orderAppService = orderAppService;
         }
+
 
         /// <summary>
         /// 保修管理
@@ -54,6 +59,25 @@ namespace WOrder.Web.Controllers
         /// </summary>
         /// <returns></returns>
         public async Task<ActionResult> Complaint()
+        {
+            return await Task.FromResult(View());
+        }
+
+        /// <summary>
+        /// 项目巡检
+        /// </summary>
+        /// <returns></returns>
+        public async Task<ActionResult> Inspect()
+        {
+            return await Task.FromResult(View());
+        }
+
+
+        /// <summary>
+        /// 运送管理
+        /// </summary>
+        /// <returns></returns>
+        public async Task<ActionResult> Transport()
         {
             return await Task.FromResult(View());
         }

@@ -1,0 +1,317 @@
+﻿@using WOrder.Web.Startup
+
+@{
+    ViewBag.ActiveMenu = PageNames.User;
+    //Layout = null;
+}
+
+
+@section Styles{
+    <style type="text/css">
+        .user-img {
+            height: 84px;
+            width: auto;
+            border: 1px solid #f5bdbd;
+        }
+    </style>
+}
+
+
+
+<div class="easyui-layout" id="ly_approve" data-options="fit:true,border:false">
+    <div data-options="region:'north',height:50" style="padding:7px 10px;">
+        <table class="query-table">
+            <tr>
+                <td>人员状态</td>
+                <td><input class="easyui-combobox" id="txtIsActive" /></td>
+                <td>关键字</td>
+                <td><input class="easyui-combobox" id="txtKey" /></td>
+                <td>
+                    <a id="btnQuery" class="easui-linkbutton">查询</a>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div data-options="region:'center'">
+        <table id="tb_approve"></table>
+    </div>
+</div>
+
+<!-- 字典信息增删该查 -->
+<div id="dlg_approve" class="easyui-dialog" data-options="width:700,height:400,closed:true,title:'人员信息'">
+    <form id="frm_approve" method="POST" enctype="multipart/form-data">
+        <input type="hidden" name="id">
+        <input type="hidden" name="fileIds" />
+        <table class="form-table">
+            <tr>
+                <td class="tdLabel">账号</td>
+                <td>
+                    <input class="easyui-textbox" name="account" data-options="width:200,required:true" />
+                </td>
+                <td class="tdLabel">密码</td>
+                <td>
+                    <input class="easyui-textbox" name="password" data-options="width:200,required:true,prompt:'最短4位,最长20位',validType:{
+		                    length:[4,20]
+	                    }" />
+                </td>
+            </tr>
+            <tr>
+                <td class="tdLabel">姓名</td>
+                <td>
+                    <input class="easyui-textbox" name="userName" data-options="width:200,required:true" />
+                </td>
+                <td class="tdLabel">部门</td>
+                <td>
+                    <input class="easyui-combobox" id="txtDeptId" name="deptId" data-options="width:200,required:true,valueField:'text',textField:'text',editable:false" />
+                </td>
+            </tr>
+            <tr>
+                <td class="tdLabel">岗位名称</td>
+                <td>
+                    <input class="easyui-textbox" name="position" data-options="width:200,required:true" />
+                </td>
+                <td class="tdLabel">性别</td>
+                <td>
+                    <input class="easyui-combobox" name="sex" data-options="width:200,required:true,valueField:'text',textField:'text',editable:false,data:[{text:'男'},{text:'女'}]" />
+                </td>
+            </tr>
+            <tr>
+                <td class="tdLabel">联系方式</td>
+                <td>
+                    <input class="easyui-textbox" name="phone" data-options="width:200,required:true,prompt:'185xx'" />
+                </td>
+                <td class="tdLabel">邮箱</td>
+                <td>
+                    <input class="easyui-textbox" name="email" data-options="width:200,validType:['email','length[0,20]']" />
+                </td>
+            </tr>
+            <tr>
+                <td class="tdLabel">负责区域</td>
+                <td>
+                    <input class="easyui-textbox" name="areaName" data-options="width:200,prompt:'负责的位置'" />
+                </td>
+                <td class="tdLabel">工作模式</td>
+                <td>
+                    <input class="easyui-textbox" name="workMode" data-options="width:200" />
+                </td>
+            </tr>
+            <tr>
+                <td class="tdLabel">照片上传</td>
+                <td colspan="3">
+                    <input class="easyui-filebox" id="txtUPhoto" name="file" data-options="width:200" />
+                </td>
+            </tr>
+            <tr>
+                <td class="tdLabel">照片</td>
+                <td>
+                    <img id="img_uPhoto" class="user-img" />
+                </td>
+            </tr>
+        </table>
+    </form>
+</div>
+
+
+@section Scripts{
+    <script type="text/javascript">
+        $(function () {
+            var selectNode
+                , deptUrl = "/api/services/app/Dept/GetAll?maxResultCount=10000&skipCount=0"
+                , _deptService = abp.services.app.dept
+                , _userService = abp.services.app.user
+                ;
+            var methods = {
+                init: function () {
+
+                    $.parser.parse('#ly_approve')
+                    $.parser.parse('#dlg_approve');
+
+
+
+                    $('#txtIsActive').combobox({
+                        valueField: 'id',
+                        textField: 'text',
+                        editable: false,
+                        tools: [{
+                            iconCls: 'icon-clear',
+                            handler: function () {
+                                $(this).combobox('clear');
+                            }
+                        }]
+                    });
+
+                    $('#dlg_approve').dialog({
+                        buttons: [
+                            {
+                                text: '保存',
+                                iconCls: 'icon-save',
+                                handler: function () {
+                                    methods.saveUser();
+                                }
+                            }, {
+                                text: '关闭',
+                                iconCls: 'icon-cancel',
+                                handler: function () {
+                                    $('#dlg_approve').dialog('close');
+                                }
+                            }
+                        ]
+                    });
+
+                    $('#txtDeptId').combobox({
+                        method: "GET",
+                        url: deptUrl,
+                        valueField: 'id',
+                        textField: 'name',
+                        loadFilter: function (result) {
+                            return result["items"];
+                        }
+                    });
+
+                    //照片选择
+                    $('#txtUPhoto').filebox({
+                        buttonText: '选择图片',
+                        buttonIcon: 'icon-upload',
+                        prompt: ' 格式jpg,png',
+                        width: 300,
+                        accept: 'jpg|png'
+                    });
+                },
+                initTree: function () {
+                    $.treeInit({
+                        id: 'tree_dept',
+                        url: deptUrl,
+
+                        onClick: function (node) {
+                            selectNode = node;
+                            //通过类型来获取字典数据
+                            methods.queryUser();
+                        },
+                        onContextMenu: function (e, node) {
+                            e.preventDefault();
+                            // select the node
+                            $('#tree_dept').tree('select', node.target);
+                            // display context menu
+                            $('#mm_dict').menu('show', {
+                                left: e.pageX,
+                                top: e.pageY,
+                                onClick: function (item) {
+                                    if (item.text == "新增") {
+                                        $('#frm_dept').form('clear');
+                                        $('#dlg_dept').dialog('open')
+                                    }
+                                    else if (item.text == "编辑") {
+                                        $('#frm_dept').form('load', node.attributes);
+                                        console.log(node.attributes)
+                                        $('#dlg_dept').dialog('open')
+                                    } else {
+                                        abp.message.confirm("确定要删除部门<span style='color:red;'>" + node.text + "</span>?", function () {
+                                            _deptService.delete({ id: node.id }, {
+                                                success: function (data) {
+                                                    $("#tree_dept").tree('reload');
+                                                }
+                                            })
+                                        })
+                                    }
+                                }
+                            });
+                        }
+                    })
+                },
+                initTable: function () {
+                    $.dgInit({
+                        id: "tb_approve",
+                        url: '/api/services/app/user/getAll',
+                        columns: [[
+                            { field: 'id', hidden: true, width: 30 },
+                            { field: 'deptId', hidden: true, width: 30 },
+                            { field: 'account', title: '账号', width: 80, sortable: true },
+                            { field: 'userName', title: '姓名', width: 80 },
+                            { field: 'deptName', title: '隶属部门', width: 120 },
+                            { field: 'position', title: '岗位', width: 80 },
+                            { field: 'phone', title: '联系方式', width: 120 },
+                            { field: 'sex', title: '性别', width: 80 },
+                        ]],
+                        toolbar: [
+                            {
+                                text: "新增",
+                                iconCls: 'icon-add',
+                                handler: function () {
+
+                                    $('#frm_approve').form('clear');
+                                    $('#dlg_approve').dialog('open');
+                                    if (selectNode) {
+                                        $('#txtDeptId').combobox('setValue', selectNode.id);
+                                    }
+                                }
+                            }, '-', {
+                                text: "编辑",
+                                iconCls: 'icon-edit',
+                                handler: function () {
+
+                                    $.rowSelectCheck('tb_approve', "请先要编辑的人员", function (row) {
+                                        $('#frm_approve').form('load', row);
+                                        $('#dlg_approve').dialog('open')
+                                        //将no设置未只读
+                                        if (row.photos) {
+                                            $('#img_uPhoto').attr('src', row.photos)
+                                        }
+                                    })
+                                }
+                            }, '-', {
+                                text: "删除",
+                                iconCls: 'icon-remove',
+                                handler: function () {
+                                    $.rowSelectCheck('tb_approve', "请先选择要删除的人员", function (row, rowIndex) {
+                                        abp.message.confirm("确定要删除人员:" + row.name, function (r) {
+                                            _userService.delete({ id: row.id }, {
+                                                success: function (data) {
+                                                    abp.notify.success("删除成功");
+                                                    $('#tb_approve').datagrid('deleteRow', rowIndex)
+                                                }
+                                            })
+                                        });
+                                    })
+                                }
+                            }
+                        ]
+                    });
+                },
+
+                queryUser: function () {
+                    var param = {};
+                    if (selectNode) {
+                        param["deptId"] = selectNode.id;
+                    }
+                    $('#tb_approve').datagrid('reload', param);
+                },
+                saveUser: function () {
+
+                    $.formSave({
+                        id: 'frm_approve',
+                        action: function (fields, isAdd) {
+                            var reqURL = "";
+                            if (isAdd) {
+                                reqURL = "/User/Create";
+                            } else {
+                                reqURL = "/User/Update";
+                            }
+
+                            $('#frm_approve').form('submit', {
+                                url: reqURL,
+                                success: function (data) {
+                                    $('#dlg_approve').dialog('close')
+                                    $.procAjax(data);
+                                }
+                            })
+
+                        }
+                    });
+                },
+            }
+
+            methods.init();
+            methods.initTable();
+        })
+    </script>
+}

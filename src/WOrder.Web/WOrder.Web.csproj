@@ -12,12 +12,6 @@
     <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
     <RootNamespace>WOrder.Web</RootNamespace>
   </PropertyGroup>
-  <ItemGroup>
-    <Compile Remove="wwwroot\lib\新文件夹\**" />
-    <Content Remove="wwwroot\lib\新文件夹\**" />
-    <EmbeddedResource Remove="wwwroot\lib\新文件夹\**" />
-    <None Remove="wwwroot\lib\新文件夹\**" />
-  </ItemGroup>
 
   <ItemGroup>
     <None Include="app.config" />
@@ -127,16 +121,16 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Abp.AspNetCore" Version="3.5.0" />
+    <PackageReference Include="Abp.AspNetCore.SignalR" Version="3.5.0-preview3" />
     <PackageReference Include="Abp.Castle.Log4Net" Version="3.5.0" />
     <PackageReference Include="Abp.MailKit" Version="3.2.5" />
-    <PackageReference Include="Abp.Owin" Version="3.5.0" />
     <PackageReference Include="Abp.QuartzCore" Version="3.3.0" />
     <PackageReference Include="BuildBundlerMinifier" Version="2.6.362" />
     <PackageReference Include="Microsoft.AspNetCore" Version="2.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Cookies" Version="2.0.3" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="2.0.3" />
     <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="2.0.0" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="1.0.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="2.3.0" />
     <PackageReference Include="System.Net.Primitives" Version="4.3.0" />
     <PackageReference Include="System.Net.NameResolution" Version="4.3.0" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics" Version="2.0.0" />

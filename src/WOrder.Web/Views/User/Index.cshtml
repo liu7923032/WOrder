@@ -11,6 +11,7 @@
         .user-img {
             height: 84px;
             width: auto;
+            min-width:60px;
             border: 1px solid #f5bdbd;
         }
     </style>
@@ -63,7 +64,7 @@
 <div id="dlg_user" class="easyui-dialog" data-options="width:700,height:400,closed:true,title:'人员信息'">
     <form id="frm_user" method="POST" enctype="multipart/form-data">
         <input type="hidden" name="id">
-        <input type="hidden" name="fileIds" />
+        <input type="hidden" name="fileIds" id="txtFileIds" />
         <table class="form-table">
             <tr>
                 <td class="tdLabel">账号</td>
@@ -87,8 +88,6 @@
                 <td>
                     <input class="easyui-combobox" id="txtDeptId" name="deptId" data-options="width:200,required:true,valueField:'text',textField:'text',editable:false" />
                 </td>
-
-
             </tr>
 
             <tr>
@@ -122,15 +121,21 @@
                 </td>
             </tr>
             <tr>
-                <td class="tdLabel">照片上传</td>
-                <td colspan="3">
-                    <input class="easyui-filebox" id="txtUPhoto" name="file" data-options="width:200" />
+                <td class="tdLabel">上传头像</td>
+                <td >
+                    <input id="uploader" />
+                </td>
+                <td class="tdLabel">
+                    身份证
+                </td>
+                <td>
+                    <input class="easyui-textbox" name="idCard" data-options="width:200,validType:['length[18,18]']" />
                 </td>
             </tr>
             <tr>
-                <td class="tdLabel">照片</td>
-                <td>
-                    <img id="img_uPhoto" class="user-img"  />
+                <td class="tdLabel">头像</td>
+                <td colspan="3">
+                    <ul class="img-list"></ul>
                 </td>
             </tr>
         </table>
@@ -202,17 +207,17 @@
                         valueField: 'id',
                         textField: 'name',
                         loadFilter: function (result) {
-                            return result["result"].items;
+                            return result["items"];
                         }
                     });
 
-                    //照片选择
-                    $('#txtUPhoto').filebox({
-                        buttonText: '选择图片',
-                        buttonIcon: 'icon-upload',
-                        width: 300,
-                        accept: 'jpg'
-                    })
+                    //上传文件
+                    $.fileUpload({
+                        module:"user",
+                        success: function (file) {
+                            $('#txtFileIds').val(file.id);
+                        }
+                    });
                 },
                 initTree: function () {
                     $.treeInit({
@@ -276,6 +281,7 @@
                                 handler: function () {
 
                                     $('#frm_user').form('clear');
+                                    $('.img-list').children().remove();
                                     $('#dlg_user').dialog('open');
                                     if (selectNode) {
                                         $('#txtDeptId').combobox('setValue', selectNode.id);
@@ -293,6 +299,10 @@
                                         if (row.photos) {
                                             $('#img_uPhoto').attr('src', row.photos)
                                         }
+                                        $.showFiles({
+                                            module: 'user',
+                                            parentId: row.id
+                                        });
                                     })
                                 }
                             }, '-', {
@@ -345,29 +355,6 @@
                     });
                 },
                 saveUser: function () {
-
-                    $.formSave({
-                        id: 'frm_user',
-                        action: function (fields, isAdd) {
-                            var reqURL = "";
-                            if (isAdd) {
-                                reqURL = "/User/Create";
-                            } else {
-                                reqURL = "/User/Update";
-                            }
-
-                            $('#frm_user').form('submit', {
-                                url: reqURL,
-                                success: function (data) {
-                                    $('#dlg_user').dialog('close')
-                                    $.procAjax(data);
-                                }
-                            })
-
-                        }
-                    });
-                },
-                oldSave: function () {
                     $.formSave({
                         id: 'frm_user',
                         action: function (fields, isAdd) {

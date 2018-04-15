@@ -18,6 +18,7 @@ namespace WOrder.Order
             //订单的mapping
             CreateMap<WOrder_Order, OrderDto>()
                 .ForMember(u => u.CreatorName, opts => opts.MapFrom(p => p.CreatorUser.UserName))
+                 .ForMember(u => u.Phone, opts => opts.MapFrom(p => p.CreatorUser.Phone))
                 .ForMember(u => u.TStatusName, opts => opts.MapFrom(p => p.TStatus.GetDescription()))
                 .ForMember(u => u.Handlers, opts => opts.MapFrom(p => p.Handlers));
                 

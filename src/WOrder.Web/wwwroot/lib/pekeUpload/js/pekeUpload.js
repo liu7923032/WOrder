@@ -101,12 +101,12 @@
             },
             handlebuttonevents: function () {
 
-                $(document).on("change", this.obj.selector, null, function () {
+                $(document).on("change", this.obj.selector, function () {
                     console.log("change")
                     pekeUpload.checkFile(pekeUpload.obj[0].files[0]);
                 });
 
-                $(document).on('click', '.pkdel', null,function(){
+                $(document).on('click', '.pkdel',function(){
                     var parent = $(this).parent('div').parent('div');
                     pekeUpload.delAndRearrange(parent);
                 });
@@ -287,7 +287,7 @@
                 }
             },
             upload: function (file, pos) {
-                console.log("upload")
+                
                 var formData = new FormData();
                 formData.append(this.obj.attr("name"), file);
                 for (var key in options.data) {

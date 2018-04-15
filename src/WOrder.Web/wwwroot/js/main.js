@@ -15,17 +15,16 @@
         var isExist = $tab.tabs('exists', title);
 
         if (isExist) {
-            var existTab = $tab.tabs('getTab', title);
 
             $tab.tabs('select', title);
-            //existTab.panel('refresh', url)
-            $('#tabs_page').tabs('update', {
-                tab: existTab,
+            var tab = $tab.tabs('getTab', title);
+            $tab.tabs('update', {
+                tab: tab,
                 options: {
                     title: title,
-                    boder: false,
                     content: $.createHtml(url),
-                    closable: true
+                    closable: true,
+                    boder: false,
                 }
             });
 
@@ -34,13 +33,12 @@
                 title: title,
                 selected: true,
                 closable: true,
-                boder:false,
-                //href: url,
-                content:$.createHtml(url)
+                boder: false,
+                content: $.createHtml(url)
             });
         }
     },
-    createHtml:function(url){
+    createHtml: function (url) {
         return '<iframe frameborder="0" src="' + url + '" scrolling="auto" style="width:100%; height:100%;"></iframe>';
     },
     //easyui datagrid 方法
@@ -75,13 +73,14 @@
             },
             loadFilter: function (abpData) {
                 //如果不是url请求,那么就直接返回data
-                if (!options.url) {
-                    return abpData;
-                }
-                if (!abpData.success) {
+                if (abpData.success) {
                     return { total: 0, rows: [] }
                 }
-                return { total: abpData["result"].totalCount, rows: abpData["result"].items };
+                if (abpData instanceof Array) {
+                    return { rows: abpData };
+                }
+
+                return { total: abpData["totalCount"], rows: abpData["items"] };
             },
 
         }
@@ -201,8 +200,8 @@
             lines: true,
             method: "GET",
             loadFilter: function (resData, parent) {
-
-                var subNodes = resData["result"].items.map(function (item) {
+                console.log(resData)
+                var subNodes = resData["items"].map(function (item) {
                     return {
                         id: item.id,
                         text: item.name,
@@ -434,4 +433,204 @@
     newGuid: function () {
         return ($.createS4() + $.createS4() + "-" + $.createS4() + "-" + $.createS4() + "-" + $.createS4() + "-" + $.createS4() + $.createS4() + $.createS4());
     },
+    //上传文档
+    fileUpload: function (opitons) {
+        var defaultOpts = {
+            id: 'uploader',
+            url: "/api/file/upload",
+            fileName: 'file',
+            width: 250,
+            module:"order",
+            //上传成功
+            success: function () {
+            }
+        };
+        var files = [];
+        $.extend(defaultOpts, opitons);
+        var uploader = $('#' + defaultOpts.id);
+
+        $('#' + defaultOpts.id).filebox({
+            width: defaultOpts.width,
+            buttonText: "选择文件",
+            buttonIcon: 'icon-upload',
+            onChange: function (n, o) {
+                upload();
+            }
+        });
+
+        //上传
+        var upload = function () {
+            var formData = new FormData();
+            //找到当前的文件
+            var upFile = uploader.next().find('input[type=file]')[0].files[0];
+            formData.append(defaultOpts.fileName, upFile);
+            formData.append("module", defaultOpts.module)
+            abp.ajax({
+                url: defaultOpts.url,
+                data: formData,
+                processData: false,
+                contentType: false,
+                mimeType: 'multipart/form-data',
+                success: function (file) {
+                    //设置fileIds
+                    if (typeof (defaultOpts.success) == "function") {
+                        defaultOpts.success(file);
+                    }
+                    //添加图片
+                    addFile(file);
+                }
+            })
+        }
+
+        //添加
+        var addFile = function (file) {
+            if (document.querySelector('.img-list')) {
+                $('.img-list').append($.createFile(file));
+                $('.img-list').viewer({ zIndex: 10000 });
+            }
+        }
+
+    },
+
+    createFile: function (file) {
+        return "<li fileId='" + file.id + "'><img src='" + file.filePath + "' data-original='" + file.filePath + "'/></li>";
+    },
+    //必须要初始化,才能使用
+    showFiles: function (options) {
+        var opts = {
+            parentId: '',
+            module:'order',
+            selector: '.img-list',
+            success: function () { },
+            files: []
+        }
+        $.extend(opts, options);
+        if (opts.parentId.length == "") {
+            abp.log.error("parentId 为空");
+            return;
+        }
+
+        abp.services.app.file.getFilesById({
+            pId: opts.parentId,
+            module: opts.module
+        }, {
+            success: function (files) {
+                var result = files.map(function (file) {
+                    opts.files.push(file);
+                    return $.createFile(file);
+                }).join('');
+                $('.img-list').html(result);
+                //预览
+                $('.img-list').viewer({ zIndex: 10000, url: "data-original" });
+                $(".img-list").viewer('update');
+                if (typeof (opts.success) == "function") {
+                    opts.success(opts.files);
+                }
+            }
+        });
+    },
+
+    //echarts
+    //================新的图表api============================
+    //1:获取通用的echarts options
+    baseOptions: function () {
+        return {
+            title: {
+                text: '未知标题',
+                x: 'center'
+            },
+            color: ['#3399FF', '#c23531', '#2f4554', '#61a0a8', '#d48265', '#91c7ae', '#749f83', '#ca8622', '#bda29a', '#6e7074', '#546570', '#c4ccd3'],
+            legend: {
+                orient: 'vertical',
+                left: 'left'
+            },
+        };
+    },
+    //获取折线,柱状图
+    getLineOption: function (opts) {
+        //1:获取基本类型
+        var option = $.baseOptions();
+        //2:获取line的基本选项
+        $.extend(true, option, {
+            tooltip: {
+                trigger: 'axis',
+                axisPointer: {            // 坐标轴指示器，坐标轴触发有效
+                    type: 'shadow'        // 默认为直线，可选为：'line' | 'shadow'
+                }
+            },
+            grid: {
+                left: '3%',
+                right: '4%',
+                bottom: '3%',
+                containLabel: true
+            },
+            xAxis: [
+                {
+                    type: 'category',
+                    axisTick: {
+                        alignWithLabel: true,
+                    },
+                    axisLabel: {
+                        rotate: 0
+                    }
+                }
+            ],
+            yAxis: [
+                {
+                    type: 'value'
+                }
+            ],
+        });
+        //3:添加自定义选项
+        $.extend(true, option, opts);
+        //4:动态计算lengend
+        if (opts.series && opts.series.length > 0) {
+
+            var legendData = opts.series.map(function (item) {
+                return item.name;
+            })
+            option.legend["data"] = legendData
+        }
+        return option;
+    },
+    //获取饼图
+    getPieOption: function (opts) {
+        //1：获取基本信息
+        var option = $.baseOptions();
+        //2：获取饼图的通用信息
+        $.extend(true, option, {
+            tooltip: {
+                trigger: 'item',
+                formatter: "{a} <br/>{b} : {c} ({d}%)"
+            },
+            series: [
+                {
+                    name: '访问来源',
+                    type: 'pie',
+                    radius: '55%',
+                    center: ['50%', '60%'],
+                    data: [
+                    ],
+                    itemStyle: {
+                        emphasis: {
+                            shadowBlur: 10,
+                            shadowOffsetX: 0,
+                            shadowColor: 'rgba(0, 0, 0, 0.5)'
+                        }
+                    }
+                }
+            ]
+        });
+        //3：添加自定义信息
+        $.extend(true, option, opts);
+        //4:动态计算lengend
+        if (opts.series.data && opts.series.data.length > 0) {
+            var legendData = opts.series.data.map(function (item) {
+                return item.name;
+            })
+            option.legend["data"] = legendData
+        }
+        return option;
+    },
+
 })

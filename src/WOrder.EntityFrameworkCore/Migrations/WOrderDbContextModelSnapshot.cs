@@ -27,7 +27,6 @@ namespace WOrder.Migrations
                         .ValueGeneratedOnAdd();
 
                     b.Property<string>("Account")
-                        .IsRequired()
                         .HasMaxLength(20);
 
                     b.Property<string>("AreaName")
@@ -42,7 +41,12 @@ namespace WOrder.Migrations
                     b.Property<string>("Email")
                         .HasMaxLength(40);
 
+                    b.Property<string>("IdCard")
+                        .HasMaxLength(20);
+
                     b.Property<decimal?>("Integral");
+
+                    b.Property<bool>("IsActive");
 
                     b.Property<bool>("IsLock");
 
@@ -103,6 +107,8 @@ namespace WOrder.Migrations
                     b.Property<string>("FileType")
                         .IsRequired();
 
+                    b.Property<string>("Module");
+
                     b.Property<string>("ParentId");
 
                     b.HasKey("Id");
@@ -125,7 +131,7 @@ namespace WOrder.Migrations
 
                     b.Property<long?>("CreatorUserId");
 
-                    b.Property<int>("OrderId");
+                    b.Property<long>("OrderId");
 
                     b.HasKey("Id");
 
@@ -251,9 +257,13 @@ namespace WOrder.Migrations
 
                     b.Property<long>("HandleId");
 
+                    b.Property<DateTime?>("LastModificationTime");
+
+                    b.Property<long?>("LastModifierUserId");
+
                     b.Property<int>("OStatus");
 
-                    b.Property<int>("OrderId");
+                    b.Property<long>("OrderId");
 
                     b.HasKey("Id");
 
@@ -297,10 +307,35 @@ namespace WOrder.Migrations
                     b.ToTable("WOrder_Integral");
                 });
 
+            modelBuilder.Entity("WOrder.Domain.Entities.WOrder_Location", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<DateTime>("CreationTime");
+
+                    b.Property<long?>("CreatorUserId");
+
+                    b.Property<double?>("Latitude");
+
+                    b.Property<double?>("Longitude");
+
+                    b.Property<string>("Position")
+                        .IsRequired();
+
+                    b.Property<long>("UserId");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("WOrder_Location");
+                });
+
             modelBuilder.Entity("WOrder.Domain.Entities.WOrder_Order", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<long>("Id")
                         .ValueGeneratedOnAdd();
+
+                    b.Property<DateTime?>("ArriveDate");
 
                     b.Property<string>("Category")
                         .IsRequired()
@@ -383,6 +418,8 @@ namespace WOrder.Migrations
                     b.Property<long?>("CreatorUserId");
 
                     b.Property<int>("DFlag");
+
+                    b.Property<string>("Description");
 
                     b.Property<int>("MFlag");
 

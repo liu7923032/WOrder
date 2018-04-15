@@ -17,6 +17,8 @@ using Dark.Common.Utils;
 using Abp.Authorization;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using WOrder.Web.Core.Controllers;
+using WOrder.Extension;
+using Abp.UI;
 
 namespace WOrder.Web.Controllers
 {
@@ -30,12 +32,15 @@ namespace WOrder.Web.Controllers
         private readonly IConfigurationRoot _appConfiguration;
         private IIntegralAppService _integralService;
         private IHostingEnvironment _env;
-        public AccountController(IUserAppService userAppService, IIntegralAppService integralAppService, IHostingEnvironment env)
+
+        private JPushHelper _jpushHelper;
+        public AccountController(IUserAppService userAppService, IIntegralAppService integralAppService, IHostingEnvironment env, JPushHelper jPushHelper)
         {
             _userAppService = userAppService;
             _appConfiguration = AppConfigurations.Get(env.ContentRootPath, env.EnvironmentName);
             _integralService = integralAppService;
             _env = env;
+            _jpushHelper = jPushHelper;
         }
 
         public async Task<ActionResult> Login()
@@ -49,9 +54,10 @@ namespace WOrder.Web.Controllers
         [HttpPost]
         public async Task<JsonResult> LoginAsync([FromBody]LoginModel login)
         {
+           
             if (!ModelState.IsValid)
             {
-                throw new AbpException("");
+                throw new UserFriendlyException("参数异常");
             }
             await LoginAysnc(login);
             //跳转地址
@@ -68,7 +74,7 @@ namespace WOrder.Web.Controllers
 
             await HttpContext.SignOutAsync(CookieScheme);
             //系统登陆
-            await HttpContext.SignInAsync(CookieScheme,claimPrincipal, new AuthenticationProperties() { IsPersistent = login.IsRemember });
+            await HttpContext.SignInAsync(CookieScheme, claimPrincipal, new AuthenticationProperties() { IsPersistent = login.IsRemember });
 
         }
 

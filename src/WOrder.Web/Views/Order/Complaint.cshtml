@@ -7,13 +7,14 @@
 
 
 
-<div class="easyui-layout" id="ly_order" data-options="fit:true,border:false">
+
+<div class="easyui-layout" id="ly_complaint" data-options="fit:true,border:false">
     <div data-options="region:'north',height:50" style="padding:7px 10px;">
         <table class="query-table">
             <tr>
-                <td>投诉状态</td>
+                <td>反馈状态</td>
                 <td><input class="easyui-combobox" id="txtTStatus" value="0" /></td>
-                <td>投诉日期</td>
+                <td>反馈日期</td>
                 <td><input class="easyui-datebox" id="txtSDate" /></td>
                 <td>-</td>
                 <td><input class="easyui-datebox" id="txtEDate" /></td>
@@ -31,63 +32,61 @@
         </table>
     </div>
     <div data-options="region:'center'">
-        <div class="easyui-tabs" id="tabs_order" data-options="fit:true,border:false,tabWidth:150,tabPosition:'bottom'">
-            <table id="tb_feedback"></table>
-        </div>
+        <table id="tb_complaint"></table>
     </div>
 </div>
 
 
 <!-- 字典信息增删该查 -->
-<div id="dlg_complaint" class="easyui-dialog" data-options="width:700,height:450,closed:true,title:'任务信息'">
+<div id="dlg_complaint" class="easyui-dialog" data-options="width:700,height:500,closed:true,title:'任务信息'">
     <form id="frm_complaint" method="POST">
         <input type="hidden" name="id">
         <input type="hidden" name="orderNo" />
-
+        <input type="hidden" name="fileIds" id="txtFileIds" />
         <table class="form-table">
             <tr>
-                <td class="tdLabel">分类</td>
-                <td>
-                    <input class="easyui-textbox" id="frm_category" name="category" data-options="width:200,required:true,editable:false,value:'在线反馈'" />
-                </td>
-                <td class="tdLabel">投诉状态</td>
-                <td>
-                    <input class="easyui-combobox" data-options="valueField: 'id',textField:'name',editable:false,
-                    width:200,
-                    data: [{ id: 0, name: '待处理' }, { id: 1, name: '处理中' }, { id: 2, name: '已完成' }]" />
-                </td>
-            </tr>
-            <tr>
-                <td class="tdLabel">投诉标题</td>
+                <td class="tdLabel">标题</td>
                 <td colspan="3">
                     <input class="easyui-textbox" name="itemName" data-options="width:500,required:true,prompt:'最短4位,最长20位'" />
                 </td>
             </tr>
             <tr>
-                <td class="tdLabel">具体位置</td>
+                <td class="tdLabel">区域</td>
                 <td colspan="3">
-                    <input class="easyui-textbox" name="oAddress" data-options="width:500,required:false,prompt:'相关位置信息'" />
+                    <input class="easyui-textbox" name="oAddress" data-options="width:500,required:true,prompt:'问题的位置信息'" />
                 </td>
             </tr>
             <tr>
-                <td class="tdLabel">投诉描述</td>
+                <td class="tdLabel">详细描述</td>
                 <td colspan="3">
                     <input class="easyui-textbox" name="description" data-options="width:500,required:true,height:'100',multiline:true" />
+                </td>
+            </tr>
+            <tr>
+                <td class="tdLabel">上传图片</td>
+                <td colspan="3">
+                    <input id="uploader" />
+                </td>
+            </tr>
+            <tr>
+                <td class="tdLabel">图片</td>
+                <td>
+                    <ul class="img-list"></ul>
                 </td>
             </tr>
         </table>
     </form>
 </div>
 
+
 @section Scripts{
     <script type="text/javascript">
     $(function () {
         var _orderService = abp.services.app.order
-        , curIndex = 0
-        , category="投诉建议";
+        , category = "投诉建议";
         var methods = {
             init: function () {
-                $.parser.parse('#ly_order')
+                $.parser.parse('#ly_complaint')
                 $.parser.parse('#dlg_complaint');
 
                 $('#dlg_complaint').dialog({
@@ -123,9 +122,10 @@
                 $('#txtTStatus').combobox($.extend({
                     valueField: 'id',
                     width:90,
-                    data: [{ id: 0, name: '待处理' },
-                            { id: 1, name: '处理中' },
-                            { id: 2, name: '已完成' }],
+                    data: [{ id: 0, name: '待分配' },
+                       { id: 1, name: '待接单' },
+                       { id: 2, name: '处理中' },
+                       { id: 3, name: '已完成' }],
                     onHidePanel: function () {
                         methods.query();
                     }
@@ -162,25 +162,40 @@
                     }
                 });
 
+
                 $('#txtKey').searchbox({
                     width: 250,
                     searchbox: function () {
                         methods.query();
                     }
-                })
+                });
+
+                //上传文件
+                $.fileUpload({
+                    success: function (file) {
+                        //设置fileIds
+                        var srcValue = $('#txtFileIds').val();
+                        if (srcValue.length > 0) {
+                            srcValue += ',';
+                        }
+                        srcValue += file.id;
+                        $('#txtFileIds').val(srcValue);
+                        //添加图片
+                    }
+                });
 
             },
             initTable: function (queryParam) {
 
                 var dgOptions = {
-                    singleSelect: false,
-                    checkOnSelect: false,
-                    selectOnCheck: false,
+                    singleSelect: true,
+                    //checkOnSelect: false,
+                    //selectOnCheck: false,
                     queryParams: queryParam
                 };
                 //初始化正常表
                 $.dgInit($.extend({
-                    id: "tb_feedback",
+                    id: "tb_complaint",
                     url: '/api/services/app/order/getAll?orderType=0',
                     toolbar: [
                         {
@@ -189,41 +204,41 @@
                             handler: function () {
 
                                 $('#frm_complaint').form('clear');
+                                $('.img-list').children().remove();
                                 $('#dlg_complaint').dialog('open');
-
-                                $('#frm_category').textbox('setValue', category);
+                              
                             }
                         }, '-', {
                             text: "编辑",
                             iconCls: 'icon-edit',
                             handler: function () {
 
-                                $.rowSelectCheck('tb_feedback', "请先要编辑的人员", function (row) {
+                                $.rowSelectCheck('tb_complaint', "请先要编辑的人员", function (row) {
                                     $('#frm_complaint').form('load', row);
                                     $('#dlg_complaint').dialog('open')
                                     //将no设置未只读
+                                    $.showFiles({
+                                        parentId: row.id,
+                                        success: function (files) {
+                                            $('#txtFileIds').val(files.map(function (file) { return file.id }).join(','));
+                                        }
+                                    });
                                 })
                             }
                         }, '-', {
                             text: "删除",
                             iconCls: 'icon-remove',
                             handler: function () {
-                                $.rowSelectCheck('tb_feedback', "请先选择要删除的人员", function (row,rowIndex) {
-                                    abp.message.confirm("确定要删除人员:" + row.name, function (r) {
+                                $.rowSelectCheck('tb_complaint', "请先选择要删除的记录", function (row,rowIndex) {
+                                    abp.message.confirm("确定要删除记录:" + row.name, function (r) {
                                         _userService.delete({ id: row.id }, {
                                             success: function (data) {
                                                 abp.notify.success("删除成功");
-                                                $('#tb_feedback').datagrid('deleteRow', rowIndex)
+                                                $('#tb_complaint').datagrid('deleteRow', rowIndex)
                                             }
                                         })
                                     });
                                 })
-                            }
-                        }, '-', {
-                            text: "移动到抢单池",
-                            iconCls: 'icon-redo',
-                            handler: function () {
-                                methods.robOrder();
                             }
                         }
                     ],
@@ -240,8 +255,8 @@
                                 }
                             }
                         },
-                        { field: 'orderNo', title: '反馈编号', width: 100 },
-                        { field: 'itemName', title: '反馈标题', width: 150, formatter: function (value, row, index) { return "<a class='easyui-tips'>" + value + "<a>" } },
+                        { field: 'orderNo', title: '任务编号', width: 100 },
+                        { field: 'itemName', title: '标题', width: 150, formatter: function (value, row, index) { return "<a class='easyui-tips'>" + value + "<a>" } },
                         {
                             field: 'tStatusName', title: '状态', align: 'center', width: 80,
                             styler: function (value, row, index) {
@@ -257,7 +272,7 @@
                         { field: 'creatorName', title: '提出人', align: 'center', width: 80 },
                         { field: 'creationTime', title: '提出时间', align: 'center', width: 110, sortable: true },
                         { field: 'oAddress', title: '具体位置', width: 150 },
-                        { field: 'description', title: '反馈描述', width: 200 },
+                        { field: 'description', title: '详细描述', width: 200 },
                     ]],
                     onLoadSuccess: function (data) {
                         var rows = data.rows;
@@ -289,14 +304,14 @@
             },
             query: function (param) {
                 var queryParam=$.extend(methods.getParam(), param);
-                $('#tb_feedback').datagrid('reload', queryParam);
+                $('#tb_complaint').datagrid('reload', queryParam);
             },
 
             save: function () {
                 $.formSave({
                     id: 'frm_complaint',
                     action: function (fields, isAdd) {
-                        console.log(fields)
+                        fields["category"] = category;
                         if (isAdd) {
                             _orderService.create(fields, {
                                 success: function (data) {
@@ -333,9 +348,9 @@
                             { field: 'deptId', hidden: true, width: 30 },
                             { field: 'account', title: '账号', width: 80, sortable: true },
                             { field: 'userName', title: '姓名', width: 80 },
+                            { field: 'deptName', title: '部门', width: 120 },
                             { field: 'position', title: '岗位', width: 80 },
                             { field: 'phone', title: '联系方式', width: 120 },
-                            { field: 'sex', title: '性别', width: 80 },
                         ]],
                         onDblClickRow:function(index,row){
                             _orderService.assign([{

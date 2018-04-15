@@ -12,30 +12,36 @@
     abp.ajax = function (userOptions) {
         userOptions = userOptions || {};
 
-        var options = $.extend({}, abp.ajax.defaultOpts, userOptions);
+        var options = $.extend(true, {}, abp.ajax.defaultOpts, userOptions);
+        var oldBeforeSendOption = options.beforeSend;		
+        options.beforeSend = function(xhr) {
+            if (oldBeforeSendOption) {
+                 oldBeforeSendOption(xhr);
+            }
+
+            xhr.setRequestHeader("Pragma", "no-cache");
+            xhr.setRequestHeader("Cache-Control", "no-cache");
+            xhr.setRequestHeader("Expires", "Sat, 01 Jan 2000 00:00:00 GMT");
+        };
+
         options.success = undefined;
         options.error = undefined;
 
         return $.Deferred(function ($dfd) {
-            //abp.ui.block();
             $.ajax(options)
                 .done(function (data, textStatus, jqXHR) {
-                    //abp.ui.unblock();
                     if (data.__abp) {
                         abp.ajax.handleResponse(data, userOptions, $dfd, jqXHR);
                     } else {
                         $dfd.resolve(data);
                         userOptions.success && userOptions.success(data);
                     }
-                   
                 }).fail(function (jqXHR) {
-                    //abp.ui.unblock();
                     if (jqXHR.responseJSON && jqXHR.responseJSON.__abp) {
                         abp.ajax.handleResponse(jqXHR.responseJSON, userOptions, $dfd, jqXHR);
                     } else {
                         abp.ajax.handleNonAbpErrorResponse(jqXHR, userOptions, $dfd);
                     }
-                 
                 });
         });
     };
@@ -44,7 +50,10 @@
         defaultOpts: {
             dataType: 'json',
             type: 'POST',
-            contentType: 'application/json'
+            contentType: 'application/json',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
         },
 
         defaultError: {
@@ -126,7 +135,6 @@
             if (data) {
                 if (data.success === true) {
                     $dfd && $dfd.resolve(data.result, data, jqXHR);
-                   
                     userOptions.success && userOptions.success(data.result, data, jqXHR);
 
                     if (data.targetUrl) {
@@ -184,6 +192,10 @@
         ajaxSendHandler: function (event, request, settings) {
             var token = abp.security.antiForgery.getToken();
             if (!token) {
+                return;
+            }
+
+            if (!abp.security.antiForgery.shouldSendToken(settings)) {
                 return;
             }
 

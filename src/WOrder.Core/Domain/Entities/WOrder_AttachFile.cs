@@ -31,6 +31,13 @@ namespace WOrder.Domain.Entities
 
         public string FileSize { get; set; }
 
+        /// <summary>
+        /// 描述
+        /// </summary>
         public string Describe { get; set; }
+        /// <summary>
+        /// 隶属模块
+        /// </summary>
+        public string Module { get; set; }
     }
 }

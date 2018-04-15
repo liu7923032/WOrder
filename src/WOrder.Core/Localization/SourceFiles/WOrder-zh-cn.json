@@ -5,12 +5,16 @@
     "Home": "首页",
     "BaseInfo": "基本信息",
     "Dictionary": "字典管理",
-    "WorkOrder": "派单管理",
+    "WorkOrder": "报修管理",
     "User": "用户管理",
     "Schedule": "排班管理",
     "SysManage": "业务管理",
     "Feedback": "反馈管理",
     "Complaint": "投诉管理",
-    "Audit": "稽核管理"
+    "Audit": "稽核管理",
+    "Inspect": "巡检管理",
+    "Transport": "运送管理",
+    "Report": "报表管理",
+    "UserWorkCount": "人员工作量"
   }
 }

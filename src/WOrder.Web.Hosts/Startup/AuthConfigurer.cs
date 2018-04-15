@@ -22,7 +22,7 @@ namespace WOrder.Web.Hosts
                 }).AddJwtBearer("JwtBearer", options =>
                 {
                     options.Audience = configuration["Authentication:JwtBearer:Audience"];
-
+                 
                     options.TokenValidationParameters = new TokenValidationParameters
                     {
                         // The signing key must match!
@@ -41,7 +41,7 @@ namespace WOrder.Web.Hosts
                         ValidateLifetime = true,
 
                         // If you want to allow a certain amount of clock drift, set that here
-                        ClockSkew = TimeSpan.Zero
+                        ClockSkew = TimeSpan.Zero,
                     };
 
                     //options.Events = new JwtBearerEvents

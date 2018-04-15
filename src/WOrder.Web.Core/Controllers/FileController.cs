@@ -15,20 +15,25 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Abp.AspNetCore.Mvc.Authorization;
 using WOrder.Web.Core.Controllers;
+using WOrder.UserApp;
+using Abp.UI;
 
 namespace WOrder.Web.Controllers
 {
     [Route("api/[controller]/[action]")]
     [AbpMvcAuthorize]
+
     public class FileController : WOrderControllerBase
     {
         private IHostingEnvironment hostingEnv;
         private IFileAppService _fileAppService;
+        private IUserAppService _userService;
 
-        public FileController(IHostingEnvironment hostingEnv, IFileAppService fileAppService)
+        public FileController(IHostingEnvironment hostingEnv, IFileAppService fileAppService, IUserAppService userAppService)
         {
             this.hostingEnv = hostingEnv;
             this._fileAppService = fileAppService;
+            this._userService = userAppService;
         }
 
         /// <summary>
@@ -37,11 +42,25 @@ namespace WOrder.Web.Controllers
         /// <param name="file"></param>
         /// <param name="param"></param>
         /// <returns></returns>
-        public async Task<AjaxResponse> Upload(IFormFile file, string param = "")
+        [HttpPost]
+        [WrapResult(WrapOnSuccess = false, WrapOnError = true)]
+        public async Task<JsonResult> Upload(IFormFile file, string module = "")
+        {
+            var newFile = await SaveFile(file, module);
+            return await Task.FromResult(Json(ObjectMapper.Map<FileDto>(newFile)));
+
+        }
+        /// <summary>
+        /// 上传图片的方法
+        /// </summary>
+        /// <param name="file"></param>
+        /// <param name="module"></param>
+        /// <returns></returns>
+        private async Task<FileDto> SaveFile(IFormFile file, string module)
         {
             if (file == null)
             {
-                return await Task.FromResult(new AjaxResponse(false) { Result = "文件不存在" });
+                throw new UserFriendlyException("文件不存在");
             }
 
             #region 1.0 生成文件dto对象
@@ -51,7 +70,8 @@ namespace WOrder.Web.Controllers
                                .Parse(file.ContentDisposition)
                               .FileName
                               .Trim('"'),
-                Describe = param,
+                Describe = "",
+                Module = module,
                 ContentType = file.ContentType,
                 FileSize = GetFileSize(file.Length),
             };
@@ -59,7 +79,7 @@ namespace WOrder.Web.Controllers
             #endregion
 
             #region 2.0 创建文件的存放路径
-            string relativeFilePath = $"\\upload\\product\\{Clock.Now.ToString("yyyy_MM")}\\";
+            string relativeFilePath = $"\\upload\\{Clock.Now.ToString("yyyy_MM")}\\";
             string fileDir = hostingEnv.WebRootPath + relativeFilePath;
             if (!Directory.Exists(fileDir))
             {
@@ -85,56 +105,29 @@ namespace WOrder.Web.Controllers
             }
             #endregion
 
-            //返回结果集
-            return await Task.FromResult(new AjaxResponse(true) { Result = ObjectMapper.Map<FileDto>(newFile) });
-
+            return await Task.FromResult(newFile);
         }
 
-        /// <summary>
-        /// 获取文件的大小
-        /// </summary>
-        /// <param name="fileSize"></param>
-        /// <returns></returns>
-        private string GetFileSize(long fileSize)
+        //更换用户头像
+        [HttpPost]
+        [WrapResult(WrapOnSuccess = false, WrapOnError = true)]
+        public async Task<JsonResult> ChageUserPhoto(IFormFile file, long userId)
         {
-            string size = "";
+            if (file == null)
+            {
+                throw new UserFriendlyException("请选择图片");
+            }
+            //上传附档
+            var newFile = await SaveFile(file, "userId");
+            //更新用户图片
+            var userEntity = await _userService.GetUserById(userId);
+            userEntity.Photos = newFile.FilePath;
+            userEntity.FileIds = newFile.Id.ToString();
+            await _userService.Update(userEntity);
 
-            if (fileSize > 1024 * 1024 * 1024)
-            {
-                size = (fileSize / 1024 * 1024 * 1024).ToString() + "GB";
-            }
-            else if (fileSize > 1024 * 1024)
-            {
-                size = (fileSize / 1024 * 1024).ToString() + "MB";
-            }
-            else
-            {
-                size = (fileSize / 1024).ToString() + "KB";
-            }
-            return size;
+            return await Task.FromResult(Json(ObjectMapper.Map<UserDto>(userEntity)));
         }
 
-        /// <summary>
-        /// 生成时间戳
-        /// </summary>
-        /// <returns></returns>
-        public string GetUniqValue()
-        {
-            byte[] buffer = Guid.NewGuid().ToByteArray();
-            return BitConverter.ToInt64(buffer, 0).ToString();
-        }
-
-        /// <summary>
-        /// 下载图片
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
-        public async Task<FileStreamResult> DownByURL()
-        {
-            string url = Request.Query["url"];
-            var imgStream = await HttpTools.GetStreamAsync(url);
-            return File(imgStream, "image/jpeg","商品图片.jpg");
-        }
 
     }
 }

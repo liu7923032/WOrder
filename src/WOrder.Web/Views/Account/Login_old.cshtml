@@ -1,0 +1,79 @@
+﻿
+
+
+@using System.Globalization
+@using Abp.Web.Security.AntiForgery
+@using Abp.Configuration.Startup
+@using Abp.Timing
+@inject IAbpAntiForgeryManager AbpAntiForgeryManager
+@{ 
+    AbpAntiForgeryManager.SetCookie(Context);
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Login</title>
+    <link rel="stylesheet" href="~/lib/layui/css/layui.css" />
+</head>
+<body>
+    <div class="layui-container">
+        <div class="layui-row" style="margin-top:100px;">
+            <div class="layui-col-md4 layui-col-md-offset3">
+                <form class="layui-form " id="frm_login"  >
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">账号</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="account" lay-verify="account" autocomplete="off" placeholder="请输入标题" class="layui-input" value="admin">
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <label class="layui-form-label">密码</label>
+                        <div class="layui-input-block">
+                            <input type="text" name="password" lay-verify="required" placeholder="请输入" autocomplete="off" class="layui-input" value="123">
+                        </div>
+                    </div>
+                    <div class="layui-form-item">
+                        <div class="layui-input-block">
+                            <button type="button" class="layui-btn" lay-submit lay-filter="btnLogin" >立即提交</button>
+                            <button type="reset" class="layui-btn layui-btn-primary">重置</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script src="~/lib/jquery/dist/jquery.js"></script>
+    <script src="~/lib/layui/layui.js"></script>
+    <script src="~/lib/abp-web-resources/Abp/Framework/scripts/abp.js"></script>
+    <!---------abp扩展的ajax ----------->
+    <script src="~/lib/abp-web-resources/Abp/Framework/scripts/libs/abp.jquery.js"></script>
+
+    <script type="text/javascript">
+        layui.use(['form'], function () {
+
+            var form = layui.form;
+            //自定义验证规则
+            form.verify({
+                account: function (value) {
+                    if (value.length < 5) {
+                        return '账号至少得3个字符啊';
+                    }
+                }
+              , pass: [/(.+){2,12}$/, '密码必须6到12位']
+            });
+
+            form.on('submit(btnLogin)', function (data) {
+                abp.ajax({
+                    url: "/Account/LoginAsync",
+                    data: JSON.stringify(data.field),
+                });
+            });
+
+        });
+    </script>
+   
+</body>
+</html>

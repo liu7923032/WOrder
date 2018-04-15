@@ -11,6 +11,10 @@
     "SysManage": "SysManage",
     "Feedback": "Feedback",
     "Complaint": "Complaint",
-    "Audit": "Audit"
+    "Audit": "Audit",
+    "Inspect": "Inspect",
+    "Transport": "Transport",
+    "Report": "Report",
+    "UserWorkCount": "UserWorkCount"
   }
 }

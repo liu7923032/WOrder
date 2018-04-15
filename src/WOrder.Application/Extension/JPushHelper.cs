@@ -17,9 +17,9 @@ namespace WOrder.Extension
         /// <param name="content"></param>
         /// <param name="aliasIds"></param>
         /// <returns></returns>
-        public async Task<bool> PushToAlias(string title, string content, params string[] aliasIds)
+        public async Task<bool> PushToAlias(string title, string content, List<string> aliasIds)
         {
-            PushPayload pushPayload = CreatePayload(title, content, null, aliasIds);
+            PushPayload pushPayload = CreatePayload(title, content, null, aliasIds.ToArray());
             var response = client.SendPush(pushPayload);
 
             return await Task.FromResult(response.isResultOK());
@@ -30,14 +30,13 @@ namespace WOrder.Extension
             var result = new PushPayload()
             {
                 platform = Platform.android(),
-                notification = Notification.android("", title),
-                message = Message.content(content)
+                notification = Notification.android(content, title)
             };
-            if (tags.Length > 0)
+            if (tags != null && tags.Length > 0)
             {
                 result.audience = Audience.s_tag_and(tags);
             }
-            if (alias.Length > 0)
+            if (alias != null && alias.Length > 0)
             {
                 result.audience = Audience.s_alias(alias);
             }

@@ -96,7 +96,7 @@
                         }],
                         url: scheduleBox.classTypeURL,
                         loadFilter: function (resData) {
-                            return resData["result"].items;
+                            return resData["items"];
                         },
                         onHidePanel: function () {
                             scheduleBox.curType = $("#txtClassType").combobox('getValue');
@@ -104,11 +104,11 @@
                     });
 
                     $('#txtScheduleKey').searchbox({
-                        prompt:'姓名/岗位/班别',
+                        prompt: '姓名/岗位/班别',
                         searcher: function () {
                             methods.queryData();
                         }
-                    })
+                    });
 
                     var date = new Date();
 
@@ -400,46 +400,14 @@
                 queryData: function (month) {
                     _scheduleService.getSchedules(methods.getParam(month), {
                         success: function (data) {
-                            if (data.length == 0) {
-                                return;
-                            }
+                            //if (data.length == 0) {
+                            //    return;
+                            //}
                             var formateData = methods.formateData(data);
                             console.log(formateData)
                             methods.initTable(formateData);
                         }
-                    })
-                    return;
-                    $.getJSON("/CService/CallCenter/GetSchedulingData", methods.getParam(month), function (jsonData) {
-                        var data = jsonData.rows;
-                        var holidays = jsonData.holiday;
-
-                        if (holidays) {
-                            scheduleBox.holidays = holidays.Holidays;
-                            scheduleBox.weekDays = holidays.WeekDays;
-                        }
-                        if (data && data.length > 0) {
-                            var obj = {};
-                            var holidays = "", weekDays = "";
-                            var result = data.map(function (item) {
-                                obj = {
-                                    UserId: item.UserId,
-                                    UserName: item.UserName,
-                                    Phone: item.MobilePhone
-                                }
-                                if (item.Days && item.Days.length > 0) {
-                                    var strDays = item.Days.split(',');
-                                    strDays.forEach(function (day) {
-                                        var field = "" + parseInt(day);
-                                        obj[field] = 1;
-                                    });
-                                }
-
-                                return obj;
-                            })
-
-                            methods.initTable(result);
-                        }
-                    })
+                    });
                 },
                 formateData: function (result) {
                     return result.map(function (item) {
@@ -459,7 +427,7 @@
                         dlgOpts: {
                             width: 700,
                             height: 500,
-                            title:'选择人员'
+                            title: '选择人员'
                         },
                         tbOpts: {
                             url: '/api/services/app/user/getAll',
@@ -489,7 +457,7 @@
                                 $('#tb_scheduling').datagrid("appendRow", newRow)
                             }
                         }
-                    })
+                    });
                 }
             }
 

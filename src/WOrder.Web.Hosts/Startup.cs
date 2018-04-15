@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Abp.AspNetCore;
@@ -14,6 +15,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Cors.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.FileProviders;
 using Swashbuckle.AspNetCore.Swagger;
 using WOrder.EntityFrameworkCore;
 using WOrder.Web.Core.Configuration;
@@ -100,7 +102,12 @@ namespace WOrder.Web.Hosts
 
             app.UseCors(_defaultCorsPolicyName); // Enable CORS!
 
-            app.UseStaticFiles();
+            app.UseStaticFiles(new StaticFileOptions()
+            {
+                FileProvider = new PhysicalFileProvider(
+                    Path.Combine(Directory.GetCurrentDirectory(), @"upload")),
+                RequestPath = new PathString("/upload")
+            });
 
             app.UseAuthentication();
 

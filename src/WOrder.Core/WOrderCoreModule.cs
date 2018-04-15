@@ -22,10 +22,7 @@ namespace WOrder
         public override void Initialize()
         {
             IocManager.RegisterAssemblyByConvention(typeof(WOrderCoreModule).GetAssembly());
-
-
         }
 
-        
     }
 }

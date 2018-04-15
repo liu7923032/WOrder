@@ -22,9 +22,9 @@ namespace WOrder.File
         /// </summary>
         /// <param name="pId"></param>
         /// <returns></returns>
-        Task<List<FileDto>> GetFilesById(int pId);
+        Task<List<FileDto>> GetFilesById(GetFilesInput input);
 
-        
+
     }
 
     [AbpAuthorize]
@@ -41,16 +41,17 @@ namespace WOrder.File
         /// </summary>
         /// <param name="pId"></param>
         /// <returns></returns>
-        public async Task<List<FileDto>> GetFilesById(int pId)
+        public async Task<List<FileDto>> GetFilesById(GetFilesInput input)
         {
-            var data = this.CreateFilteredQuery(new GetFilesInput() { ParentId = pId.ToString() }).ToList().MapTo<List<FileDto>>();
+            var data = this.CreateFilteredQuery(new GetFilesInput() { PId = input.PId, Module = input.Module }).ToList().MapTo<List<FileDto>>();
             return await Task.FromResult(data);
         }
 
         protected override IQueryable<WOrder_AttachFile> CreateFilteredQuery(GetFilesInput input)
         {
             return base.CreateFilteredQuery(input)
-                .WhereIf(!string.IsNullOrEmpty(input.ParentId), u => u.ParentId.Equals(input.ParentId));
+                .WhereIf(!string.IsNullOrEmpty(input.PId), u => u.ParentId.Equals(input.PId))
+                .WhereIf(!string.IsNullOrEmpty(input.Module), u => u.Module.Equals(input.Module));
         }
     }
 }

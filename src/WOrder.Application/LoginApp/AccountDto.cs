@@ -8,14 +8,11 @@ using WOrder.Domain.Entities;
 
 namespace WOrder.UserApp
 {
-   
-
-
 
     [AutoMapTo(typeof(WOrder_Account))]
     public class CreateUserInput
     {
-        [Required]
+
         [StringLength(20)]
         public string Account { get; set; }
 
@@ -28,16 +25,24 @@ namespace WOrder.UserApp
 
         [StringLength(30)]
         public string Position { get; set; }
-        
 
+        [Required]
         [StringLength(13)]
         public string Phone { get; set; }
-
-
+        /// <summary>
+        /// 图片
+        /// </summary>
         public string Photos { get; set; }
 
+        [Required]
         [StringLength(4)]
         public string Sex { get; set; }
+
+        /// <summary>
+        /// 身份证信息
+        /// </summary>
+        [StringLength(20)]
+        public string IdCard { get; set; }
 
         [Required]
         [StringLength(maximumLength: 20, ErrorMessage = "最长20,最短4", ErrorMessageResourceName = "", ErrorMessageResourceType = null, MinimumLength = 4)]
@@ -55,7 +60,10 @@ namespace WOrder.UserApp
         public string WorkMode { get; set; }
 
         public string AreaName { get; set; }
-        
+
+        public bool IsActive { get; set; }
+
+        public string FileIds { get; set; }
     }
 
     public class UpdateUserInput : CreateUserInput, IEntityDto<long>
@@ -79,6 +87,13 @@ namespace WOrder.UserApp
         /// 部门
         /// </summary>
         public int? DeptId { get; set; }
+
+        /// <summary>
+        /// 是否激活
+        /// </summary>
+        public bool? IsActive { get; set; }
+
+        public string Key { get; set; }
     }
 
     /// <summary>
@@ -90,15 +105,15 @@ namespace WOrder.UserApp
         public long UserId { get; set; }
 
         [Required]
-        [StringLength(maximumLength: 4, ErrorMessage = "最长20,最短4", ErrorMessageResourceName = "", ErrorMessageResourceType = null, MinimumLength = 5)]
+        [StringLength(maximumLength: 4, ErrorMessage = "最长20,最短4", ErrorMessageResourceName = "", ErrorMessageResourceType = null)]
         public string OPwd { get; set; }
 
+
         [Required]
-       
         public string CPwd { get; set; }
 
         [Required]
-        [StringLength(maximumLength: 4, ErrorMessage = "最长20,最短4", ErrorMessageResourceName = "", ErrorMessageResourceType = null, MinimumLength = 5)]
+        [StringLength(maximumLength: 4, ErrorMessage = "最长20,最短4", ErrorMessageResourceName = "", ErrorMessageResourceType = null)]
         public string NPwd { get; set; }
     }
 }

@@ -1,4 +1,4 @@
-.abp-clickable {
+﻿.abp-clickable {
   cursor: pointer;
 }
 .abp-dock-top {
@@ -29,11 +29,12 @@
   position: absolute;
   margin: 0;
 }
-.abp-busy-indicator-sWOrder {
+.abp-busy-indicator-small {
   width: 36px;
   height: 36px;
 }
-.abp-busy-indicator-sWOrder.abp-dock-left,
-.abp-busy-indicator-sWOrder.abp-dock-right {
+.abp-busy-indicator-small.abp-dock-left,
+.abp-busy-indicator-small.abp-dock-right {
   height: auto;
 }
+/*# sourceMappingURL=abp.css.map */

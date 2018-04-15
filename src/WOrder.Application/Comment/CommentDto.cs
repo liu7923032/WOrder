@@ -31,7 +31,7 @@ namespace WOrder.Comment
         public string Comment { get; set; }
 
         [Required]
-        public int OrderId { get; set; }
+        public long OrderId { get; set; }
 
 
         [JsonConverter(typeof(WOrderDateFormat))]

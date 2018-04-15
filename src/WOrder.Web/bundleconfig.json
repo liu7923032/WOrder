@@ -4,22 +4,30 @@
     "inputFiles": [
       "wwwroot/lib/easyui/themes/color.css",
       "wwwroot/lib/easyui/themes/icon.css",
+      "wwwroot/lib/easyui-plugin/themes/icon.css",
       "wwwroot/lib/easyui/themes/default/easyui.css",
-      "wwwroot/css/main.css"
+      "wwwroot/lib/easyui-plugin/themes/easyui-extend.css",
+      "wwwroot/css/main.css",
+      "wwwroot/lib/viewer/viewer.css"
     ]
   },
   {
     "outputFileName": "wwwroot/view-resources/Views/_Bundles/layout-libs.min.js",
     "inputFiles": [
       "wwwroot/lib/easyui/jquery.min.js",
-      "wwwroot/js/main.js",
       "wwwroot/lib/filedownload/jquery.filedownload.js",
-      "wwwroot/lib/easyui/jquery.easyui.min.js",
 
-      "wwwroot/lib/easyui-plugin/easyui-extend.js",
+      "wwwroot/lib/easyui/jquery.easyui.min.js",
+      "wwwroot/lib/easyui/locale/easyui-lang-zh_CN.js",
+      "wwwroot/js/main.js",
+      "wwwroot/lib/ajaxForm/jquery.form.min.js",
       "wwwroot/lib/abp-web-resources/Abp/Framework/scripts/abp.js",
       "wwwroot/lib/abp-web-resources/Abp/Framework/scripts/libs/abp.jquery.js",
-      "wwwroot/lib/easyui-plugin/easyui.abp.js"
+      "wwwroot/lib/easyui-plugin/easyui.abp.js",
+      "wwwroot/lib/viewer/viewer.js",
+      "wwwroot/lib/echarts/echarts.min.js",
+      //"wwwroot/lib/signalr-client/signalr.min.js",
+      //"wwwroot/lib/abp-web-resources/Abp/Framework/scripts/libs/abp.signalr-client.js"
     ]
   }
 ]

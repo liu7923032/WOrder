@@ -18,9 +18,9 @@ a {
     background-color: whitesmoke;
 
     .header {
-        background-color: #3c8dbc;
-        height: 50px;
-        line-height: 50px;
+        background: linear-gradient(to bottom right,#50a3a2,#53e3a6);
+        height: 60px;
+        line-height: 60px;
         width: 100%;
         padding: 0px 10px;
         box-sizing: border-box;
@@ -33,6 +33,17 @@ a {
             width: 200px;
             float: left;
             color: white;
+            line-height: 50px;
+            vertical-align: middle;
+
+            img {
+                vertical-align: middle;
+            }
+
+            label {
+                margin-left: 10px;
+                vertical-align: middle;
+            }
         }
 
         .left {
@@ -44,8 +55,9 @@ a {
         .right {
             width: 150px;
             float: right;
-            height:50px;
-            line-height:50px;
+            height: 50px;
+            line-height: 50px;
+
             .u-name {
                 a {
                     font-size: 16px;
@@ -59,11 +71,10 @@ a {
                     font-size: 16px;
                     line-height: 40px;
                     color: red;
-                    background:url(/image/logout.png) no-repeat;
-                    display:inline-block;
-                    margin-top:13px;
-                    padding:15px 20px;
-
+                    background: url(/image/logout.png) no-repeat;
+                    display: inline-block;
+                    margin-top: 13px;
+                    padding: 15px 20px;
                     /*img {
                         margin-top: 12px;
                         margin-right: 20px;
@@ -151,7 +162,7 @@ a {
     ;
 
     label {
-        margin: 0 10;
+        margin: 0 10px;
         vertical-align: middle;
     }
 
@@ -278,5 +289,77 @@ a {
         .arrow {
             display: none;
         }
+    }
+}
+
+
+/*图片展示*/
+.img-list {
+    margin: 0;
+    position: relative;
+    padding: 5px 0px;
+
+    li {
+        position: relative;
+        float: left;
+        border: 1px solid rgb(157, 189, 240);
+        list-style-type: none;
+        margin-right: 10px;
+
+        img {
+            position: relative;
+            width: auto;
+            height: 80px;
+            cursor: pointer;
+        }
+
+        .img-delete {
+            position: absolute;
+            right: 5px;
+            top: 5px;
+            cursor: pointer;
+            display: none;
+            width: 16px !important;
+            height: 16px !important;
+        }
+
+        &:hover {
+            .img-delete {
+                display: block;
+            }
+        }
+    }
+}
+
+/*首页展示任务数量*/
+.block-num {
+    width: 180px;
+    height: 180px;
+    box-sizing: border-box;
+    display: inline-block;
+    margin-right: 10px;
+
+    .block-title {
+        height: 40px;
+        line-height: 40px;
+        text-align: center;
+        border-bottom: 1px solid whitesmoke;
+        font-size: 18px;
+        padding: 10px;
+        background-color: #EBEDF4;
+        color: peru;
+    }
+
+    .block-body {
+        height: 100px;
+        line-height: 100px;
+        text-align: center;
+        vertical-align: middle;
+        padding: 10px;
+        font-size: 32px;
+        font-weight: 600;
+        background-color: #FF5983;
+        color: ivory;
+        cursor:pointer;
     }
 }
