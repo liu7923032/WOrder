@@ -33,21 +33,20 @@ namespace WOrder.Schedule
         [Required]
         public long UserId { get; set; }
 
-        /// <summary>
-        /// 日期字符串
-        /// </summary>
-        [Required]
-        [JsonConverter(typeof(WOrderDateFormat))]
-        public DateTime ClassDate { get; set; }
-
+       
         /// <summary>
         /// 班别
         /// </summary>
         [Required]
         [StringLength(20, ErrorMessage = "班别字符长度不可超过20")]
         public string ClassType { get; set; }
-    }
 
+        /// <summary>
+        /// 工作描述
+        /// </summary>
+        [StringLength(200)]
+        public string Description { get; set; }
+    }
 
     public class UpdateScheduleDto : CreateScheduleDto, IEntityDto<long>
     {
@@ -63,10 +62,17 @@ namespace WOrder.Schedule
         public string WorkMode { get; set; }
 
         public int Week { get; set; }
+
+        /// <summary>
+        /// 日期字符串
+        /// </summary>
+        [Required]
+        [JsonConverter(typeof(WOrderDateFormat))]
+        public DateTime ClassDate { get; set; }
     }
 
 
-    public class GetAllScheduleDto
+    public class GetAllScheduleDto : PagedAndSortedResultRequestDto
     {
         public int YFlag { get; set; }
 
@@ -93,17 +99,30 @@ namespace WOrder.Schedule
         [Required]
         public long UserId { get; set; }
 
-        [Required]
-        public List<UserDayDto> UserDays { get; set; }
+        public DateTime SDate { get; set; }
+
+        public DateTime EDate { get; set; }
+
+        public string ClassType { get; set; }
+
+        public string Description { get; set; }
+          
     }
 
     public class UserDayDto
     {
+
+        public long Id { get; set; }
+
         public string ClassType { get; set; }
         /// <summary>
         /// 天
         /// </summary>
         public int DFlag { get; set; }
+        /// <summary>
+        /// 工作事项
+        /// </summary>
+        public string Description { get; set; }
     }
 
 
@@ -120,6 +139,8 @@ namespace WOrder.Schedule
         public string AreaName { get; set; }
 
         public string WorkMode { get; set; }
+
+        public string Position { get; set; }
 
         public List<UserDayDto> UserDays { get; set; }
     }

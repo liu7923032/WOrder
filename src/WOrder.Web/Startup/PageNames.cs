@@ -14,6 +14,17 @@
         /// </summary>
         public const string Dictionary = "Dictionary";
 
+        /// <summary>
+        /// 角色设定
+        /// </summary>
+        public const string RoleSetting = "RoleSetting";
+
+        public const string Location = "Location";
+        /// <summary>
+        /// 用户审核
+        /// </summary>
+        public const string Approve = "Approve";
+
         public const string SysManage = "SysManage";
         /// <summary>
         /// 报修管理
@@ -54,6 +65,8 @@
         public const string Report = "Report";
         //人员工作量统计
         public const string UserWorkCount = "UserWorkCount";
+        //运送管理统计
+        public const string TransportCount = "TransportCount";
 
     }
 }

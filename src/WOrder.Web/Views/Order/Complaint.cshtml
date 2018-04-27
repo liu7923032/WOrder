@@ -230,8 +230,8 @@
                             iconCls: 'icon-remove',
                             handler: function () {
                                 $.rowSelectCheck('tb_complaint', "请先选择要删除的记录", function (row,rowIndex) {
-                                    abp.message.confirm("确定要删除记录:" + row.name, function (r) {
-                                        _userService.delete({ id: row.id }, {
+                                    abp.message.confirm("确定要删除记录:" + row.itemName, function (r) {
+                                        _orderService.delete({ id: row.id }, {
                                             success: function (data) {
                                                 abp.notify.success("删除成功");
                                                 $('#tb_complaint').datagrid('deleteRow', rowIndex)
@@ -312,6 +312,7 @@
                     id: 'frm_complaint',
                     action: function (fields, isAdd) {
                         fields["category"] = category;
+                        fields["orderType"] = 0;
                         if (isAdd) {
                             _orderService.create(fields, {
                                 success: function (data) {
@@ -335,10 +336,10 @@
             assign: function (rowIndex,oId) {
                 $.dialogAndDg({
                     dlgOpts: {
-                        title: "处理人",
+                        title: "派单员",
                         width: 700,
                         height: 400,
-                        id:'dlg_assign'
+                        id: 'dlg_assign'
                     },
                     tbOpts: {
                         id: "tb_assignU",
@@ -352,20 +353,17 @@
                             { field: 'position', title: '岗位', width: 80 },
                             { field: 'phone', title: '联系方式', width: 120 },
                         ]],
-                        onDblClickRow:function(index,row){
-                            _orderService.assign([{
-                                handleId: row.id,
-                                orderId: oId,
-                                oStatus:0
-                            }], {
+                        onDblClickRow: function (index, row) {
+                            _orderService.assign(oId, row.id, {
                                 success: function (resData) {
-                                    abp.notify.success("派人成功,单据进入<span style='color:blue;'>处理状态</span>", "反馈提示");
+                                    abp.notify.success("派单成功,运单进入<span style='color:blue;'>待接单状态</span>", "反馈提示");
                                     methods.query();
                                 }
                             });
                         }
                     }
                 });
+
             },
             showProcess: function (userData) {
                 $.dialogAndDg({

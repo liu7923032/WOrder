@@ -102,12 +102,7 @@ namespace WOrder.Web.Hosts
 
             app.UseCors(_defaultCorsPolicyName); // Enable CORS!
 
-            app.UseStaticFiles(new StaticFileOptions()
-            {
-                FileProvider = new PhysicalFileProvider(
-                    Path.Combine(Directory.GetCurrentDirectory(), @"upload")),
-                RequestPath = new PathString("/upload")
-            });
+            app.UseStaticFiles();
 
             app.UseAuthentication();
 

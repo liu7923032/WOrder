@@ -25,6 +25,7 @@ using Abp.Application.Services;
 using Abp.Authorization;
 using Abp.Domain.Uow;
 using WOrder.Extension;
+using WOrder.Message;
 
 namespace WOrder.Order
 {
@@ -39,7 +40,7 @@ namespace WOrder.Order
         /// </summary>
         /// <param name="handlers"></param>
         /// <returns></returns>
-        Task<bool> Assign(List<CreateHandlerDto> handlers);
+        Task<bool> Assign(long orderId, long userId);
 
         /// <summary>
         /// 接单
@@ -53,23 +54,35 @@ namespace WOrder.Order
         /// </summary>
         /// <param name="order"></param>
         /// <returns></returns>
-        Task<bool> Finish(long orderId);
+        Task<bool> Finish(long orderId, string location);
 
         #endregion
 
-        #region 2.0 抢单
-        /// <summary>
-        /// 将正常的单子调整位抢单状态
-        /// </summary>
-        /// <param name="ids"></param>
-        /// <returns></returns>
-        Task<bool> ChangeToRob(List<long> ids);
-        /// <summary>
-        /// 抢单
-        /// </summary>
-        /// <param name="orderId"></param>
-        /// <returns></returns>
-        Task<bool> Robber(long orderId);
+        //#region 2.0 抢单
+        ///// <summary>
+        ///// 将正常的单子调整位抢单状态
+        ///// </summary>
+        ///// <param name="ids"></param>
+        ///// <returns></returns>
+        //Task<bool> ChangeToRob(List<long> ids);
+        ///// <summary>
+        ///// 抢单
+        ///// </summary>
+        ///// <param name="orderId"></param>
+        ///// <returns></returns>
+        //Task<bool> Robber(long orderId);
+        //#endregion
+
+        #region 3.0 稽核
+        //通过
+        Task<bool> Pass(long orderId);
+        //整改
+        Task<OrderDto> Audited(CreateOrderDto input);
+        #endregion
+
+        #region 4.0 巡检
+
+
         #endregion
 
 
@@ -95,27 +108,29 @@ namespace WOrder.Order
     {
 
         private readonly IRepository<WOrder_Order, long> _orderRepository;
-        private readonly IRepository<WOrder_ORecord> _recordRepository;
         private readonly IRepository<WOrder_Handler> _handlerRepository;
         private readonly IRepository<WOrder_AttachFile> _fileRepository;
         private readonly JPushHelper _jpushHelper;
         private readonly IRealTimeNotifier _realTimeNotifier;
-
+        private readonly IMessageAppService _messageService;
+        private readonly IRepository<WOrder_Relation> _relationRepository;
 
         public OrderAppService(IRepository<WOrder_Order, long> orderRepository,
             IRepository<WOrder_Handler> handlerRepository,
-            IRepository<WOrder_ORecord> recordRepository,
             IRepository<WOrder_AttachFile> fileRepository,
             JPushHelper jpushHelper,
-            IRealTimeNotifier realTimeNotifier
+            IRealTimeNotifier realTimeNotifier,
+            IMessageAppService messageService,
+            IRepository<WOrder_Relation> relationRepository
           ) : base(orderRepository)
         {
             _orderRepository = orderRepository;
             _handlerRepository = handlerRepository;
-            _recordRepository = recordRepository;
             _fileRepository = fileRepository;
             _jpushHelper = jpushHelper;
             _realTimeNotifier = realTimeNotifier;
+            _relationRepository = relationRepository;
+            _messageService = messageService;
         }
 
 
@@ -135,11 +150,14 @@ namespace WOrder.Order
                 .WhereIf(input.OrderType.HasValue, u => u.OrderType.Equals(input.OrderType.Value))
                 //任务状态
                 .WhereIf(input.TStatus.HasValue, u => u.TStatus.Equals(input.TStatus.Value))
+                //稽核状态
+                .WhereIf(input.CStatus.HasValue, u => u.CStatus.Equals(input.CStatus.Value))
                 .WhereIf(input.SDate.HasValue, u => u.CreationTime >= input.SDate.Value)
                 .WhereIf(input.EDate.HasValue, u => u.CreationTime <= input.EDate.Value.AddDays(1))
                 .WhereIf(input.CreatorId.HasValue, u => u.CreatorUserId == input.CreatorId.Value)
+
                 .Include("CreatorUser")
-                .Include("Handlers").Include("Handlers.Handler");
+                .Include("Handler");
 
         }
 
@@ -148,8 +166,8 @@ namespace WOrder.Order
         {
             var dto = await _orderRepository.GetAll().Where(u => u.Id.Equals(input.Id))
                  .Include("CreatorUser")
-                 .Include("Handlers")
-                 .Include("Handlers.Handler").FirstOrDefaultAsync();
+                 .Include("Handler")
+                 .FirstOrDefaultAsync();
             return await Task.FromResult(dto.MapTo<OrderDto>());
         }
 
@@ -213,9 +231,20 @@ namespace WOrder.Order
             //通知管理员
             userNotification.UserId = 1;
             userNotification.Id = Guid.NewGuid();
+            //实时通知
             await _realTimeNotifier.SendNotificationsAsync(new UserNotification[] { userNotification });
-        }
 
+            //记录消息
+            await _messageService.Create(new CreateMessageInput()
+            {
+                Title = order.Category,
+                Content = order.ItemName,
+                UserId = 1,
+                //派单
+                AppPage = "Assign",
+                SrcId = order.Id
+            });
+        }
         //异步更新
         public async override Task<OrderDto> Update(UpdateOrderDto input)
         {
@@ -223,11 +252,11 @@ namespace WOrder.Order
             if (!string.IsNullOrEmpty(input.FileIds))
             {
                 List<int> ids = input.FileIds.ToListBySplit();
-                var newFiles = await _fileRepository.GetAllListAsync(u => string.IsNullOrEmpty(u.ParentId) && ids.Contains(u.Id));
-
+                var newFiles = await _fileRepository.GetAllListAsync(u => ids.Contains(u.Id));
                 newFiles.ForEach(u =>
                 {
                     u.ParentId = input.Id.ToString();
+                    u.Module = "order";
                 });
             }
             return await base.Update(input);
@@ -240,7 +269,10 @@ namespace WOrder.Order
             var orderData = CreateFilteredQuery(new GetAllOrderInput()
             {
                 Category = input.Category,
-                ItemName = input.ItemName
+                ItemName = input.ItemName,
+                OrderType = input.OrderType,
+                SDate = input.SDate,
+                EDate = input.EDate
             });
 
             //我的状态
@@ -273,39 +305,40 @@ namespace WOrder.Order
         /// </summary>
         /// <param name="handlers"></param>
         /// <returns></returns>
-        public async Task<bool> Assign(List<CreateHandlerDto> handlers)
+        public async Task<bool> Assign(long orderId, long userId)
         {
-            var orderIds = handlers.Select(u => u.OrderId).ToList();
-            var orderList = await _orderRepository.GetAllListAsync(u => orderIds.Contains(u.Id));
-            if (orderList.Count == 0)
+            var order = await _orderRepository.GetAsync(orderId);
+            if (order.HandlerId.HasValue)
             {
-                throw new UserFriendlyException("请选择要反派的订单");
+                throw new UserFriendlyException("该任务已经派过人员");
             }
-            //将订单设置进程中
-            orderList.ForEach(u =>
-            {
-                u.TStatus = TStatus.Wait;
-            });
+            order.HandlerId = userId;
+            order.TStatus = TStatus.Wait;
 
             //生成消息类容
-            var strData = string.Join(',', orderList.Select(u => u.Category));
-
-            //添加抢单人
-            handlers.ForEach(async u =>
+            await _messageService.Create(new CreateMessageInput()
             {
-                //添加人员
-                var newEntity = u.MapTo<WOrder_Handler>();
-                u.OStatus = OStatus.Init;
-                _handlerRepository.Insert(newEntity);
-
-                //将新增记录保存
-                UnitOfWorkManager.Current.SaveChanges();
-                //添加记录
-                await InsertRecordAsync(newEntity);
-
+                Title = order.Category,
+                Content = order.ItemName,
+                UserId = userId,
+                //接单
+                AppPage = order.OrderType.GetDescription(),
+                SrcId = orderId
             });
+
+            //插入Handler记录
+            await _handlerRepository.InsertAsync(new WOrder_Handler()
+            {
+                OrderId = order.Id,
+                HandleId = userId,
+                OStatus = OStatus.Init,
+            });
+
+            //如果消息没有设置未已阅的话,那么就在此处设置已阅读
+            await _messageService.ReadMyMsg(orderId);
+
             //执行推送消息
-            await _jpushHelper.PushToAlias($"有新任务来了", strData, handlers.Select(u => u.HandleId.ToString()).ToList());
+            await _jpushHelper.PushToAlias($"有新任务来了", $"{order.Category}", new List<string>() { userId.ToString() });
             return await Task.FromResult(true);
         }
 
@@ -320,18 +353,7 @@ namespace WOrder.Order
             return await _handlerRepository.FirstOrDefaultAsync(u => u.OrderId.Equals(orderId) && u.HandleId.Equals(userId));
         }
 
-        /// <summary>
-        /// 新增人员的状态记录
-        /// </summary>
-        /// <param name="handler"></param>
-        /// <returns></returns>
-        private async Task InsertRecordAsync(WOrder_Handler handler)
-        {
-            WOrder_ORecord record = new WOrder_ORecord();
-            record.HandlerId = handler.Id;
-            record.OStatus = handler.OStatus;
-            await _recordRepository.InsertAsync(record);
-        }
+
 
         /// <summary>
         /// 接单
@@ -344,88 +366,87 @@ namespace WOrder.Order
             var handler = await GetHandler(orderId);
             //2：接单
             handler.OStatus = OStatus.Accept;
+            handler.AcceptDate = DateTime.Now;
             var order = await _orderRepository.FirstOrDefaultAsync(u => u.Id.Equals(handler.OrderId));
             order.TStatus = TStatus.Running;
             //3:添加记录
-            await InsertRecordAsync(handler);
             return await Task.FromResult(true);
         }
 
 
-        public async Task<bool> Finish(long orderId)
+        public async Task<bool> Finish(long orderId, string location)
         {
             //1:找到订单处理人
             var handler = await GetHandler(orderId);
-            //2：接单
+            //2：完成订单
             handler.OStatus = OStatus.Finish;
-            //3:添加记录
-            await InsertRecordAsync(handler);
+            handler.EndDate = DateTime.Now;
+            handler.LastModificationTime = Clock.Now;
 
             //4:将任务主记录更新
             var order = await _orderRepository.GetAsync(orderId);
             order.TStatus = TStatus.Finish;
-
-            await UnitOfWorkManager.Current.SaveChangesAsync();
+            order.EndDate = Clock.Now;
+            order.Location = location;
 
             //5.看看后面是否需要通知管理员
             return await Task.FromResult(true);
-
         }
 
 
         #endregion
 
-        #region 3.0 抢单处理
-        /// <summary>
-        /// 将普通的未处理的派工单变更为抢单
-        /// </summary>
-        /// <param name="ids"></param>
-        /// <returns></returns>
-        public async Task<bool> ChangeToRob(List<long> ids)
-        {
-            var orderList = await _orderRepository.GetAllListAsync(u => ids.Contains(u.Id) && u.OrderType.Equals(OrderType.Dispatch) && u.TStatus.Equals(TStatus.Init));
-            if (orderList.Count == 0)
-            {
-                throw new UserFriendlyException("任务状态只有同时是未处理才能进入抢单");
-            }
-            orderList.ForEach(u =>
-            {
-                u.OrderType = OrderType.Rob;
-            });
+        //#region 3.0 抢单处理
+        ///// <summary>
+        ///// 将普通的未处理的派工单变更为抢单
+        ///// </summary>
+        ///// <param name="ids"></param>
+        ///// <returns></returns>
+        //public async Task<bool> ChangeToRob(List<long> ids)
+        //{
+        //    var orderList = await _orderRepository.GetAllListAsync(u => ids.Contains(u.Id) && u.OrderType.Equals(OrderType.Dispatch) && u.TStatus.Equals(TStatus.Init));
+        //    if (orderList.Count == 0)
+        //    {
+        //        throw new UserFriendlyException("任务状态只有同时是未处理才能进入抢单");
+        //    }
+        //    orderList.ForEach(u =>
+        //    {
+        //        u.OrderType = OrderType.Rob;
+        //    });
 
-            return await Task.FromResult(true);
-        }
+        //    return await Task.FromResult(true);
+        //}
 
-        /// <summary>
-        /// 抢单
-        /// </summary>
-        /// <param name="orderId"></param>
-        /// <returns></returns>
-        public async Task<bool> Robber(long orderId)
-        {
-            //1：检查订单状态
-            var order = await _orderRepository.GetAsync(orderId);
-            if (order.TStatus != TStatus.Init)
-            {
-                throw new UserFriendlyException("订单被抢啦,下次加油...");
-            }
+        ///// <summary>
+        ///// 抢单
+        ///// </summary>
+        ///// <param name="orderId"></param>
+        ///// <returns></returns>
+        //public async Task<bool> Robber(long orderId)
+        //{
+        //    //1：检查订单状态
+        //    var order = await _orderRepository.GetAsync(orderId);
+        //    if (order.TStatus != TStatus.Init)
+        //    {
+        //        throw new UserFriendlyException("订单被抢啦,下次加油...");
+        //    }
 
-            //2：分配记录
-            await Assign(new List<CreateHandlerDto>()
-            {
-                new CreateHandlerDto()
-                {
-                    HandleId=AbpSession.GetUserId(),
-                    OrderId=orderId,
-                    OStatus=OStatus.Init
-                }
-            });
-            return await Task.FromResult(true);
-        }
+        //    //2：分配记录
+        //    await Assign(new List<CreateHandlerDto>()
+        //    {
+        //        new CreateHandlerDto()
+        //        {
+        //            HandleId=AbpSession.GetUserId(),
+        //            OrderId=orderId,
+        //            OStatus=OStatus.Init
+        //        }
+        //    });
+        //    return await Task.FromResult(true);
+        //}
 
 
 
-        #endregion
+        //#endregion
 
 
         #region 4.0 报表统计
@@ -454,11 +475,52 @@ namespace WOrder.Order
                                              );
         }
 
-
-
-
         #endregion
 
+        #region 巡检和稽核
+
+        public async Task<bool> Pass(long orderId)
+        {
+            var srcOrder = await _orderRepository.GetAsync(orderId);
+            if (srcOrder == null)
+            {
+                throw new UserFriendlyException("要稽核的订单不存在");
+            }
+            srcOrder.EndDate = DateTime.Now;
+            srcOrder.CStatus = CStatus.Pass;
+            await _orderRepository.UpdateAsync(srcOrder);
+            return await Task.FromResult(true);
+        }
+
+
+        public async Task<OrderDto> Audited(CreateOrderDto input)
+        {
+            if (!input.SrcId.HasValue)
+            {
+                throw new UserFriendlyException("要稽核的订单不存在");
+            }
+            var srcOrder = await _orderRepository.GetAsync(input.SrcId.Value);
+
+            if (srcOrder == null)
+            {
+                throw new UserFriendlyException("要稽核的订单不存在");
+            }
+            srcOrder.CStatus = CStatus.Reform;
+            srcOrder.SrcId = srcOrder.Id;
+            //新订单
+            OrderDto order = await Create(input);
+            //添加关联表
+            await _relationRepository.InsertAsync(new WOrder_Relation()
+            {
+                OrderId = input.SrcId.Value,
+                AuditedId = order.Id,
+                Category = input.Category
+            });
+
+            return await Task.FromResult(order.MapTo<OrderDto>());
+        }
+
+        #endregion
     }
     #endregion
 

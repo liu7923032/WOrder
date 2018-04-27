@@ -7,6 +7,7 @@ using Abp.Application.Services;
 using Abp.Authorization;
 using Abp.Domain.Repositories;
 using Abp.Linq.Extensions;
+using Microsoft.EntityFrameworkCore;
 using WOrder.Domain.Entities;
 
 namespace WOrder.Location
@@ -30,7 +31,8 @@ namespace WOrder.Location
         protected override IQueryable<WOrder_Location> CreateFilteredQuery(GetAllLocatinDto input)
         {
             return base.CreateFilteredQuery(input)
-                .WhereIf(input.UserId.HasValue, u => u.UserId.Equals(input.UserId));
+                .WhereIf(input.UserId.HasValue, u => u.UserId.Equals(input.UserId))
+                .Include("User");
         }
     }
 }

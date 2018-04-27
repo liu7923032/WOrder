@@ -14,9 +14,8 @@ a {
   background-color: whitesmoke;
 }
 #ly_main .header {
-  background: linear-gradient(to bottom right, #50a3a2, #53e3a6);
+  background: linear-gradient(to bottom right, #26A3DC, #0F74C6);
   height: 60px;
-  line-height: 60px;
   width: 100%;
   padding: 0px 10px;
   box-sizing: border-box;
@@ -25,8 +24,7 @@ a {
   font-size: 24px;
   font-weight: bold;
   margin: 0 auto;
-  text-align: center;
-  width: 200px;
+  width: 400px;
   float: left;
   color: white;
   line-height: 50px;
@@ -45,18 +43,49 @@ a {
   background-color: bisque;
 }
 #ly_main .header .right {
-  width: 150px;
-  float: right;
+  width: 250px;
   height: 50px;
-  line-height: 50px;
+  position: absolute;
+  right: 0;
   display: flex;
   flex-flow: row nowrap;
   justify-content: space-between;
 }
+#ly_main .header .right .u-message {
+  position: relative;
+}
+#ly_main .header .right .u-message img {
+  position: relative;
+  top: 10px;
+  left: 0;
+  height: 20px;
+  margin: 0;
+}
+#ly_main .header .right .u-message .text {
+  position: relative;
+  top: 25px;
+  right: 24px;
+  color: white;
+}
+#ly_main .header .right .u-message .number {
+  position: absolute;
+  left: 15px;
+  background-color: red;
+  color: white;
+  padding: 4px 3px;
+  border-radius: 10px;
+  top: 0;
+}
+#ly_main .header .right .u-name {
+  line-height: 50px;
+  vertical-align: middle;
+}
 #ly_main .header .right .u-name a {
   font-size: 16px;
   color: white;
-  line-height: 40px;
+}
+#ly_main .header .right .signout {
+  margin-right: 20px;
 }
 #ly_main .header .right .signout a {
   font-size: 16px;

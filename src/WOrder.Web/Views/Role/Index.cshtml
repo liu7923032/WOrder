@@ -1,0 +1,330 @@
+﻿@using WOrder.Web.Startup
+@{
+    ViewBag.ActiveMenu = PageNames.RoleSetting;
+    //Layout = null;
+}
+
+
+<div class="easyui-layout" id="ly_role" data-options="fit:true,border:false">
+    <div data-options="region:'west',width:200,title:'角色',tools:[{iconCls:'icon-add',handler:function(){$('#dlg_role').dialog('open');$('#frm_role').form('clear')}}]" style="padding:5px 0px;">
+        <ul class="easyui-tree" id="tree_role"></ul>
+    </div>
+    <div data-options="region:'center'">
+        <table id="tb_roleUser"></table>
+    </div>
+</div>
+<!-- 字典类别 -->
+<div id="dlg_role">
+    <form id="frm_role" method="post">
+        <input type="hidden" name="id" />
+        <table class="form-table">
+            <tr>
+                <td class="tdLabel">角色名称</td>
+                <td>
+                    <input class="easyui-textbox" name="name" data-options="width:300,required:true" />
+                </td>
+            </tr>
+            <tr>
+                <td class="tdLabel">角色备注</td>
+                <td>
+                    <input class="easyui-textbox" name="description" data-options="width:300,multiline:true,height:100" />
+                </td>
+            </tr>
+        </table>
+    </form>
+</div>
+
+<!-- 字典信息增删该查 -->
+<div id="dlg_dict" class="easyui-dialog" data-options="width:500,height:400,closed:true,title:'字典'">
+    <form id="frm_dict" method="POST">
+        <input type="hidden" name="id">
+        <input type="hidden" name="isDel" value="0">
+        <table class="form-table">
+            <tr>
+                <td class="tdLabel">字典类别</td>
+                <td>
+                    <input class="easyui-textbox" id="txtDictType" name="dictType" data-options="width:300,required:true,readonly:true" />
+                </td>
+            </tr>
+
+            <tr>
+                <td class="tdLabel">字典名称</td>
+                <td>
+                    <input class="easyui-textbox" name="name" data-options="width:300,required:true,prompt:'XX'" />
+                </td>
+            </tr>
+            <tr>
+                <td class="tdLabel">字典编号</td>
+                <td>
+                    <input class="easyui-textbox" name="no" data-options="width:300,required:true,prompt:'默认字典名称拼音首字母大写'" />
+                </td>
+            </tr>
+            <tr>
+                <td class="tdLabel">字典序号</td>
+                <td>
+                    <input class="easyui-numberbox" name="sortNo" data-options="width:300,required:true,prompt:'10/20'" />
+                </td>
+            </tr>
+
+            <tr>
+                <td class="tdLabel">字典备注</td>
+                <td>
+                    <input class="easyui-textbox" name="memo" data-options="width:300,multiline:true,height:100" />
+                </td>
+            </tr>
+        </table>
+    </form>
+</div>
+
+<!-- 字典类别的右键菜单 -->
+<div id="mm_dict" class="easyui-menu" style="width:120px;">
+    <div data-options="iconCls:'icon-edit'">编辑</div>
+    <div data-options="iconCls:'icon-remove'">删除</div>
+</div>
+
+
+@section Scripts{
+    <script type="text/javascript">
+    $(function () {
+        var  selectNode
+            , treeUrl = "/api/services/app/role/GetAll?maxResultCount=10000&skipCount=0"
+            , _roleService = abp.services.app.role
+            , _dictService = abp.services.app.dictionary;
+        var methods = {
+            init: function () {
+                $.parser.parse('#dlg_role');
+                $.parser.parse('#dlg_dict');
+                $('#dlg_role').dialog({
+                    width: 500, height: 250, closed: true, title: '角色',
+                    buttons: [
+                        {
+                            text: '保存',
+                            iconCls: 'icon-save',
+                            handler: function () {
+                                methods.saveRole();
+                            }
+                        }, {
+                            text: '关闭',
+                            iconCls: 'icon-cancel',
+                            handler: function () {
+                                $('#dlg_role').dialog('close');
+                            }
+                        }
+                    ]
+                });
+
+                $('#dlg_dict').dialog({
+                    buttons: [
+                        {
+                            text: '保存',
+                            iconCls: 'icon-save',
+                            handler: function () {
+                                methods.saveDict();
+                            }
+                        }, {
+                            text: '关闭',
+                            iconCls: 'icon-cancel',
+                            handler: function () {
+                                $('#dlg_dict').dialog('close');
+                            }
+                        }
+                    ]
+                });
+            },
+            initTree: function () {
+                $.treeInit({
+                    id: 'tree_role',
+                    url: treeUrl,
+                    onClick: function (node) {
+                        selectNode = node;
+                        //通过类型来获取字典数据
+                        methods.queryRole();
+                    },
+                    onContextMenu: function (e, node) {
+                        e.preventDefault();
+                        // select the node
+                        $('#tree_role').tree('select', node.target);
+                        // display context menu
+                        $('#mm_dict').menu('show', {
+                            left: e.pageX,
+                            top: e.pageY,
+                            onClick: function (item) {
+                                if (item.text == "编辑") {
+                                    $('#frm_role').form('load', node.attributes);
+                                    $('#dlg_role').dialog('open')
+                                } else {
+                                    abp.message.confirm("确定要删除<span style='color:red;'>" + node.text + "</span>,一旦删除该类别的字典都会删除",function(){
+                                        _roleService.delete({ id: node.id }, {
+                                            success: function (data) {
+                                                $("#tree_role").tree('reload');
+                                            }
+                                        })
+                                    })
+                                }
+                            }
+                        });
+                    }
+                })
+            },
+            initTable: function (params) {
+                $.dgInit({
+                    id: "tb_roleUser",
+                    url: '/api/services/app/role/GetUsersByRoleId/',
+                    queryParam: params,
+                    singleSelect: false,
+                    checkOnSelect: false,
+                    selectOnCheck:false,
+                    columns: [[
+                        { field: 'id', hidden: true, width: 30 },
+                        {field:'ck',checkbox:true},
+                        { field: 'userName', title: '姓名', width: 80 },
+                        { field: 'account', title: '账号', width: 80, sortable: true },
+                        { field: 'deptName', title: '隶属部门', width: 120 },
+                        { field: 'position', title: '岗位', width: 80 },
+                    ]],
+                    toolbar: [
+                        {
+                            text: "新增",
+                            iconCls: 'icon-add',
+                            handler: function () {
+                                if (!selectNode) {
+                                    $.errorMsg("请先选择角色");
+                                    return;
+                                }
+                                $.dialogAndDg({
+                                    dlgOpts: {
+                                        title: "人员信息",
+                                        width: 700,
+                                        height: 400,
+                                        id: 'dlg_userRole'
+                                    },
+                                    tbOpts: {
+                                        id: "tb_userRole",
+                                        url: '/api/services/app/user/getAll',
+                                        singleSelect: false,
+                                        selectOnCheck: false,
+                                        checkOnSelect: false,
+                                        columns: [[
+                                            { field: 'ck', checkbox: true },
+                                            { field: 'id', hidden: true, width: 30 },
+                                            { field: 'deptId', hidden: true, width: 30 },
+                                            { field: 'account', title: '账号', width: 80, sortable: true },
+                                            { field: 'userName', title: '姓名', width: 80 },
+                                            { field: 'deptName', title: '部门', width: 120 },
+                                            { field: 'position', title: '岗位', width: 80 },
+                                            { field: 'phone', title: '联系方式', width: 120 },
+                                        ]],
+                                        toolbar: [
+                                            {
+                                                text: "选择",
+                                                iconCls: 'icon-ok',
+                                                handler: function () {
+                                                    var checkRows = $('#tb_userRole').datagrid('getChecked');
+                                                    if (checkRows == 0) {
+                                                        abp.notify.info("请勾选人员", "信息提示");
+                                                        return;
+                                                    }
+                                                    $('#dlg_userRole').dialog('close');
+                                                    var userIds = checkRows.map(function (item) {
+                                                        return item.id;
+                                                    });
+                                                    _roleService.addUsersToRole(userIds,selectNode.id, {
+                                                        success: function (resData) {
+                                                            abp.notify.success("添加成功", "派单提示");
+                                                            methods.queryRole();
+                                                        }
+                                                    });
+                                                }
+                                            }
+                                        ]
+                                    }
+                                });
+                            }
+                        }, '-', {
+                            text: "删除",
+                            iconCls: 'icon-remove',
+                            handler: function () {
+                                var checkRows = $('#tb_roleUser').datagrid('getChecked');
+                                if (checkRows.length == 0) {
+                                    $.messager.alert("错误提示", "请先选择要删除的人员");
+                                    return;
+                                }
+                                var userRoleIds = checkRows.map(function (item) {
+                                    return item.id;
+                                });
+
+                                _roleService.delUserRoles(userRoleIds, {
+                                    success: function () {
+                                        methods.queryRole();
+                                    }
+                                });
+                            }
+                        }
+                    ]
+                });
+            },
+            queryRole: function (obj) {
+                var roleId = "";
+                if (selectNode) {
+                    roleId = selectNode.id;
+                }else if(obj) {
+                    roleId = obj.roleId;
+                }
+                $('#tb_roleUser').datagrid('reload', { "roleId": roleId });
+            },
+            saveRole: function () {
+                $.formSave({
+                    id: 'frm_role',
+                    action: function (data, isAdd) {
+                        if (isAdd) {
+                            _roleService.create(data, {
+                                success: function (data) {
+                                    $('#dlg_role').dialog('close');
+                                    $('#tree_role').tree('reload');
+                                }
+                            })
+                        } else {
+                            _roleService.update(data, {
+                                success: function (data) {
+                                    $('#dlg_role').dialog('close');
+                                    $('#tree_role').tree('reload');
+                                }
+                            })
+                        }
+                    }
+                });
+            },
+            saveDict: function () {
+
+                $.formSave({
+                    id: 'frm_dict',
+                    action: function (data, isAdd) {
+                        if (isAdd) {
+                            _dictService.create(data, {
+                                success: function (data) {
+                                    $('#dlg_dict').dialog('close');
+                                    methods.queryRole(data.dictType);
+                                }
+                            })
+                        } else {
+                            _dictService.update(data, {
+                                success: function (data) {
+                                    $('#dlg_dict').dialog('close')
+                                    methods.queryRole(data.dictType);
+                                }
+                            })
+
+                        }
+
+                    }
+                });
+            }
+        }
+
+        methods.init();
+        methods.initTable();
+        methods.initTree()
+    })
+    </script>
+
+}

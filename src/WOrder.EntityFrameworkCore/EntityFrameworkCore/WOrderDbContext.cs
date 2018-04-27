@@ -19,11 +19,7 @@ namespace WOrder.EntityFrameworkCore
         /// </summary>
         public virtual DbSet<WOrder_Handler> WOrder_Handler { get; set; }
 
-        /// <summary>
-        /// 订单记录变更表
-        /// </summary>
-        public virtual DbSet<WOrder_ORecord> WOrder_OrderRecord { get; set; }
-
+       
         /// <summary>
         /// 产品分类
         /// </summary>
@@ -66,12 +62,30 @@ namespace WOrder.EntityFrameworkCore
         /// </summary>
         public virtual DbSet<WOrder_Location> WOrder_Location { get; set; }
 
+        public virtual DbSet<Sys_Role> Sys_Role { get; set; }
+
+        public virtual DbSet<Sys_UserRole> Sys_UserRole { get; set; }
+        /// <summary>
+        /// 系统消息
+        /// </summary>
+        public virtual DbSet<Sys_Message> Sys_Message { get; set; }
+
+        /// <summary>
+        /// 用于关联
+        /// </summary>
+        public virtual DbSet<WOrder_Relation> WOrder_Relation { get; set; }
+
+
+
 
         #endregion
+
+
 
         public WOrderDbContext(DbContextOptions<WOrderDbContext> options) 
             : base(options)
         {
+            
         }
     }
 }

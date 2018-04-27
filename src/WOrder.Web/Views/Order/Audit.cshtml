@@ -7,7 +7,7 @@
 
 
 
-<div class="easyui-layout" id="ly_order" data-options="fit:true,border:false">
+<div class="easyui-layout" id="ly_audit" data-options="fit:true,border:false">
     <div data-options="region:'north',height:50" style="padding:7px 10px;">
         <table class="query-table">
             <tr>
@@ -83,10 +83,11 @@
     <script type="text/javascript">
     $(function () {
         var _orderService = abp.services.app.order
-        , category = "品质稽核";
+        , category = "品质稽核"
+        , status = $.getQuery("status") || 0;
         var methods = {
             init: function () {
-                $.parser.parse('#ly_order')
+                $.parser.parse('#ly_audit')
                 $.parser.parse('#dlg_audit');
 
                 $('#dlg_audit').dialog({
@@ -130,7 +131,7 @@
                         methods.query();
                     }
                 }, baseOption));
-
+                $('#txtTStatus').combobox('setValue', status);
                 $('#txtSDate').datebox({
                     width: 120,
                     editable:false,
@@ -228,8 +229,8 @@
                             iconCls: 'icon-remove',
                             handler: function () {
                                 $.rowSelectCheck('tb_audit', "请先选择要巡检信息", function (row, rowIndex) {
-                                    abp.message.confirm("确定要巡检信息:" + row.name, function (r) {
-                                        _userService.delete({ id: row.id }, {
+                                    abp.message.confirm("确定要巡检信息:" + row.itemName, function (r) {
+                                        _orderService.delete({ id: row.id }, {
                                             success: function (data) {
                                                 abp.notify.success("删除成功");
                                                 $('#tb_audit').datagrid('deleteRow', rowIndex)
@@ -310,6 +311,7 @@
                     id: 'frm_audit',
                     action: function (fields, isAdd) {
                         fields["category"] = category;
+                        fields["orderType"] = 0;
                         if (isAdd) {
                             _orderService.create(fields, {
                                 success: function (data) {
@@ -333,32 +335,27 @@
             assign: function (rowIndex,oId) {
                 $.dialogAndDg({
                     dlgOpts: {
-                        title: "处理人",
+                        title: "派单员",
                         width: 700,
                         height: 400,
-                        id:'dlg_assign'
+                        id: 'dlg_assign'
                     },
                     tbOpts: {
                         id: "tb_assignU",
-                        url: '/api/services/app/user/getAll',
+                        url: '/api/services/app/role/GetUsersByRoleId?roleId=3',
                         columns: [[
-                            { field: 'id', hidden: true, width: 30 },
+                            { field: 'userId', hidden: true, width: 30 },
                             { field: 'deptId', hidden: true, width: 30 },
                             { field: 'account', title: '账号', width: 80, sortable: true },
                             { field: 'userName', title: '姓名', width: 80 },
                             { field: 'deptName', title: '部门', width: 120 },
                             { field: 'position', title: '岗位', width: 80 },
                             { field: 'phone', title: '联系方式', width: 120 },
-                            //{ field: 'sex', title: '性别', width: 80 },
                         ]],
-                        onDblClickRow:function(index,row){
-                            _orderService.assign([{
-                                handleId: row.id,
-                                orderId: oId,
-                                oStatus:0
-                            }], {
+                        onDblClickRow: function (index, row) {
+                            _orderService.assign(oId, row.userId, {
                                 success: function (resData) {
-                                    abp.notify.success("派人成功,单据进入<span style='color:blue;'>处理状态</span>", "反馈提示");
+                                    abp.notify.success("派单成功,运单进入<span style='color:blue;'>待接单状态</span>", "反馈提示");
                                     methods.query();
                                 }
                             });

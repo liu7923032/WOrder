@@ -1,7 +1,6 @@
-﻿
+﻿@using WOrder.Web.Startup
 @{
-    ViewData["Title"] = "Index";
-    //Layout = null;
+    ViewBag.ActiveMenu = PageNames.Schedule;
 }
 
 <style scoped type="text/css">
@@ -9,6 +8,7 @@
         height: 32px;
     }
 </style>
+
 <div class="easyui-layout" data-options="fit:true,border:false">
     <div data-options="region:'north',height:48" style="padding:5px 10px;">
         <table class="query-table">
@@ -20,10 +20,6 @@
                 <td id="txtTime">排班月:</td>
                 <td>
                     <input type="text" id='txtMonth' />
-                </td>
-                <td id="txtTime">班别:</td>
-                <td>
-                    <input type="text" id='txtClassType' />
                 </td>
                 <td>关键字:</td>
                 <td>
@@ -37,10 +33,42 @@
         <table id="tb_scheduling"></table>
     </div>
 </div>
+
+
+<div id="dlg_schedule">
+    <form id="frm_schedule" method="post">
+        <input type="hidden" name="id" />
+        <input type="hidden" name="userId" />
+        <input type="hidden" name="classDate" />
+        <table class="form-table">
+            <tr>
+                <td class="tdLabel">班别</td>
+                <td colspan="3">
+                    <input name="classType" id="txtClassType" />
+                </td>
+            </tr>
+            <tr>
+                <td class="tdLabel">开始</td>
+                <td>
+                    <input name="sDate" id="txtSDate" class="easyui-datebox" data-options="required:true,editable:false,width:120" />
+                </td>
+                <td class="tdLabel">结束</td>
+                <td>
+                    <input name="eDate" id="txtEDate" class="easyui-datebox" data-options="required:true,editable:false,width:120" />
+                </td>
+            </tr>
+            <tr>
+                <td class="tdLabel">工作描述</td>
+                <td colspan="3">
+                    <input type="text" name="description" class="easyui-textbox" data-options="required:true,multiline:true,height:120,width:410" />
+                </td>
+            </tr>
+        </table>
+    </form>
+</div>
+
 <!--右键菜单-->
 <div id="mm_schedule" class="easyui-menu" style="width:120px;display:none;">
-    <div data-options="iconCls:'icon-play'">开始</div>
-    <div data-options="iconCls:'icon-stop'">结束</div>
     <div data-options="iconCls:'icon-clear'">取消</div>
 </div>
 
@@ -56,7 +84,7 @@
             weekDays: "",
            //当前班别
             curType:"",
-            classTypeURL: "/api/services/app/Dictionary/GetAll?dictType=" + encodeURIComponent("人员班别")
+            classTypeURL: "/api/services/app/Dictionary/GetAll?maxResultCount=10000&skipCount=0&dictType=" + encodeURIComponent("人员班别")
         }
         $(function () {
             var _scheduleService = abp.services.app.schedule;
@@ -85,8 +113,9 @@
                         valueField: 'name',
                         textField: 'name',
                         method:'GET',
-                        width: 80,
                         editable: false,
+                        required:true,
+                        width: 410,
                         icons: [{
                             iconCls: 'icon-clear',
                             handler: function (e) {
@@ -119,7 +148,31 @@
                         onClick: function () {
                             methods.queryData();
                         }
-                    })
+                    });
+
+                    $('#dlg_schedule').dialog({
+                        closed: true,
+                        width: 600,
+                        height: 300,
+                        title:"排班设定",
+                        buttons: [
+                            {
+                                text: '保存',
+                                iconCls: 'icon-save',
+                                handler: function () {
+                                    methods.save();
+                                }
+                            }, {
+                                text: '取消',
+                                iconCls: 'icon-cancel',
+                                handler: function () {
+                                    $('#dlg_schedule').dialog('close');
+                                }
+                            }
+                        ]
+                    });
+
+                    $.parser.parse('#dlg_schedule');
                 },
                 initTable: function (jsonData, holidays) {
                     var newCols = methods.generateCols(holidays);
@@ -132,7 +185,8 @@
                         frozenColumns: [[
                              { field: 'userId', hidden:true,width:10, align: 'left' },
                              { field: 'userName', width: 70, title: "姓名", align: 'left' },
-                             { field: 'position', width: 80, title: "岗位", align: 'left' },
+                             { field: 'position', width: 70, title: "岗位", align: 'left' },
+                             { field: 'areaName', width: 80, title: "负责区域", align: 'left' },
                              { field: 'workMode', width: 80, title: "工作方式", align: 'center' },
                         ]],
                         onClickCell: function (index, field, value) {
@@ -140,32 +194,23 @@
                                 return;
                             }
                             var tempObj = {};
-                            if(scheduleBox.curType==""){
-                                abp.notify.info("请先选择<span style='color:red;'>[班别]</span>,在进行设置","操作提示");
-                                return;
-                            }
-                            if (value === scheduleBox.curType) {
-                                tempObj[field] = "";
-                            } else {
-                                tempObj[field] = scheduleBox.curType;
-                            }
 
-                            $('#tb_scheduling').datagrid('updateRow', {
-                                index: index,
-                                row: tempObj
-                            })
+                            var row = $('#tb_scheduling').datagrid('getRows')[index];
 
-                            methods.saveBy(index, parseInt(field), parseInt(field), function () {
-
-                            });
+                            //弹出对话框
+                            $('#dlg_schedule').dialog('open');
+                            $('#frm_schedule').form('clear');
+                            var desc = row[field + "_desc"];
+                            row["description"] = desc;
+                            $('#frm_schedule').form('load', row);
+                            $('#txtClassType').combobox('setValue', value);
+                            var strDate = methods.getParam().yFlag + "-" + methods.getParam().mFlag + "-" + field;
+                            $('#txtSDate').datebox('setValue', strDate);
+                            $('#txtEDate').datebox('setValue', strDate);
+                            scheduleBox.curRowIndex = index;
                         },
                         onRowContextMenu: function (e, index, row) {
                             e.preventDefault();
-                            console.log(e.target)
-                            if (scheduleBox.curType == "") {
-                                abp.notify.info("请先选择<span style='color:red;'>[班别]</span>,在进行设置", "操作提示");
-                                return;
-                            }
                             var cellIndex = 0;
                             if (e.target.nodeName == "TD") {
                                 cellIndex = $(e.target).attr('field');
@@ -199,8 +244,6 @@
                             }
                         }, '-', {
                             text: '<span style="color:blue;">【左键单选】</span>'
-                        },'-', {
-                            text: '<span style="color:red;">【右键范围选择】</span>'
                         }]
                     })
                 },
@@ -261,10 +304,6 @@
                             width: 40,
                             align: 'center',
                             halign: 'center',
-                            editor: {
-                                type:"combobox",
-                                opitions:scheduleBox.editorOpts
-                            }
                             //formatter: function (value, row, index) {
                             //    if (!value) {
                             //        return ""
@@ -276,59 +315,6 @@
                     }
                     return [oneRow, twoRow,threeRow];
                 },
-                start: function () {
-
-                    scheduleBox.sDay = scheduleBox.curDay;
-                    var obj = {
-                    };
-                    obj[scheduleBox.sDay] = scheduleBox.curType;
-                    abp.log.debug(obj)
-                    $('#tb_scheduling').datagrid('updateRow', {
-                        index: scheduleBox.curRowIndex,
-                        row: obj
-                    });
-
-                    scheduleBox.curDay = 0;
-                    scheduleBox.curRowIndex = -1;
-                },
-                end: function () {
-
-                    //检查是否有选择开始日期
-                    if (scheduleBox.sDay == 0) {
-                        $.messager.alert("错误提示", "请先设置开始天");
-                        return;
-                    }
-                    scheduleBox.eDay = scheduleBox.curDay;
-                    var obj = {
-                    };
-                    var sDay = parseInt(scheduleBox.sDay),
-                        eDay = parseInt(scheduleBox.eDay);
-
-                    if (eDay > sDay) {
-                        //设置从开始到结束所有列的值
-                        for (var q = sDay; q <= eDay ; q++) {
-                            obj[q] = scheduleBox.curType;
-                            $('#tb_scheduling').datagrid('updateRow', {
-                                index: scheduleBox.curRowIndex,
-                                row: obj
-                            });
-                        }
-                    }
-
-                    methods.saveBy(scheduleBox.curRowIndex, sDay, eDay);
-                    scheduleBox.curDay = 0;
-                    scheduleBox.curRowIndex = -1;
-
-                },
-                cancel: function () {
-                    var obj = {
-                    };
-                    obj[scheduleBox.curDay] = "";
-                    $('#tb_scheduling').datagrid('updateRow', {
-                        index: scheduleBox.curRowIndex,
-                        row: obj
-                    });
-                },
                 createDto:function(userId,userDays){
                     var params = methods.getParam();
                     return $.extend(params, {
@@ -336,75 +322,60 @@
                         "userDays": userDays
                     });
                 },
-                saveBy:function(saveIndex,start,end,success){
-                    var row = $('#tb_scheduling').datagrid('getRows')[saveIndex];
-                    var queryParam = methods.getParam();
-                    var userDays = [];
-                    for (var i = start; i <= end;i++){
-                        userDays.push({
-                            classType: row[i],
-                            dFlag: i
-                        });
-                    }
-
-                    var params = methods.createDto(row.userId, userDays);
-                   console.log(params)
-                    //保存成功
-                    _scheduleService.batchSave(params, {
-                        success: function () {
-                            //abp.notify.success("保存成功","信息提示")
-                            if (success&&typeof(success) == "function") success();
-                        }, error: function (errorInfo) {
-                            //清空记录
-                            abp.notify.error(errorInfo, "信息提示")
+                save:function(){
+                    $.formSave({
+                        id: 'frm_schedule',
+                        action: function (fields, isAdd) {
+                            fields["yFlag"] = methods.getParam().yFlag;
+                            fields["mFlag"] = methods.getParam().mFlag;
+                            _scheduleService.batchSave(fields, {
+                                success: function () {
+                                    $('#dlg_schedule').dialog('close');
+                                    //更新表
+                                    var sDay = new Date($('#txtSDate').datebox('getValue')).getDate(), eDay = new Date($('#txtEDate').datebox('getValue')).getDate();
+                                    for (var d = sDay; d <= eDay; d++) {
+                                        var obj = {};
+                                        obj[""+d] = fields["classType"];
+                                        $('#tb_scheduling').datagrid('updateRow', {
+                                            index: scheduleBox.curRowIndex,
+                                            row: obj
+                                        });
+                                    }
+                                    scheduleBox.curRowIndex = -1;
+                                }, error: function (errorInfo) {
+                                    //清空记录
+                                    abp.notify.error(errorInfo, "信息提示")
+                                }
+                            });
                         }
                     });
-
                 },
-                //保存修改后的数据
-                save: function () {
-                    var rows = $('#tb_scheduling').datagrid('getRows');
-                    var queryParam = methods.getParam();
-                    var result = rows.map(function (item) {
-                        var userId = item.userid;
-                        delete item["userId"];
-                        delete item["userName"];
-                        delete item["position"];
-                        delete item["workMode"];
-                       var result = Object.keys(item).map(function (key) {
-                           var obj= {
-                               "userId": item.userId,
-                               "yFlag": queryParam.yFlag,
-                               "mFlag": queryParam.mFlag,
-                               "DFlag": key,
-                               "ClassType": item[key],
-                               "ClassDate": queryParam.yFlag + "-" + queryParam.mFlag + "-" + key
-                           };
-                        });
-                        //移除不用的key
-
-
-                    });
-
-                    var params = $.extend({
-                        userDate: result
-                    }, methods.getParam());
-
-                    _scheduleService.batchSave(params, {
-                        success: function () {
-                            abp.notify.success("保存成功")
+                cancel: function () {
+                    var obj = {
+                    };
+                   
+                    var row = $('#tb_scheduling').datagrid('getRows')[scheduleBox.curRowIndex];
+                    console.log(row);
+                    var scheduleId = row[scheduleBox.curDay + "_id"];
+                    _scheduleService.delete({
+                        id: scheduleId
+                    }, {
+                        success: function (data) {
+                            
+                            obj[scheduleBox.curDay] = "";
+                            $('#tb_scheduling').datagrid('updateRow', {
+                                index: scheduleBox.curRowIndex,
+                                row: obj
+                            });
+                            scheduleBox.curDay = -1;
+                            scheduleBox.curRowIndex = -1;
                         }
                     });
-
                 },
                 queryData: function (month) {
                     _scheduleService.getSchedules(methods.getParam(month), {
                         success: function (data) {
-                            //if (data.length == 0) {
-                            //    return;
-                            //}
                             var formateData = methods.formateData(data);
-                            console.log(formateData)
                             methods.initTable(formateData);
                         }
                     });
@@ -416,7 +387,10 @@
                             return item;
                         }
                         userDays.forEach(function (day) {
-                            item[day["dFlag"]] = day.classType;
+                            var tempDay=day.dFlag,desc=day.dFlag+"_desc",id=day.dFlag+"_id";
+                            item[tempDay] = day.classType;
+                            item[desc] = day.description;
+                            item[id] = day.id;
                         });
                         return item;
                     });
@@ -443,10 +417,12 @@
                             ]],
                             onDblClickRow: function (index, row) {
                                 var param = methods.getParam();
+                                console.log(row)
                                 var days = $.dayNumOfMonth(param.yFlag, param.mFlag);
                                 var newRow = {
                                     "userId": row.id,
                                     "userName": row.userName,
+                                    "position": row.position,
                                     "areaName": row.areaName || "",
                                     "workMode": row.workMode || ""
                                 };
@@ -467,4 +443,4 @@
         });
     </script>
 
-    }
+}

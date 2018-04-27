@@ -25,6 +25,7 @@ namespace WOrder.Order
         [StringLength(20)]
         public string Category { get; set; }
 
+
         /// <summary>
         /// 项目名称
         /// </summary>
@@ -32,13 +33,7 @@ namespace WOrder.Order
         [StringLength(200)]
         public string ItemName { get; set; }
 
-        /// <summary>
-        /// 具体位置
-        /// </summary>
-        [Required]
-        [StringLength(100)]
-        public string OAddress { get; set; }
-
+      
         /// <summary>
         /// 描述信息
         /// </summary>
@@ -56,14 +51,31 @@ namespace WOrder.Order
         [Required]
         public TStatus TStatus { get; set; }
 
+   
+        [MaxLength(2000)]
+        public string StartAddr { get; set; }
+
         /// <summary>
-        /// 到达时间
+        /// 目的地
         /// </summary>
-        //[JsonConverter(typeof(WOrderDateFormat))]
-        public DateTime? ArriveDate { get; set; }
+        [Required]
+        [StringLength(100)]
+        public string OAddress { get; set; }
+
+        /// <summary>
+        /// 运送开始
+        /// </summary>
+        public DateTime? SDate { get; set; }
+
+        public DateTime? EDate { get; set; }
 
         //图片信息
         public string FileIds { get; set; }
+
+        /// <summary>
+        /// 来源Id
+        /// </summary>
+        public long? SrcId { get; set; }
     }
 
     /// <summary>
@@ -80,6 +92,8 @@ namespace WOrder.Order
 
     public class OrderDto : UpdateOrderDto
     {
+
+        public CStatus CStatus { get; set; }
         /// <summary>
         /// 订单状态说明
         /// </summary>
@@ -89,6 +103,9 @@ namespace WOrder.Order
         /// </summary>
         public string CreatorName { get; set; }
 
+        /// <summary>
+        /// 创建人联系方式
+        /// </summary>
         public string Phone { get; set; }
 
         /// <summary>
@@ -101,10 +118,12 @@ namespace WOrder.Order
         ///// <summary>
         ///// 处理人
         ///// </summary>
-        public List<HandlerDto> Handlers { get; set; }
+        public string HandleName { get; set; }
 
         [JsonConverter(typeof(WOrderDateFormat))]
-        public new DateTime? ArriveDate { get; set; }
+        public new DateTime? SDate { get; set; }
+        [JsonConverter(typeof(WOrderDateFormat))]
+        public new DateTime? EDate { get; set; }
 
     }
 
@@ -123,11 +142,18 @@ namespace WOrder.Order
         public string Category { get; set; }
 
         /// <summary>
-        /// 订单类别 是抢单还是派单
+        /// 是维修类的单据还是运输类的单据
         /// </summary>
         public OrderType? OrderType { get; set; }
 
         public string ItemName { get; set; }
+
+        public DateTime? SDate { get; set; }
+
+        public DateTime? EDate { get; set; }
+
+        public CStatus? CStatus { get; set; }
+
     }
 
     public class GetAllOrderInput : PagedAndSortedResultRequestDto
@@ -160,6 +186,8 @@ namespace WOrder.Order
         /// 通过创建人来查找订单
         /// </summary>
         public int? CreatorId { get; set; }
+
+        public CStatus? CStatus { get; set; }
     }
 
     

@@ -21,6 +21,86 @@ namespace WOrder.Migrations
                 .HasAnnotation("ProductVersion", "2.0.1-rtm-125")
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+            modelBuilder.Entity("WOrder.Domain.Entities.Sys_Message", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("AppPage");
+
+                    b.Property<string>("Content");
+
+                    b.Property<DateTime>("CreationTime");
+
+                    b.Property<long?>("CreatorUserId");
+
+                    b.Property<bool>("IsRead");
+
+                    b.Property<DateTime?>("LastModificationTime");
+
+                    b.Property<long?>("LastModifierUserId");
+
+                    b.Property<long>("SrcId");
+
+                    b.Property<string>("Target");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(200);
+
+                    b.Property<long>("UserId");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CreatorUserId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Sys_Message");
+                });
+
+            modelBuilder.Entity("WOrder.Domain.Entities.Sys_Role", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<DateTime>("CreationTime");
+
+                    b.Property<long?>("CreatorUserId");
+
+                    b.Property<string>("Description");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(500);
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Sys_Role");
+                });
+
+            modelBuilder.Entity("WOrder.Domain.Entities.Sys_UserRole", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<DateTime>("CreationTime");
+
+                    b.Property<long?>("CreatorUserId");
+
+                    b.Property<int>("RoleId");
+
+                    b.Property<long>("UserId");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("RoleId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Sys_UserRole");
+                });
+
             modelBuilder.Entity("WOrder.Domain.Entities.WOrder_Account", b =>
                 {
                     b.Property<long>("Id")
@@ -36,7 +116,11 @@ namespace WOrder.Migrations
 
                     b.Property<long?>("CreatorUserId");
 
-                    b.Property<int>("DeptId");
+                    b.Property<long?>("DeleterUserId");
+
+                    b.Property<DateTime?>("DeletionTime");
+
+                    b.Property<int?>("DeptId");
 
                     b.Property<string>("Email")
                         .HasMaxLength(40);
@@ -47,6 +131,8 @@ namespace WOrder.Migrations
                     b.Property<decimal?>("Integral");
 
                     b.Property<bool>("IsActive");
+
+                    b.Property<bool>("IsDeleted");
 
                     b.Property<bool>("IsLock");
 
@@ -251,9 +337,13 @@ namespace WOrder.Migrations
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
 
+                    b.Property<DateTime?>("AcceptDate");
+
                     b.Property<DateTime>("CreationTime");
 
                     b.Property<long?>("CreatorUserId");
+
+                    b.Property<DateTime?>("EndDate");
 
                     b.Property<long>("HandleId");
 
@@ -327,6 +417,8 @@ namespace WOrder.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("UserId");
+
                     b.ToTable("WOrder_Location");
                 });
 
@@ -335,7 +427,7 @@ namespace WOrder.Migrations
                     b.Property<long>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<DateTime?>("ArriveDate");
+                    b.Property<int>("CStatus");
 
                     b.Property<string>("Category")
                         .IsRequired()
@@ -352,6 +444,12 @@ namespace WOrder.Migrations
                     b.Property<string>("Description")
                         .HasMaxLength(1000);
 
+                    b.Property<DateTime?>("EDate");
+
+                    b.Property<DateTime?>("EndDate");
+
+                    b.Property<long?>("HandlerId");
+
                     b.Property<bool>("IsDeleted");
 
                     b.Property<string>("ItemName")
@@ -361,6 +459,8 @@ namespace WOrder.Migrations
                     b.Property<DateTime?>("LastModificationTime");
 
                     b.Property<long?>("LastModifierUserId");
+
+                    b.Property<string>("Location");
 
                     b.Property<string>("OAddress")
                         .IsRequired()
@@ -372,35 +472,43 @@ namespace WOrder.Migrations
 
                     b.Property<int>("OrderType");
 
+                    b.Property<DateTime?>("SDate");
+
+                    b.Property<long?>("SrcId");
+
+                    b.Property<string>("StartAddr");
+
                     b.Property<int>("TStatus");
 
                     b.HasKey("Id");
 
                     b.HasIndex("CreatorUserId");
 
+                    b.HasIndex("HandlerId");
+
                     b.HasIndex("LastModifierUserId");
 
                     b.ToTable("WOrder_Order");
                 });
 
-            modelBuilder.Entity("WOrder.Domain.Entities.WOrder_ORecord", b =>
+            modelBuilder.Entity("WOrder.Domain.Entities.WOrder_Relation", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd();
+
+                    b.Property<long>("AuditedId");
+
+                    b.Property<string>("Category");
 
                     b.Property<DateTime>("CreationTime");
 
                     b.Property<long?>("CreatorUserId");
 
-                    b.Property<int>("HandlerId");
-
-                    b.Property<int>("OStatus");
+                    b.Property<long>("OrderId");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("HandlerId");
-
-                    b.ToTable("WOrder_OrderRecord");
+                    b.ToTable("WOrder_Relation");
                 });
 
             modelBuilder.Entity("WOrder.Domain.Entities.WOrder_Schedule", b =>
@@ -434,12 +542,36 @@ namespace WOrder.Migrations
                     b.ToTable("WOrder_Schedule");
                 });
 
+            modelBuilder.Entity("WOrder.Domain.Entities.Sys_Message", b =>
+                {
+                    b.HasOne("WOrder.Domain.Entities.WOrder_Account", "Creator")
+                        .WithMany()
+                        .HasForeignKey("CreatorUserId");
+
+                    b.HasOne("WOrder.Domain.Entities.WOrder_Account", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("WOrder.Domain.Entities.Sys_UserRole", b =>
+                {
+                    b.HasOne("WOrder.Domain.Entities.Sys_Role")
+                        .WithMany("Users")
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade);
+
+                    b.HasOne("WOrder.Domain.Entities.WOrder_Account")
+                        .WithMany("Roles")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
             modelBuilder.Entity("WOrder.Domain.Entities.WOrder_Account", b =>
                 {
                     b.HasOne("WOrder.Domain.Entities.WOrder_Department", "Department")
                         .WithMany("Accounts")
-                        .HasForeignKey("DeptId")
-                        .OnDelete(DeleteBehavior.Cascade);
+                        .HasForeignKey("DeptId");
                 });
 
             modelBuilder.Entity("WOrder.Domain.Entities.WOrder_Comment", b =>
@@ -458,7 +590,7 @@ namespace WOrder.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
 
                     b.HasOne("WOrder.Domain.Entities.WOrder_Order", "Order")
-                        .WithMany("Handlers")
+                        .WithMany()
                         .HasForeignKey("OrderId")
                         .OnDelete(DeleteBehavior.Cascade);
                 });
@@ -471,23 +603,27 @@ namespace WOrder.Migrations
                         .OnDelete(DeleteBehavior.Cascade);
                 });
 
+            modelBuilder.Entity("WOrder.Domain.Entities.WOrder_Location", b =>
+                {
+                    b.HasOne("WOrder.Domain.Entities.WOrder_Account", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade);
+                });
+
             modelBuilder.Entity("WOrder.Domain.Entities.WOrder_Order", b =>
                 {
                     b.HasOne("WOrder.Domain.Entities.WOrder_Account", "CreatorUser")
                         .WithMany()
                         .HasForeignKey("CreatorUserId");
 
+                    b.HasOne("WOrder.Domain.Entities.WOrder_Account", "Handler")
+                        .WithMany()
+                        .HasForeignKey("HandlerId");
+
                     b.HasOne("WOrder.Domain.Entities.WOrder_Account", "LastModifierUser")
                         .WithMany()
                         .HasForeignKey("LastModifierUserId");
-                });
-
-            modelBuilder.Entity("WOrder.Domain.Entities.WOrder_ORecord", b =>
-                {
-                    b.HasOne("WOrder.Domain.Entities.WOrder_Handler", "Handler")
-                        .WithMany("Records")
-                        .HasForeignKey("HandlerId")
-                        .OnDelete(DeleteBehavior.Cascade);
                 });
 
             modelBuilder.Entity("WOrder.Domain.Entities.WOrder_Schedule", b =>

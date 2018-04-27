@@ -18,9 +18,8 @@ a {
     background-color: whitesmoke;
 
     .header {
-        background: linear-gradient(to bottom right,#50a3a2,#53e3a6);
+        background: linear-gradient(to bottom right,#26A3DC,#0F74C6);
         height: 60px;
-        line-height: 60px;
         width: 100%;
         padding: 0px 10px;
         box-sizing: border-box;
@@ -29,8 +28,7 @@ a {
             font-size: 24px;
             font-weight: bold;
             margin: 0 auto;
-            text-align: center;
-            width: 200px;
+            width: 400px;
             float: left;
             color: white;
             line-height: 50px;
@@ -53,20 +51,52 @@ a {
         }
 
         .right {
-            width: 150px;
-            float: right;
+            width: 250px;
             height: 50px;
-            line-height: 50px;
+            position: absolute;
+            right: 0;
+
+            .u-message {
+                position: relative;
+
+                img {
+                    position: relative;
+                    top: 10px;
+                    left: 0;
+                    height: 20px;
+                    margin: 0;
+                }
+
+                .text {
+                    position: relative;
+                    top: 25px;
+                    right: 24px;
+                    color: white;
+                }
+
+                .number {
+                    position:absolute;
+                    left:15px;
+                    background-color:red;
+                    color:white;
+                    padding:4px 3px;
+                    border-radius:10px;
+                    top:0;
+
+                }
+            }
 
             .u-name {
+                line-height:50px;
+                vertical-align:middle;
                 a {
                     font-size: 16px;
                     color: white;
-                    line-height: 40px;
                 }
             }
 
             .signout {
+                margin-right:20px;
                 a {
                     font-size: 16px;
                     line-height: 40px;
@@ -360,6 +390,6 @@ a {
         font-weight: 600;
         background-color: #FF5983;
         color: ivory;
-        cursor:pointer;
+        cursor: pointer;
     }
 }

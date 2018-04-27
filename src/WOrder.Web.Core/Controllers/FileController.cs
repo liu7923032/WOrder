@@ -21,7 +21,6 @@ using Abp.UI;
 namespace WOrder.Web.Controllers
 {
     [Route("api/[controller]/[action]")]
-    [AbpMvcAuthorize]
 
     public class FileController : WOrderControllerBase
     {
@@ -79,7 +78,7 @@ namespace WOrder.Web.Controllers
             #endregion
 
             #region 2.0 创建文件的存放路径
-            string relativeFilePath = $"\\upload\\{Clock.Now.ToString("yyyy_MM")}\\";
+            string relativeFilePath = $"\\upload\\{module}\\{Clock.Now.ToString("yyyy_MM")}\\";
             string fileDir = hostingEnv.WebRootPath + relativeFilePath;
             if (!Directory.Exists(fileDir))
             {
@@ -108,25 +107,7 @@ namespace WOrder.Web.Controllers
             return await Task.FromResult(newFile);
         }
 
-        //更换用户头像
-        [HttpPost]
-        [WrapResult(WrapOnSuccess = false, WrapOnError = true)]
-        public async Task<JsonResult> ChageUserPhoto(IFormFile file, long userId)
-        {
-            if (file == null)
-            {
-                throw new UserFriendlyException("请选择图片");
-            }
-            //上传附档
-            var newFile = await SaveFile(file, "userId");
-            //更新用户图片
-            var userEntity = await _userService.GetUserById(userId);
-            userEntity.Photos = newFile.FilePath;
-            userEntity.FileIds = newFile.Id.ToString();
-            await _userService.Update(userEntity);
-
-            return await Task.FromResult(Json(ObjectMapper.Map<UserDto>(userEntity)));
-        }
+     
 
 
     }

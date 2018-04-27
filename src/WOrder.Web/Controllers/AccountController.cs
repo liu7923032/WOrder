@@ -22,6 +22,7 @@ using Abp.UI;
 
 namespace WOrder.Web.Controllers
 {
+
     public class AccountController : WOrderControllerBase
     {
         private IUserAppService _userAppService;
@@ -50,11 +51,10 @@ namespace WOrder.Web.Controllers
 
 
 
-
         [HttpPost]
         public async Task<JsonResult> LoginAsync([FromBody]LoginModel login)
         {
-           
+
             if (!ModelState.IsValid)
             {
                 throw new UserFriendlyException("参数异常");
@@ -70,7 +70,7 @@ namespace WOrder.Web.Controllers
         {
             var user = await _userAppService.SignAsync(login);
             //证件当事人
-            var claimPrincipal = await _userAppService.GetPrincipalAsync(user, CookieScheme);
+            var claimPrincipal = await _userAppService.GetPrincipalAsync(user.Id.ToString(), user.UserName, CookieScheme);
 
             await HttpContext.SignOutAsync(CookieScheme);
             //系统登陆
@@ -84,28 +84,6 @@ namespace WOrder.Web.Controllers
             return RedirectToAction("Login");
         }
 
-        /// <summary>
-        /// 通过其他方式登陆
-        /// </summary>
-        /// <returns></returns>
-        public async Task<ActionResult> ExternalLogin()
-        {
-            string account = Request.Query["gongHao"];
-            //如果账号不存在,那么直接跳转到登陆页面
-            if (string.IsNullOrEmpty(account))
-            {
-                return Redirect("/Account/Login");
-            }
-            //var loginUser = Request.Cookies["MDSD.LoginUser"];
-            //获取当前信息
-            var user = await _userAppService.GetUserByAccountAsync(account);
-            //获取证件当事人
-            var claimPrincipal = await _userAppService.GetPrincipalAsync(user, CookieScheme);
-            //登陆系统
-            await HttpContext.SignInAsync(CookieScheme, claimPrincipal, new AuthenticationProperties() { IsPersistent = false });
-            //跳转地址
-            return Redirect("/Home/Index");
-        }
 
         /// <summary>
         /// 为了保持网站能够持续响应
@@ -118,33 +96,14 @@ namespace WOrder.Web.Controllers
         }
 
         /// <summary>
-        /// 用于同步积分
-        /// </summary>
-        /// <param name="input"></param>
-        /// <returns></returns>
-        [DontWrapResult]
-        [HttpPost]
-        public async Task<IntegralDto> SyncIntegral(CreateIntegralInput input)
-        {
-            return await _integralService.Create(input);
-        }
-
-
-        /// <summary>
-        /// 积分信息
+        /// 用户审核
         /// </summary>
         /// <returns></returns>
-        public async Task<ActionResult> Integral()
+        public async Task<ActionResult> UserApprove()
         {
-            var user = await _userAppService.GetUserById(AbpSession.UserId.Value);
-            //ViewBag.Integral = user.Integral;
-            //计算当前人员的积分
             return await Task.FromResult(View());
         }
 
-        public async Task<ActionResult> IntegralAbout()
-        {
-            return await Task.FromResult(View());
-        }
+
     }
 }

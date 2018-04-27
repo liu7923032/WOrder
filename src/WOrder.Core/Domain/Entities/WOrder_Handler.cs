@@ -26,7 +26,22 @@ namespace WOrder.Domain.Entities
         /// </summary>
         public OStatus OStatus { get; set; }
         
-        //人员处理状态记录表
-        public virtual ICollection<WOrder_ORecord> Records { get; set; }
+        /// <summary>
+        /// 接单时间
+        /// </summary>
+        public DateTime? AcceptDate { get; set; }
+
+        /// <summary>
+        /// 完结时间
+        /// </summary>
+        public DateTime? EndDate { get; set; }
+    }
+
+
+    public enum OStatus
+    {
+        Init,
+        Accept,
+        Finish
     }
 }

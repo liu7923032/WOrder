@@ -6,6 +6,11 @@
 @{
     if (!string.IsNullOrEmpty(Model.Account))
     {
+<a class="u-message" href="javascript:void(0)">
+    <span class="number" id="txtMsg"></span>
+    <img src="~/image/bell.png" />
+    <span class="text">消息</span>
+</a>
         <div class="u-name">
             <a href="javascript:void(0)">@Model.UserName</a>
         </div>

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
+using System.IO;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
@@ -36,7 +37,7 @@ namespace WOrder.Web.Core.Controllers
 
         }
 
-        
+
         [HttpPost]
         public async Task<AuthenticateResultModel> Authenticate([FromQuery]LoginModel model)
         {
@@ -65,6 +66,15 @@ namespace WOrder.Web.Core.Controllers
             ));
         }
 
+        [HttpGet]
+        public async Task<FileResult> DownApkFile()
+        {
+            //加载文件
+            var addrUrl = "/app/pManage.apk";
+            return await Task.FromResult(
+                    File(addrUrl, "application/vnd.android.package-archive", Path.GetFileName(addrUrl))
+            );
+        }
 
         private string CreateAccessToken(IEnumerable<Claim> claims, TimeSpan? expiration = null)
         {

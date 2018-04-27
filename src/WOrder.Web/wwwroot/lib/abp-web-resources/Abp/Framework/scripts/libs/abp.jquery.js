@@ -16,7 +16,7 @@
         var oldBeforeSendOption = options.beforeSend;		
         options.beforeSend = function(xhr) {
             if (oldBeforeSendOption) {
-                 oldBeforeSendOption(xhr);
+                oldBeforeSendOption(xhr);
             }
 
             xhr.setRequestHeader("Pragma", "no-cache");
@@ -37,7 +37,10 @@
                         userOptions.success && userOptions.success(data);
                     }
                 }).fail(function (jqXHR) {
-                    if (jqXHR.responseJSON && jqXHR.responseJSON.__abp) {
+                    if(jqXHR.status==200){
+                        userOptions.success && userOptions.success();
+                    }
+                    else if (jqXHR.responseJSON && jqXHR.responseJSON.__abp) {
                         abp.ajax.handleResponse(jqXHR.responseJSON, userOptions, $dfd, jqXHR);
                     } else {
                         abp.ajax.handleNonAbpErrorResponse(jqXHR, userOptions, $dfd);
@@ -54,6 +57,11 @@
             headers: {
                 'X-Requested-With': 'XMLHttpRequest'
             }
+        },
+
+        defaultSuccess:{
+            message: "操作提示",
+            details:"操作成功"
         },
 
         defaultError: {
@@ -97,13 +105,11 @@
         },
 
         handleNonAbpErrorResponse: function (jqXHR, userOptions, $dfd) {
+
             if (userOptions.abpHandleError !== false) {
                 switch (jqXHR.status) {
                     case 401:
-                        abp.ajax.handleUnAuthorizedRequest(
-                            abp.ajax.showError(abp.ajax.defaultError401),
-                            abp.appPath
-                        );
+                        abp.ajax.showError(abp.ajax.defaultError401);
                         break;
                     case 403:
                         abp.ajax.showError(abp.ajax.defaultError403);

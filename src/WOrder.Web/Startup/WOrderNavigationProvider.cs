@@ -38,16 +38,37 @@ namespace WOrder.Web.Startup
                                     url: "Dictionary/Index",
                                     icon: "&#xe604;",
                                     requiredPermissionName: PermissionNames.Page_Admin
-                                   ))
+                                ))
                          .AddItem(new MenuItemDefinition(
                                     PageNames.User,
                                     L(nameof(PageNames.User)),
                                     url: "User/Index",
                                     icon: "&#xe604;",
                                     requiredPermissionName: PermissionNames.Page_Admin
-                                   ))
+                                ))
+                        .AddItem(new MenuItemDefinition(
+                                    PageNames.RoleSetting,
+                                    L(nameof(PageNames.RoleSetting)),
+                                    url: "Role/Index",
+                                    icon: "&#xe604;",
+                                    requiredPermissionName: PermissionNames.Page_Admin
+                                ))
+                         .AddItem(new MenuItemDefinition(
+                                    PageNames.Approve,
+                                    L(nameof(PageNames.Approve)),
+                                    url: "User/Approve",
+                                    icon: "&#xe604;",
+                                    requiredPermissionName: PermissionNames.Page_Admin
+                                ))
+                         .AddItem(new MenuItemDefinition(
+                                    PageNames.Location,
+                                    L(nameof(PageNames.Location)),
+                                    url: "Location/Index",
+                                    icon: "&#xe604;",
+                                    requiredPermissionName: PermissionNames.Page_Admin
+                                ))
 
-                ).AddItem(new MenuItemDefinition(
+                    ).AddItem(new MenuItemDefinition(
                             PageNames.SysManage,
                             L(nameof(PageNames.SysManage)),
                             url: "",
@@ -89,12 +110,7 @@ namespace WOrder.Web.Startup
                             url: "Schedule/Index",
                             requiredPermissionName: PermissionNames.Page_Admin,
                             icon: ""
-                        )).AddItem(new MenuItemDefinition(
-                             PageNames.Complaint,
-                            L(nameof(PageNames.Complaint)),
-                            url: "Order/Complaint",
-                            requiredPermissionName: PermissionNames.Page_Admin,
-                            icon: "")))
+                        )))
                  .AddItem(
                             new MenuItemDefinition(
                                 PageNames.Report,
@@ -104,8 +120,15 @@ namespace WOrder.Web.Startup
                                 new MenuItemDefinition(
                                     PageNames.UserWorkCount,
                                     L(nameof(PageNames.UserWorkCount)),
-                                    url: "Report/WorkHour",
-                                    requiredPermissionName: PermissionNames.Page_Admin, icon: "")));
+                                    url: "Report/UserWorkCount",
+                                    requiredPermissionName: PermissionNames.Page_Admin, icon: ""))
+                            .AddItem(
+                                new MenuItemDefinition(
+                                    PageNames.UserWorkCount,
+                                    L(nameof(PageNames.TransportCount)),
+                                    url: "Report/TransportCount",
+                                    requiredPermissionName: PermissionNames.Page_Admin, icon: ""))
+                           );
 
         }
 

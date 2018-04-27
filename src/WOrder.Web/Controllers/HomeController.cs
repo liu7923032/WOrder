@@ -73,5 +73,14 @@ namespace WOrder.Web.Controllers
         {
             return await Task.FromResult(View());
         }
+
+        /// <summary>
+        /// 查看消息
+        /// </summary>
+        /// <returns></returns>
+        public async Task<ActionResult> Message()
+        {
+            return await Task.FromResult(View());
+        }
     }
 }

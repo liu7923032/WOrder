@@ -9,6 +9,7 @@ using Abp.AutoMapper;
 using Abp.Collections.Extensions;
 using Abp.Domain.Repositories;
 using Abp.Linq.Extensions;
+using Abp.UI;
 using Microsoft.EntityFrameworkCore;
 using WOrder.Authorization;
 using WOrder.Domain.Entities;
@@ -26,6 +27,7 @@ namespace WOrder.Schedule
         Task<bool> BatchSave(BatchSaveDto saveAll);
 
         Task<List<GetScheduleDto>> GetSchedules(GetAllScheduleDto dto);
+
     }
 
     [AbpAuthorize]
@@ -41,10 +43,12 @@ namespace WOrder.Schedule
 
         protected override IQueryable<WOrder_Schedule> CreateFilteredQuery(GetAllScheduleDto input)
         {
-            return base.CreateFilteredQuery(input).Where(u => u.YFlag.Equals(input.YFlag) && u.MFlag.Equals(input.MFlag))
+            return base.CreateFilteredQuery(input)
+                    .Where(u => u.YFlag.Equals(input.YFlag) && u.MFlag.Equals(input.MFlag))
                     .WhereIf(!string.IsNullOrEmpty(input.ClassType), u => u.ClassType.Equals(input.ClassType))
-                    .WhereIf(input.UserId.HasValue, u => u.UserId == input.UserId);
-                
+                    .WhereIf(input.UserId.HasValue, u => u.UserId == input.UserId)
+                    .Include("User");
+
         }
 
         /// <summary>
@@ -55,24 +59,29 @@ namespace WOrder.Schedule
         [AbpAuthorize(PermissionNames.Page_Admin)]
         public async Task<bool> BatchSave(BatchSaveDto saveDto)
         {
-            var dateList = saveDto.UserDays.Select(u => u.DFlag).ToList();
+
+            if (saveDto.EDate < saveDto.SDate)
+            {
+                throw new UserFriendlyException("开始时间大于结束时间,请处理");
+            }
+
+            int sDay = saveDto.SDate.Day, eDay = saveDto.EDate.Day;
             //1.删除已经由的记录
             await _scheduleRepository.DeleteAsync(u =>
                                                  u.UserId.Equals(saveDto.UserId)
                                                  && u.YFlag.Equals(saveDto.YFlag)
                                                  && u.MFlag.Equals(saveDto.MFlag)
-                                                 && dateList.Contains(u.DFlag));
-            //2.新增新的记录
-            saveDto.UserDays.ForEach(async u =>
+                                                 && u.DFlag >= sDay
+                                                 && u.DFlag <= eDay);
+
+            for (int i = sDay; i <= eDay; i++)
             {
                 var newEntity = saveDto.MapTo<WOrder_Schedule>();
-                newEntity.DFlag = u.DFlag;
-                newEntity.ClassType = u.ClassType;
+                newEntity.DFlag = i;
+                newEntity.ClassDate = Convert.ToDateTime(saveDto.YFlag + "/" + saveDto.MFlag + "/" + i);
                 await _scheduleRepository.InsertAsync(newEntity);
-            });
-
+            }
             return await Task.FromResult(true);
-
         }
 
         /// <summary>
@@ -97,6 +106,7 @@ namespace WOrder.Schedule
                                 a.UserId,
                                 a.User.WorkMode,
                                 a.User.AreaName,
+                                a.User.Position,
                                 a.YFlag,
                                 a.MFlag
                             } into g
@@ -106,6 +116,7 @@ namespace WOrder.Schedule
                                 UserId = g.Key.UserId,
                                 WorkMode = g.Key.WorkMode,
                                 AreaName = g.Key.AreaName,
+                                Position = g.Key.Position,
                                 YFlag = g.Key.YFlag,
                                 MFlag = g.Key.MFlag,
                                 UserDays = (from b in final
@@ -114,8 +125,10 @@ namespace WOrder.Schedule
                                             && b.UserId == g.Key.UserId
                                             select new UserDayDto
                                             {
+                                                Id = b.Id,
                                                 ClassType = b.ClassType,
-                                                DFlag = b.DFlag
+                                                DFlag = b.DFlag,
+                                                Description = b.Description
                                             }).ToList()
                             };
 

@@ -7,5 +7,6 @@
     <text name="Cancel" value="取消" />
     <text name="Yes" value="确定" />
     <text name="ValidationNarrativeTitle" value="参数验证期间检测到以下错误." />
+    <text name="EntityNotFound" value="没有这个实体 {0} with id = {1}!" />
   </texts>
 </localizationDictionary>

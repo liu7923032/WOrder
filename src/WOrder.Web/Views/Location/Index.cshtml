@@ -1,0 +1,139 @@
+﻿@using WOrder.Web.Startup
+
+@{
+    ViewBag.ActiveMenu = PageNames.Location;
+    //Layout = null;
+}
+
+
+
+<div class="easyui-layout" id="ly_location" data-options="fit:true,border:false">
+    <div data-options="region:'north',height:50" style="padding:7px 10px;">
+        <table class="query-table">
+            <tr>
+
+                <td>创建时间</td>
+                <td><input class="easyui-datebox" id="txtSDate" /></td>
+                <td>-</td>
+                <td><input class="easyui-datebox" id="txtEDate" /></td>
+                <td>
+                    关键字
+                </td>
+                <td>
+                    <input class="easyui-searchbox" id="txtKey" />
+                </td>
+                <td>
+                    <a id="btnQuery" class="easui-linkbutton">查询</a>
+                </td>
+
+            </tr>
+        </table>
+    </div>
+    <div data-options="region:'center'">
+        <table id="tb_location"></table>
+    </div>
+</div>
+
+
+
+@section Scripts{
+    <script type="text/javascript">
+    $(function () {
+        var _reportService = abp.services.app.location
+       ;
+        var methods = {
+            init: function () {
+                $.parser.parse('#ly_location')
+
+                $('#txtSDate').datebox({
+                    width: 120,
+                    editable: false,
+                    icons: [{
+                        iconCls: 'icon-clear',
+                        handler: function (e) {
+                            $(e.data.target).textbox('clear');
+                        }
+                    }]
+                });
+
+
+                $('#txtEDate').datebox({
+                    width: 120,
+                    editable: false,
+                    icons: [{
+                        iconCls: 'icon-clear',
+                        handler: function (e) {
+                            $(e.data.target).textbox('clear');
+                        }
+                    }]
+                })
+
+                $('#btnQuery').linkbutton({
+                    iconCls: 'icon-search',
+                    width: 80,
+                    plain:true,
+                    onClick: function () {
+                        methods.query()
+                    }
+                });
+
+
+                $('#txtKey').searchbox({
+                    width: 250,
+                    prompt:'姓名',
+                    searchbox: function () {
+                        methods.query();
+                    }
+                });
+
+                //上传文件
+                $.fileUpload({
+                    success: function (file) {
+                        //设置fileIds
+                        var srcValue = $('#txtFileIds').val();
+                        if (srcValue.length > 0) {
+                            srcValue += ',';
+                        }
+                        srcValue += file.id;
+                        $('#txtFileIds').val(srcValue);
+                        //添加图片
+                    }
+                });
+            },
+            initTable: function (queryParam) {
+                //初始化正常表
+                $.dgInit({
+                    singleSelect: true,
+                    queryParams: queryParam,
+                    id: "tb_location",
+                    url: '/api/services/app/location/getAll',
+                    columns: [[
+                        {
+                            field: 'userName', title: '姓名', width: 80
+                        },
+                        { field: 'position', title: '当前位置', width: 100 },
+                        { field: 'creationTime', title: '创建时间', align: 'center', width: 80 },
+
+                    ]],
+
+                });
+            },
+            getParam:function(){
+                return {
+                    "sDate": $('#txtSDate').datebox("getValue"),
+                    "eDate": $('#txtEDate').datebox("getValue"),
+                    "userName": $('#txtKey').searchbox('getValue'),
+                }
+            },
+            query: function (param) {
+                var queryParam=$.extend(methods.getParam(), param);
+                $('#tb_location').datagrid('reload', queryParam);
+            }
+        }
+
+        methods.init();
+        methods.initTable(methods.getParam());
+    })
+    </script>
+
+}

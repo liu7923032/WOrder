@@ -11,9 +11,9 @@
     <div data-options="region:'north',height:50" style="padding:7px 10px;">
         <table class="query-table">
             <tr>
-                <td>巡检状态</td>
+                <td>运送状态</td>
                 <td><input class="easyui-combobox" id="txtTStatus" value="0" /></td>
-                <td>巡检日期</td>
+                <td>运送日期</td>
                 <td><input class="easyui-datebox" id="txtSDate" /></td>
                 <td>-</td>
                 <td><input class="easyui-datebox" id="txtEDate" /></td>
@@ -42,30 +42,43 @@
         <input type="hidden" name="id">
         <input type="hidden" name="orderNo" />
         <input type="hidden" name="fileIds" id="txtFileIds" />
-        <input type="hidden" name="category" />
         <table class="form-table">
             <tr>
-                <td class="tdLabel">标题</td>
+                <td class="tdLabel">运送类别</td>
                 <td colspan="3">
-                    <input class="easyui-textbox" name="itemName" data-options="width:500,required:true,prompt:'最短4位,最长20位'" />
+                    <input class="easyui-combobox" id="txtCategory" name="category" data-options="width:500,required:true" />
                 </td>
             </tr>
             <tr>
-                <td class="tdLabel">目的地</td>
+                <td class="tdLabel">运送项目</td>
                 <td colspan="3">
-                    <input class="easyui-textbox" name="oAddress" data-options="width:500,required:true,prompt:'问题的位置信息'" />
+                    <input class="easyui-textbox" id="txtItemName" name="itemName" data-options="width:500,required:true,prompt:'最短4位,最长20位'" />
+                </td>
+            </tr>
+            <tr>
+                <td class="tdLabel">出发地</td>
+                <td>
+                    <input class="easyui-textbox" name="startAddr" data-options="width:200,editable:true,required:true,prompt:'物品出发地'" />
+                </td>
+                <td class="tdLabel">目的地</td>
+                <td>
+                    <input class="easyui-textbox" name="oAddress" data-options="width:200,editable:true,required:true,prompt:'物品目的地'" />
+                </td>
+            </tr>
+            <tr>
+                <td class="tdLabel">出发时间</td>
+                <td>
+                    <input class="easyui-datetimebox" name="sDate" data-options="showSeconds:false,width:200,required:true,editable:false,prompt:'出发时间'" />
+                </td>
+                <td class="tdLabel">到达时间</td>
+                <td>
+                    <input class="easyui-datetimebox" name="eDate" data-options="showSeconds:false,width:200,required:true,editable:false,prompt:'到达时间'" />
                 </td>
             </tr>
             <tr>
                 <td class="tdLabel">备注</td>
                 <td colspan="3">
-                    <input class="easyui-textbox" name="description" data-options="width:500,required:true,height:'100',multiline:true" />
-                </td>
-            </tr>
-            <tr>
-                <td class="tdLabel">到达时间</td>
-                <td colspan="3">
-                    <input class="easyui-datetimebox" name="arriveDate" data-options="width:500,required:true,editable:false" />
+                    <input class="easyui-textbox" name="description" data-options="width:500,required:false,height:'100',multiline:true" />
                 </td>
             </tr>
             <tr>
@@ -89,7 +102,8 @@
     <script type="text/javascript">
     $(function () {
         var _orderService = abp.services.app.order
-        , category = "物品运送";
+        , typeURL ="/api/services/app/Dictionary/GetAll?maxResultCount=10000&skipCount=0&dictType=" + encodeURIComponent("中央运送类别")
+        , status = $.getQuery("status") || 0;
         var methods = {
             init: function () {
                 $.parser.parse('#ly_order')
@@ -125,9 +139,10 @@
                     }]
                 }
 
-                $('#txtTStatus').combobox($.extend({
+                $.combobox({
+                    id: 'txtTStatus',
                     valueField: 'id',
-                    width:90,
+                    width: 90,
                     data: [{ id: 0, name: '待分配' },
                         { id: 1, name: '待接单' },
                         { id: 2, name: '处理中' },
@@ -135,7 +150,16 @@
                     onHidePanel: function () {
                         methods.query();
                     }
-                }, baseOption));
+                });
+               
+                $('#txtTStatus').combobox('setValue', status);
+                $.combobox({
+                    id: 'txtCategory',
+                    url: typeURL,
+                    valueField: 'name',
+                    required:true
+                });
+              
 
                 $('#txtSDate').datebox({
                     width: 120,
@@ -201,7 +225,7 @@
                 //初始化正常表
                 $.dgInit($.extend({
                     id: "tb_transport",
-                    url: '/api/services/app/order/getAll?orderType=0',
+                    url: '/api/services/app/order/getAll?orderType=1',
                     toolbar: [
                         {
                             text: "新增",
@@ -233,9 +257,9 @@
                             text: "删除",
                             iconCls: 'icon-remove',
                             handler: function () {
-                                $.rowSelectCheck('tb_transport', "请先选择要巡检信息", function (row, rowIndex) {
-                                    abp.message.confirm("确定要巡检信息:" + row.name, function (r) {
-                                        _userService.delete({ id: row.id }, {
+                                $.rowSelectCheck('tb_transport', "请先选择要运送任务", function (row, rowIndex) {
+                                    abp.message.confirm("确定要运送任务:" + row.itemName, function (r) {
+                                        _orderService.delete({ id: row.id }, {
                                             success: function (data) {
                                                 abp.notify.success("删除成功");
                                                 $('#tb_transport').datagrid('deleteRow', rowIndex)
@@ -246,21 +270,31 @@
                             }
                         }
                     ],
-                    columns: [[
+                    fitColumns:false,
+                    frozenColumns: [[
                         { field: 'id', hidden: true, width: 30 },
                         { field: 'tStatus', hidden: true, width: 30 },
                         {
-                            field: 'assign', title: '处理人', width: 60,align:'center',
+                            field: 'handleName', title: '处理人', width: 60, align: 'center',
                             formatter: function (value, row, index) {
                                 if (row.tStatus == 0) {
-                                    return "<a href='javascript:void(0)' orderId='"+row.id+"' rowIndex='"+index+"'  class='btn-assign' >派单</a>"
+                                    return "<a href='javascript:void(0)' tId='"+row.id+"' rowIndex='"+index+"'  class='btn-assign' >派单</a>"
                                 } else {
-                                    return "<a href='javascript:void(0)' orderId='" + row.id + "' rowIndex='" + index + "'  class='btn-pUsers' >查看</a>";
+                                    return row.tranUName;
                                 }
                             }
                         },
-                        { field: 'orderNo', title: '运送编号', width: 100 },
-                        { field: 'itemName', title: '标题', width: 150, formatter: function (value, row, index) { return "<a class='easyui-tips'>" + value + "<a>" } },
+                        { field: 'orderNo', title: '运送编号', width: 120 },
+                        { field: 'category', title: '运送分类', width: 120 },
+                        {
+                            field: 'itemName', title: '运送项目', width: 150,
+                            formatter: function (value, row, index){
+                                return "<a class='easyui-tips'>" + value + "<a>";
+                            }
+                        },
+                        
+                    ]],
+                    columns: [[
                         {
                             field: 'tStatusName', title: '状态', align: 'center', width: 80,
                             styler: function (value, row, index) {
@@ -273,27 +307,18 @@
                                 }
                             }
                         },
-                        { field: 'creatorName', title: '提出人', align: 'center', width: 80 },
-                        { field: 'creationTime', title: '提出时间', align: 'center', width: 110, sortable: true },
-                        { field: 'arriveDate', title: '运送时间', width: 110,algin:'center' },
-                        { field: 'oAddress', title: '运送地点', width: 150 },
-                        { field: 'description', title: '备注', width: 250 },
+                        { field: 'sDate', title: '出发时间', width: 120, algin: 'center' },
+                        { field: 'eDate', title: '到达时间', width: 120, algin: 'center' },
+                        { field: 'startAddr', title: '出发地', width: 150 },
+                        { field: 'oAddress', title: '目的地', width: 150 },
+                        { field: 'description', title: '备注', width: 200 },
                     ]],
                     onLoadSuccess: function (data) {
                         var rows = data.rows;
                         $('.btn-assign').click(function () {
-                            var orderId = $(this).attr('orderId')
+                            var tId = $(this).attr('tId')
                             ,rowIndex=$(this).attr('rowIndex');
-                            methods.assign(rowIndex,orderId)
-                        });
-
-                        $('.btn-pUsers').click(function () {
-                            var orderId = $(this).attr('orderId')
-                            , rowIndex = $(this).attr('rowIndex');
-                            var result = rows.filter(function (item) {
-                                return item.id == orderId;
-                            })[0].handlers;
-                            methods.showProcess(result)
+                            methods.assign(rowIndex, tId)
                         });
                     }
                 }, dgOptions));
@@ -303,7 +328,7 @@
                     "tStatus": $('#txtTStatus').combobox("getValue"),
                     "sDate": $('#txtSDate').datebox("getValue"),
                     "eDate": $('#txtEDate').datebox("getValue"),
-                    "category": category,
+                    "category": $('#txtCategory').searchbox('getValue'),
                     "itemName":$('#txtKey').searchbox('getValue')
                 }
             },
@@ -316,7 +341,7 @@
                 $.formSave({
                     id: 'frm_transport',
                     action: function (fields, isAdd) {
-                        fields["category"] = category;
+                        fields["orderType"] = 1;
                         if (isAdd) {
                             _orderService.create(fields, {
                                 success: function (data) {
@@ -337,7 +362,7 @@
                     }
                 });
             },
-            assign: function (rowIndex,oId) {
+            assign: function (rowIndex,tId) {
                 $.dialogAndDg({
                     dlgOpts: {
                         title: "处理人",
@@ -347,9 +372,9 @@
                     },
                     tbOpts: {
                         id: "tb_assignU",
-                        url: '/api/services/app/user/getAll',
+                        url: '/api/services/app/role/GetUsersByRoleId?roleId=3',
                         columns: [[
-                            { field: 'id', hidden: true, width: 30 },
+                            { field: 'userId', hidden: true, width: 30 },
                             { field: 'deptId', hidden: true, width: 30 },
                             { field: 'account', title: '账号', width: 80, sortable: true },
                             { field: 'userName', title: '姓名', width: 80 },
@@ -357,14 +382,10 @@
                             { field: 'position', title: '岗位', width: 80 },
                             { field: 'phone', title: '联系方式', width: 120 },
                         ]],
-                        onDblClickRow:function(index,row){
-                            _orderService.assign([{
-                                handleId: row.id,
-                                orderId: oId,
-                                oStatus:0
-                            }], {
+                        onDblClickRow: function (index, row) {
+                            _orderService.assign(oId, row.userId, {
                                 success: function (resData) {
-                                    abp.notify.success("派人成功,单据进入<span style='color:blue;'>处理状态</span>", "反馈提示");
+                                    abp.notify.success("派单成功,运单进入<span style='color:blue;'>待接单状态</span>", "反馈提示");
                                     methods.query();
                                 }
                             });

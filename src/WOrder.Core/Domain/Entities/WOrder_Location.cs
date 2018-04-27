@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
 using Abp.Domain.Entities.Auditing;
 
@@ -29,5 +30,8 @@ namespace WOrder.Domain.Entities
         /// 纬度
         /// </summary>
         public double? Latitude { get; set; }
+
+        [ForeignKey("UserId")]
+        public virtual WOrder_Account User { get; set; }
     }
 }

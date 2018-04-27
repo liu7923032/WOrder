@@ -18,6 +18,8 @@ using Abp.Extensions;
 using Microsoft.AspNetCore.Mvc.Cors.Internal;
 using WOrder.Web.Core;
 using Abp.AspNetCore.SignalR.Hubs;
+using Microsoft.AspNetCore.StaticFiles;
+using System.Collections.Generic;
 
 namespace WOrder.Web.Startup
 {

@@ -1,0 +1,187 @@
+﻿@using WOrder.Web.Startup
+
+@{
+    ViewBag.ActiveMenu = PageNames.UserWorkCount;
+    //Layout = null;
+}
+
+
+
+<div class="easyui-layout" id="ly_audit" data-options="fit:true,border:false">
+    <div data-options="region:'north',height:50" style="padding:7px 10px;">
+        <table class="query-table">
+            <tr>
+                
+                <td>完成日期</td>
+                <td><input class="easyui-datebox" id="txtSDate" /></td>
+                <td>-</td>
+                <td><input class="easyui-datebox" id="txtEDate" /></td>
+                <td>
+                    关键字
+                </td>
+                <td>
+                    <input class="easyui-searchbox" id="txtKey" />
+                </td>
+                <td>
+                    <a id="btnQuery" class="easui-linkbutton">查询</a>
+                </td>
+
+            </tr>
+        </table>
+    </div>
+    <div data-options="region:'center'">
+        <table id="tb_userNum"></table>
+    </div>
+</div>
+
+
+
+@section Scripts{
+    <script type="text/javascript">
+    $(function () {
+        var _reportService = abp.services.app.report
+       ;
+        var methods = {
+            init: function () {
+                $.parser.parse('#ly_audit')
+                $.parser.parse('#dlg_audit');
+
+                $('#dlg_audit').dialog({
+                    buttons: [
+                        {
+                            text: '保存',
+                            iconCls: 'icon-save',
+                            handler: function () {
+                                methods.save();
+                            }
+                        }, {
+                            text: '关闭',
+                            iconCls: 'icon-cancel',
+                            handler: function () {
+                                $('#dlg_audit').dialog('close');
+                            }
+                        }
+                    ]
+                });
+
+                var baseOption = {
+                    textField: 'name',
+                    method: "GET",
+                    editable: false,
+                    icons: [{
+                        iconCls: 'icon-clear',
+                        handler: function (e) {
+                            $(e.data.target).textbox('clear');
+                        }
+                    }]
+                }
+
+                $('#txtTStatus').combobox($.extend({
+                    valueField: 'id',
+                    width:90,
+                    data: [{ id: 0, name: '待分配' },
+                        { id: 1, name: '待接单' },
+                        { id: 2, name: '处理中' },
+                        { id: 3, name: '已完成' }],
+                    onHidePanel: function () {
+                        methods.query();
+                    }
+                }, baseOption));
+
+                $('#txtSDate').datebox({
+                    width: 120,
+                    editable: false,
+                    icons: [{
+                        iconCls: 'icon-clear',
+                        handler: function (e) {
+                            $(e.data.target).textbox('clear');
+                        }
+                    }]
+                });
+
+             
+                $('#txtEDate').datebox({
+                    width: 120,
+                    editable: false,
+                    icons: [{
+                        iconCls: 'icon-clear',
+                        handler: function (e) {
+                            $(e.data.target).textbox('clear');
+                        }
+                    }]
+                })
+
+                $('#btnQuery').linkbutton({
+                    iconCls: 'icon-search',
+                    width: 80,
+                    plain:true,
+                    onClick: function () {
+                        methods.query()
+                    }
+                });
+
+
+                $('#txtKey').searchbox({
+                    width: 250,
+                    prompt:'姓名',
+                    searchbox: function () {
+                        methods.query();
+                    }
+                });
+
+                //上传文件
+                $.fileUpload({
+                    success: function (file) {
+                        //设置fileIds
+                        var srcValue = $('#txtFileIds').val();
+                        if (srcValue.length > 0) {
+                            srcValue += ',';
+                        }
+                        srcValue += file.id;
+                        $('#txtFileIds').val(srcValue);
+                        //添加图片
+                    }
+                });
+            },
+            initTable: function (queryParam) {
+
+                var dgOptions = {
+                    singleSelect: true,
+                    //checkOnSelect: false,
+                    //selectOnCheck: false,
+                    queryParams: queryParam
+                };
+                //初始化正常表
+                $.dgInit($.extend({
+                    id: "tb_userNum",
+                    url: '/api/services/app/report/GetUserWork',
+                    columns: [[
+                        {
+                            field: 'userName', title: '姓名', width: 80
+                        },
+                        { field: 'position', title: '岗位', width: 100 },
+                        { field: 'userNum', title: '完成数', align: 'center', width: 80 },
+                        
+                    ]],
+                   
+                }, dgOptions));
+            },
+            getParam:function(){
+                return {
+                    "sDate": $('#txtSDate').datebox("getValue"),
+                    "eDate": $('#txtEDate').datebox("getValue"),
+                    "userName": $('#txtKey').searchbox('getValue'),
+                }
+            },
+            query: function (param) {
+                var queryParam=$.extend(methods.getParam(), param);
+                $('#tb_userNum').datagrid('reload', queryParam);
+            }
+        }
+
+        methods.init();
+        methods.initTable(methods.getParam());
+    })
+    </script>
+
+}

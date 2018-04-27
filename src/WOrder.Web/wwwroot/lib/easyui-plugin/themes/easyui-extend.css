@@ -5,3 +5,18 @@
 .panel-body{
     overflow:visible;
 }
+
+/*将header的间距调大*/
+.panel-header {
+    padding: 5px 10px;
+}
+
+.panel-title {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+
+.combo-panel {
+    overflow: auto;
+}

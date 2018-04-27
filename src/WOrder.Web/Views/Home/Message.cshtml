@@ -1,0 +1,172 @@
+﻿@using WOrder.Web.Startup
+
+@{
+    ViewBag.ActiveMenu = PageNames.Location;
+    //Layout = null;
+}
+
+
+<div class="easyui-layout" id="ly_location" data-options="fit:true,border:false">
+    <div data-options="region:'north',height:50" style="padding:7px 10px;">
+        <table class="query-table">
+            <tr>
+                <td>消息类别</td>
+                <td>
+                    <input type="text" id="txtIsRead" />
+                </td>
+                <td>到达时间</td>
+                <td><input class="easyui-datebox" id="txtSDate" /></td>
+                <td>-</td>
+                <td><input class="easyui-datebox" id="txtEDate" /></td>
+                <td>
+                    关键字
+                </td>
+                <td>
+                    <input class="easyui-searchbox" id="txtKey" />
+                </td>
+                <td>
+                    <a id="btnQuery" class="easui-linkbutton">查询</a>
+                </td>
+
+            </tr>
+        </table>
+    </div>
+    <div data-options="region:'center'">
+        <table id="tb_message"></table>
+    </div>
+</div>
+
+
+
+@section Scripts{
+    <script type="text/javascript">
+    $(function () {
+        var msgService = abp.services.app.message
+       ;
+        var methods = {
+            init: function () {
+                $.parser.parse('#ly_location')
+
+                $.combobox({
+                    id: 'txtIsRead',
+                    valueField: 'id',
+                    width: 120,
+                    data: [{ id: 0, name: "未阅" }, { id: 1, name: "已阅" }]
+                });
+
+                $('#txtSDate').datebox({
+                    width: 120,
+                    editable: false,
+                    icons: [{
+                        iconCls: 'icon-clear',
+                        handler: function (e) {
+                            $(e.data.target).textbox('clear');
+                        }
+                    }]
+                });
+
+
+                $('#txtEDate').datebox({
+                    width: 120,
+                    editable: false,
+                    icons: [{
+                        iconCls: 'icon-clear',
+                        handler: function (e) {
+                            $(e.data.target).textbox('clear');
+                        }
+                    }]
+                })
+
+                $('#btnQuery').linkbutton({
+                    iconCls: 'icon-search',
+                    width: 80,
+                    plain:true,
+                    onClick: function () {
+                        methods.query()
+                    }
+                });
+
+
+                $('#txtKey').searchbox({
+                    width: 250,
+                    prompt:'姓名',
+                    searchbox: function () {
+                        methods.query();
+                    }
+                });
+
+              
+            },
+            initTable: function (queryParam) {
+                //初始化正常表
+                $.dgInit({
+                    singleSelect: true,
+                    queryParams: queryParam,
+                    id: "tb_message",
+                    url: '/api/services/app/message/getAll',
+                    columns: [[
+                        {
+                            field: 'title', title: '标题', width: 150,
+                            formatter: function (value, row, index) {
+                                return "<a href='#' title='"+value+"' _href='"+row.target+"' class='title'>"+value+"</a>"
+                            }
+                        },
+                        {
+                            field: 'content', title: '内容', width: 200
+                        },
+                        {
+                            field: 'sendUser', title: '发送人', width: 80
+                        },
+                        { field: 'creationTime', title: '发送时间', align: 'center', width: 80 },
+                        {
+                            field: 'actionre', title: '操作', align: 'center', width: 80,
+                            formatter: function (value, row, index) {
+                                if (row.isRead) {
+                                    return ""
+                                } else {
+                                    return "<a href='#' rowIndex='" + index + "' messageId='" + row.id + "' class='btnRead'>标记已阅</a>"
+                                }
+                            }
+                        },
+
+                    ]],
+                    onLoadSuccess: function (data) {
+                        $('.title').click(function () {
+                            var url = $(this).attr('target');
+                            var title = $(this).attr('title');
+                            $.tabAdd(title, url);
+                        });
+
+                        $('.btnRead').click(function () {
+                            var id = $(this).attr('messageId');
+                            var index = $(this).attr('rowIndex');
+                            msgService.read(id, {
+                                success: function (data) {
+                                    $('#tb_message').datagrid('deleteRow', index);
+                                }
+                            });
+                        });
+
+                    }
+                });
+            },
+            getParam:function(){
+                return {
+                    "sDate": $('#txtSDate').datebox("getValue"),
+                    "eDate": $('#txtEDate').datebox("getValue"),
+                    "userName": $('#txtKey').searchbox('getValue'),
+                    "isRead": $('#txtIsRead').combobox('getValue')==0?false:true
+                }
+            },
+            query: function (param) {
+                var queryParam=$.extend(methods.getParam(), param);
+                $('#tb_message').datagrid('reload', queryParam);
+            }
+        }
+
+        methods.init();
+        methods.initTable(methods.getParam());
+    })
+    </script>
+
+}

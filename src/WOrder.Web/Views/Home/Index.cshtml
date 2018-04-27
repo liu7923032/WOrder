@@ -11,9 +11,9 @@
 <div class="easyui-layout" data-options="fit:true,border:false" id="ly_main">
     <div class="" data-options="region:'north',height:52">
         <div class="header">
-            <div class="logo">
-                <img src="~/image/logo_tran.png"/>
-                <label>天翔物业</label>
+            <div class="logo" >
+                <img style="height:50px;" src="~/image/sys_logo.png"/>
+                <label style="font-size:25px;margin-left:10px;">管理平台</label>
             </div>
             <div class="left">
 
@@ -63,8 +63,11 @@
                     <span></span>
                 </div>
             </div>*@
-        <div style="text-align:center;">
-            天翔物业管理平台V1.0(请使用IE9以上浏览器) 版权所有 © 2018
+        <div style="text-align:center;padding:3px;">
+            <span style="margin-top:5px;font-weight:700;">
+                苏州市环亚数据技术有限公司 版权所有@2018
+            </span>
+            
         </div>
     </div>
 </div>
@@ -120,7 +123,8 @@
         $(function () {
             var cateEchart = echarts.init(document.getElementById('echart_category'))
             , detailEchart = echarts.init(document.getElementById('echart_detail'))
-            , _orderService = abp.services.app.order;
+            , _orderService = abp.services.app.order
+            , _messageService = abp.services.app.message;
             var methods = {
                 init: function () {
                     $.parser.parse('#ly_main')
@@ -135,6 +139,10 @@
                     $('#btnRunning').click(function () {
                         methods.initByStatus(2, "进行中订单");
                     });
+
+                    $('.u-message').click(function () {
+                        $.tabAdd("我的消息","/Home/Message");
+                    })
                 },
                 initMenu: function () {
                     $('.submenu>li>a').bind('click', function () {
@@ -205,31 +213,41 @@
                                 //TODO
                                 switch (params.name) {
                                     case "故障报修":
-                                        $.tabAdd(params.name, "/order/index");
+                                        $.tabAdd(params.name, "/order/index?status=" + status);
                                         break;
                                     case "品质稽核":
-                                        $.tabAdd(params.name, "/order/audit");
+                                        $.tabAdd(params.name, "/order/audit?status=" + status);
                                         break;
                                     case "投诉建议":
-                                        $.tabAdd(params.name, "/order/complaint");
+                                        $.tabAdd(params.name, "/order/complaint?status=" + status);
                                         break;
                                     case "项目巡检":
-                                        $.tabAdd(params.name, "/order/inspect");
+                                        $.tabAdd(params.name, "/order/inspect?status=" + status);
                                         break;
                                     case "物品运送":
-                                        $.tabAdd(params.name, "/order/transport");
+                                        $.tabAdd(params.name, "/order/transport?status=" + status);
                                         break;
                                     case "在线反馈":
-                                        $.tabAdd(params.name, "/order/feedBack");
+                                        $.tabAdd(params.name, "/order/feedBack?status=" + status);
                                         break;
                                 }
                             });
                         }
                     });
                 },
+                getMessage: function () {
+                    _messageService.getAll({
+                        isRead: false
+                    }, {
+                        success: function (data) {
+                            $('#txtMsg').text(data.totalCount)
+                        }
+                    });
+                }
             }
             methods.init();
             methods.initChart();
+            methods.getMessage();
         });
 
     </script>

@@ -1,34 +1,31 @@
 ﻿@using WOrder.Web.Startup
 
 @{
-    ViewBag.ActiveMenu = PageNames.User;
+    ViewBag.ActiveMenu = PageNames.Approve;
     //Layout = null;
 }
 
 
-@section Styles{
-    <style type="text/css">
-        .user-img {
-            height: 84px;
-            width: auto;
-            border: 1px solid #f5bdbd;
-        }
-    </style>
-}
-
-
-
-<div class="easyui-layout" id="ly_approve" data-options="fit:true,border:false">
+<div class="easyui-layout" id="ly_userApprove" data-options="fit:true,border:false">
     <div data-options="region:'north',height:50" style="padding:7px 10px;">
         <table class="query-table">
             <tr>
-                <td>人员状态</td>
-                <td><input class="easyui-combobox" id="txtIsActive" /></td>
-                <td>关键字</td>
-                <td><input class="easyui-combobox" id="txtKey" /></td>
+                <td>审核状态</td>
+                <td><input class="easyui-combobox" id="txtActive" value="0" /></td>
+                <td>创建日期</td>
+                <td><input class="easyui-datebox" id="txtSDate" /></td>
+                <td>-</td>
+                <td><input class="easyui-datebox" id="txtEDate" /></td>
+                <td>
+                    关键字
+                </td>
+                <td>
+                    <input class="easyui-searchbox" id="txtKey" />
+                </td>
                 <td>
                     <a id="btnQuery" class="easui-linkbutton">查询</a>
                 </td>
+
             </tr>
         </table>
     </div>
@@ -38,15 +35,60 @@
 </div>
 
 <!-- 字典信息增删该查 -->
-<div id="dlg_approve" class="easyui-dialog" data-options="width:700,height:400,closed:true,title:'人员信息'">
-    <form id="frm_approve" method="POST" enctype="multipart/form-data">
+<div id="dlg_approve" class="easyui-dialog" data-options="width:700,height:500,closed:true,title:'人员信息'">
+    <form id="frm_audit" method="POST">
         <input type="hidden" name="id">
-        <input type="hidden" name="fileIds" />
         <table class="form-table">
             <tr>
-                <td class="tdLabel">账号</td>
+                <td class="tdLabel">隶属部门</td>
+                <td colspan="3">
+                    <input class="easyui-textbox" name="itemName" data-options="width:500,required:true,prompt:'最短4位,最长20位'" />
+                </td>
+            </tr>
+            <tr>
+                <td class="tdLabel">工作区域</td>
+                <td colspan="3">
+                    <input class="easyui-textbox" name="oAddress" data-options="width:500,required:true,prompt:'问题的位置信息'" />
+                </td>
+            </tr>
+            <tr>
+                <td class="tdLabel">工作模式</td>
+                <td colspan="3">
+                    <input class="easyui-textbox" name="description" data-options="width:500,required:true,height:'100',multiline:true" />
+                </td>
+            </tr>
+            <tr>
+                <td class="tdLabel">上传图片</td>
+                <td colspan="3">
+                    <input id="uploader" />
+                </td>
+            </tr>
+            <tr>
+                <td class="tdLabel">图片</td>
                 <td>
-                    <input class="easyui-textbox" name="account" data-options="width:200,required:true" />
+                    <ul class="img-list"></ul>
+                </td>
+            </tr>
+        </table>
+    </form>
+</div>
+
+<!-- 字典信息增删该查 -->
+<div id="dlg_user" class="easyui-dialog" data-options="width:700,height:400,closed:true,title:'人员信息'">
+    <form id="frm_user" method="POST" enctype="multipart/form-data">
+        <input type="hidden" name="id">
+        <input type="hidden" name="fileIds" id="txtFileIds" />
+        <input type="hidden" name="phone">
+        <input type="hidden" name="sex">
+        <input type="hidden" name="account">
+        <table class="form-table">
+
+            <tr>
+                <td class="tdLabel">身份证</td>
+                <td>
+                    <input class="easyui-textbox" name="idCard" data-options="width:200,required:true,validType:{
+		                    length:[18,18]
+	                    }" />
                 </td>
                 <td class="tdLabel">密码</td>
                 <td>
@@ -68,27 +110,7 @@
             <tr>
                 <td class="tdLabel">岗位名称</td>
                 <td>
-                    <input class="easyui-textbox" name="position" data-options="width:200,required:true" />
-                </td>
-                <td class="tdLabel">性别</td>
-                <td>
-                    <input class="easyui-combobox" name="sex" data-options="width:200,required:true,valueField:'text',textField:'text',editable:false,data:[{text:'男'},{text:'女'}]" />
-                </td>
-            </tr>
-            <tr>
-                <td class="tdLabel">联系方式</td>
-                <td>
-                    <input class="easyui-textbox" name="phone" data-options="width:200,required:true,prompt:'185xx'" />
-                </td>
-                <td class="tdLabel">邮箱</td>
-                <td>
-                    <input class="easyui-textbox" name="email" data-options="width:200,validType:['email','length[0,20]']" />
-                </td>
-            </tr>
-            <tr>
-                <td class="tdLabel">负责区域</td>
-                <td>
-                    <input class="easyui-textbox" name="areaName" data-options="width:200,prompt:'负责的位置'" />
+                    <input class="easyui-textbox" id="txtPosition" name="position" data-options="width:200,required:true" />
                 </td>
                 <td class="tdLabel">工作模式</td>
                 <td>
@@ -96,15 +118,15 @@
                 </td>
             </tr>
             <tr>
-                <td class="tdLabel">照片上传</td>
+                <td class="tdLabel">负责区域</td>
                 <td colspan="3">
-                    <input class="easyui-filebox" id="txtUPhoto" name="file" data-options="width:200" />
+                    <input class="easyui-textbox" name="areaName" data-options="prompt:'负责的位置',width:540" />
                 </td>
             </tr>
             <tr>
-                <td class="tdLabel">照片</td>
-                <td>
-                    <img id="img_uPhoto" class="user-img" />
+                <td class="tdLabel">头像</td>
+                <td colspan="3">
+                    <ul class="img-list"></ul>
                 </td>
             </tr>
         </table>
@@ -113,205 +135,215 @@
 
 
 @section Scripts{
-    <script type="text/javascript">
-        $(function () {
-            var selectNode
-                , deptUrl = "/api/services/app/Dept/GetAll?maxResultCount=10000&skipCount=0"
-                , _deptService = abp.services.app.dept
-                , _userService = abp.services.app.user
-                ;
-            var methods = {
-                init: function () {
+<script type="text/javascript">
+    $(function () {
+        var _userService = abp.services.app.user
+            , deptUrl = "/api/services/app/Dept/GetAll?maxResultCount=10000&skipCount=0"
+            , dictURL = "/api/services/app/dictionary/GetAll?maxResultCount=10000&skipCount=0&dictType=" + encodeURIComponent("岗位排班字典")
+       ,activeIndex=-1;
+        var methods = {
+            init: function () {
+                $.parser.parse('#ly_userApprove')
 
-                    $.parser.parse('#ly_approve')
-                    $.parser.parse('#dlg_approve');
-
-
-
-                    $('#txtIsActive').combobox({
-                        valueField: 'id',
-                        textField: 'text',
-                        editable: false,
-                        tools: [{
-                            iconCls: 'icon-clear',
-                            handler: function () {
-                                $(this).combobox('clear');
-                            }
-                        }]
-                    });
-
-                    $('#dlg_approve').dialog({
-                        buttons: [
-                            {
-                                text: '保存',
-                                iconCls: 'icon-save',
-                                handler: function () {
-                                    methods.saveUser();
-                                }
-                            }, {
-                                text: '关闭',
-                                iconCls: 'icon-cancel',
-                                handler: function () {
-                                    $('#dlg_approve').dialog('close');
-                                }
-                            }
-                        ]
-                    });
-
-                    $('#txtDeptId').combobox({
-                        method: "GET",
-                        url: deptUrl,
-                        valueField: 'id',
-                        textField: 'name',
-                        loadFilter: function (result) {
-                            return result["items"];
+                var baseOption = {
+                    textField: 'name',
+                    method: "GET",
+                    editable: false,
+                    icons: [{
+                        iconCls: 'icon-clear',
+                        handler: function (e) {
+                            $(e.data.target).textbox('clear');
                         }
-                    });
+                    }]
+                }
 
-                    //照片选择
-                    $('#txtUPhoto').filebox({
-                        buttonText: '选择图片',
-                        buttonIcon: 'icon-upload',
-                        prompt: ' 格式jpg,png',
-                        width: 300,
-                        accept: 'jpg|png'
-                    });
-                },
-                initTree: function () {
-                    $.treeInit({
-                        id: 'tree_dept',
-                        url: deptUrl,
+                $('#txtActive').combobox($.extend({
+                    valueField: 'id',
+                    width:90,
+                    data: [{ id: 0, name: '待审核' }, { id: 1, name: '已审核' }],
+                    onHidePanel: function () {
+                        methods.query();
+                    }
+                }, baseOption));
 
-                        onClick: function (node) {
-                            selectNode = node;
-                            //通过类型来获取字典数据
-                            methods.queryUser();
+                $.combobox({
+                    id: 'txtPosition',
+                    url: dictURL,
+                    valueField:'name'
+                });
+
+                $('#txtDeptId').combobox({
+                    method: "GET",
+                    url: deptUrl,
+                    valueField: 'id',
+                    textField: 'name',
+                    loadFilter: function (result) {
+                        return result["items"];
+                    }
+                });
+
+                $('#txtSDate').datebox({
+                    width: 120,
+                    editable:false,
+                    icons: [{
+                        iconCls: 'icon-clear',
+                        handler: function (e) {
+                            $(e.data.target).textbox('clear');
+                        }
+                    }]
+                })
+
+                $('#txtEDate').datebox({
+                    width: 120,
+                    editable: false,
+                    icons: [{
+                        iconCls: 'icon-clear',
+                        handler: function (e) {
+                            $(e.data.target).textbox('clear');
+                        }
+                    }]
+                })
+
+                $('#btnQuery').linkbutton({
+                    iconCls: 'icon-search',
+                    width: 80,
+                    plain:true,
+                    onClick: function () {
+                        methods.query()
+                    }
+                });
+
+
+                $('#txtKey').searchbox({
+                    width: 250,
+                    searchbox: function () {
+                        methods.query();
+                    }
+                });
+
+                $('#dlg_user').dialog({
+                    buttons: [
+                        {
+                            text: '激活',
+                            iconCls: 'icon-save',
+                            handler: function () {
+                                methods.active();
+                            }
+                        }, {
+                            text: '关闭',
+                            iconCls: 'icon-cancel',
+                            handler: function () {
+                                $('#dlg_user').dialog('close');
+                                activeIndex = -1;
+                            }
+                        }
+                    ]
+                });
+            },
+            initTable: function (queryParam) {
+                $.dgInit({
+                    id: "tb_approve",
+                    url: '/api/services/app/user/getAll',
+                    queryParams:queryParam,
+                    columns: [[
+                        { field: 'id', hidden: true, width: 30 },
+                        { field: 'deptId', hidden: true, width: 30 },
+                        { field: 'account', title: '账号', width: 80, sortable: true },
+                        { field: 'userName', title: '姓名', width: 80 },
+                        {
+                            field: 'isActive', title: '审核状态', width: 80,
+                            formatter: function (value, row, index) {
+                                if (value == 0) {
+                                    return "<span style='color:red;'>未审核</span>"
+                                } else {
+                                    return "<span style='color:blue;'>已审核</span>"
+                                }
+                            }
                         },
-                        onContextMenu: function (e, node) {
-                            e.preventDefault();
-                            // select the node
-                            $('#tree_dept').tree('select', node.target);
-                            // display context menu
-                            $('#mm_dict').menu('show', {
-                                left: e.pageX,
-                                top: e.pageY,
-                                onClick: function (item) {
-                                    if (item.text == "新增") {
-                                        $('#frm_dept').form('clear');
-                                        $('#dlg_dept').dialog('open')
-                                    }
-                                    else if (item.text == "编辑") {
-                                        $('#frm_dept').form('load', node.attributes);
-                                        console.log(node.attributes)
-                                        $('#dlg_dept').dialog('open')
-                                    } else {
-                                        abp.message.confirm("确定要删除部门<span style='color:red;'>" + node.text + "</span>?", function () {
-                                            _deptService.delete({ id: node.id }, {
-                                                success: function (data) {
-                                                    $("#tree_dept").tree('reload');
-                                                }
-                                            })
-                                        })
-                                    }
+                        { field: 'idCard', title: '身份证', width: 140 },
+                        { field: 'deptName', title: '隶属部门', width: 120 },
+                        { field: 'position', title: '岗位', width: 80 },
+                        { field: 'phone', title: '联系方式', width: 120 },
+                        { field: 'sex', title: '性别', width: 80 },
+                        {
+                            field: 'action', title: '操作', width: 80,
+                            formatter: function (value, row, index) {
+                                if (row.isActive) {
+                                    return;
+                                }
+                                return "<a rowIndex='" + index + "' userId='" + row.id + "' href='javascript:void(0)' class='btn-pass'>通过</a>" +
+                                       "<a rowIndex='" + index + "' userId='" + row.id + "' style='margin-left:10px;' href='javascript:void(0)' class='btn-cancel'>拒绝</a>"
+                            }
+                        },
+                    ]],
+                    onLoadSuccess: function (data) {
+                        //通过
+                        $('.btn-pass').click(function () {
+                            var userId = $(this).attr('userId')
+                             , index = $(this).attr('rowIndex');
+                            activeIndex = index;
+                            var row = $('#tb_approve').datagrid('getRows')[index];
+                            $('#frm_user').form('load', row);
+                            $('#dlg_user').dialog('open');
+
+                            $.showFiles({
+                                parentId: row.id,
+                                module: 'user'
+                            });
+                        });
+                        //拒绝
+                        $('.btn-cancel').click(function () {
+                            var userId = $(this).attr('userId')
+                            , index = $(this).attr('rowIndex');
+                            _userService.delete({id:userId}, {
+                                success: function (data) {
+                                    $('#tb_approve').datagrid('deleteRow', index);
                                 }
                             });
-                        }
-                    })
-                },
-                initTable: function () {
-                    $.dgInit({
-                        id: "tb_approve",
-                        url: '/api/services/app/user/getAll',
-                        columns: [[
-                            { field: 'id', hidden: true, width: 30 },
-                            { field: 'deptId', hidden: true, width: 30 },
-                            { field: 'account', title: '账号', width: 80, sortable: true },
-                            { field: 'userName', title: '姓名', width: 80 },
-                            { field: 'deptName', title: '隶属部门', width: 120 },
-                            { field: 'position', title: '岗位', width: 80 },
-                            { field: 'phone', title: '联系方式', width: 120 },
-                            { field: 'sex', title: '性别', width: 80 },
-                        ]],
-                        toolbar: [
-                            {
-                                text: "新增",
-                                iconCls: 'icon-add',
-                                handler: function () {
-
-                                    $('#frm_approve').form('clear');
-                                    $('#dlg_approve').dialog('open');
-                                    if (selectNode) {
-                                        $('#txtDeptId').combobox('setValue', selectNode.id);
-                                    }
-                                }
-                            }, '-', {
-                                text: "编辑",
-                                iconCls: 'icon-edit',
-                                handler: function () {
-
-                                    $.rowSelectCheck('tb_approve', "请先要编辑的人员", function (row) {
-                                        $('#frm_approve').form('load', row);
-                                        $('#dlg_approve').dialog('open')
-                                        //将no设置未只读
-                                        if (row.photos) {
-                                            $('#img_uPhoto').attr('src', row.photos)
-                                        }
-                                    })
-                                }
-                            }, '-', {
-                                text: "删除",
-                                iconCls: 'icon-remove',
-                                handler: function () {
-                                    $.rowSelectCheck('tb_approve', "请先选择要删除的人员", function (row, rowIndex) {
-                                        abp.message.confirm("确定要删除人员:" + row.name, function (r) {
-                                            _userService.delete({ id: row.id }, {
-                                                success: function (data) {
-                                                    abp.notify.success("删除成功");
-                                                    $('#tb_approve').datagrid('deleteRow', rowIndex)
-                                                }
-                                            })
-                                        });
-                                    })
-                                }
-                            }
-                        ]
-                    });
-                },
-
-                queryUser: function () {
-                    var param = {};
-                    if (selectNode) {
-                        param["deptId"] = selectNode.id;
+                        });
                     }
-                    $('#tb_approve').datagrid('reload', param);
-                },
-                saveUser: function () {
-
-                    $.formSave({
-                        id: 'frm_approve',
-                        action: function (fields, isAdd) {
-                            var reqURL = "";
-                            if (isAdd) {
-                                reqURL = "/User/Create";
-                            } else {
-                                reqURL = "/User/Update";
+                });
+            },
+            getParam:function(){
+                var param= {
+                    "sDate": $('#txtSDate').datebox("getValue"),
+                    "eDate": $('#txtEDate').datebox("getValue"),
+                    "key":$('#txtKey').searchbox('getValue')
+                }
+                var isActive = $('#txtActive').combobox("getValue");
+                if (isActive == 0) {
+                    param["isActive"] = false;
+                } else if (isActive == 1) {
+                    param["isActive"] = true;
+                }
+                return param
+            },
+            query: function (param) {
+              
+                var queryParam = $.extend(methods.getParam(), param);
+                $('#tb_approve').datagrid('reload', queryParam);
+            },
+            active: function () {
+                $.formSave({
+                    id: 'frm_user',
+                    action: function (fields, isAdd) {
+                        fields["isActive"] = true;
+                        _userService.update(fields, {
+                            success: function (data) {
+                                $('#dlg_user').dialog('close')
+                                $('#tb_approve').datagrid('deleteRow', activeIndex);
+                                activeIndex = -1;
                             }
-
-                            $('#frm_approve').form('submit', {
-                                url: reqURL,
-                                success: function (data) {
-                                    $('#dlg_approve').dialog('close')
-                                    $.procAjax(data);
-                                }
-                            })
-
-                        }
-                    });
-                },
+                        });
+                    }
+                });
             }
 
-            methods.init();
-            methods.initTable();
-        })
-    </script>
+        }
+
+        methods.init();
+        methods.initTable($.extend({isActive:false},methods.getParam()));
+    })
+</script>
+
 }

@@ -231,7 +231,9 @@
             },
             queryDict: function (obj) {
                 var dictType = "";
-                if (selectNode) {
+                if (selectNode && selectNode.text == "全部") {
+                }
+                else if (selectNode) {
                     dictType = selectNode.text;
                 }else if(obj) {
                     dictType = obj.dictType;

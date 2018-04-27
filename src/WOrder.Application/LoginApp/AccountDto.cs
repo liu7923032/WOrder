@@ -4,13 +4,14 @@ using System.ComponentModel.DataAnnotations;
 using System.Text;
 using Abp.Application.Services.Dto;
 using Abp.AutoMapper;
+using Abp.Runtime.Validation;
 using WOrder.Domain.Entities;
 
 namespace WOrder.UserApp
 {
 
     [AutoMapTo(typeof(WOrder_Account))]
-    public class CreateUserInput
+    public class CreateUserInput : ICustomValidate
     {
 
         [StringLength(20)]
@@ -44,26 +45,54 @@ namespace WOrder.UserApp
         [StringLength(20)]
         public string IdCard { get; set; }
 
-        [Required]
         [StringLength(maximumLength: 20, ErrorMessage = "最长20,最短4", ErrorMessageResourceName = "", ErrorMessageResourceType = null, MinimumLength = 4)]
         public string Password { get; set; }
 
-        /// <summary>
-        /// 部门Id
-        /// </summary>
-        [Required]
-        public int DeptId { get; set; }
+        public int? DeptId { get; set; }
 
         /// <summary>
         /// 工作方式
         /// </summary>
         public string WorkMode { get; set; }
 
+        /// <summary>
+        /// 工作区域
+        /// </summary>
         public string AreaName { get; set; }
-
+        /// <summary>
+        /// 是否激活
+        /// </summary>
         public bool IsActive { get; set; }
 
+        /// <summary>
+        /// 是否有附档
+        /// </summary>
         public string FileIds { get; set; }
+
+        public void AddValidationErrors(CustomValidationContext context)
+        {
+            if (IdCard.Length != 18)
+            {
+                context.Results.Add(new ValidationResult("身份证编号未18位"));
+            }
+            if (Phone.Length != 11)
+            {
+                context.Results.Add(new ValidationResult("手机号为11位"));
+            }
+        }
+    }
+
+    public class LoginInput
+    {
+        [Required]
+        [StringLength(5)]
+        public string Account { get; set; }
+
+        [Required]
+        [StringLength(20)]
+        public string Password { get; set; }
+
+        public bool IsRemember { get; set; }
     }
 
     public class UpdateUserInput : CreateUserInput, IEntityDto<long>
@@ -74,11 +103,14 @@ namespace WOrder.UserApp
     public class UserDto : UpdateUserInput
     {
         public string DeptName { get; set; }
+
+        public string RoleName { get; set; }
+
     }
     /// <summary>
     /// 查询
     /// </summary>
-    public class GetUsersInput
+    public class GetUsersInput : PagedAndSortedResultRequestDto
     {
         public string Account { get; set; }
 

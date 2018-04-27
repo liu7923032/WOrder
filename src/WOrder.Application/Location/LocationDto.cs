@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Text;
 using Abp.Application.Services.Dto;
 using Abp.AutoMapper;
+using Newtonsoft.Json;
 using WOrder.Domain.Entities;
 
 namespace WOrder.Location
@@ -42,7 +43,10 @@ namespace WOrder.Location
 
     public class LocationDto : UpdateLocationInput
     {
+        [JsonConverter(typeof(WOrderDateFormat))]
         public DateTime CreationTime { get; set; }
+
+        public string UserName { get; set; }
     }
 
     public class GetAllLocatinDto : PagedAndSortedResultRequestDto

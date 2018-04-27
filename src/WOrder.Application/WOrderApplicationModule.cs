@@ -39,7 +39,7 @@ namespace WOrder
             });
 
             //注册jpush帮助类
-            IocManager.Register(typeof(JPushHelper), Abp.Dependency.DependencyLifeStyle.Transient);
+            IocManager.Register(typeof(JPushHelper), Abp.Dependency.DependencyLifeStyle.Singleton);
         }
     }
 }

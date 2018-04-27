@@ -7,7 +7,7 @@ using Abp.Domain.Entities.Auditing;
 
 namespace WOrder.Domain.Entities
 {
-    public class WOrder_Account : AuditedEntity<long>
+    public class WOrder_Account : FullAuditedEntity<long>
     {
         [StringLength(20)]
         public string Account { get; set; }
@@ -29,9 +29,10 @@ namespace WOrder.Domain.Entities
         [StringLength(50)]
         public string Position { get; set; }
 
-
-        [Required]
-        public int DeptId { get; set; }
+        /// <summary>
+        /// 调整未可空状态
+        /// </summary>
+        public int? DeptId { get; set; }
 
         [ForeignKey("DeptId")]
         public virtual WOrder_Department Department { get; set; }
@@ -77,9 +78,16 @@ namespace WOrder.Domain.Entities
         [StringLength(20)]
         public string IdCard { get; set; }
 
+        /// <summary>
+        /// 一个用户拥有多个角色
+        /// </summary>
+        [ForeignKey("UserId")]
+        public virtual ICollection<Sys_UserRole> Roles { get; set; }
+
         public WOrder_Account()
         {
             IsLock = false;
         }
+
     }
 }

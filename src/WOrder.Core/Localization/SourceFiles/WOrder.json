@@ -5,6 +5,9 @@
     "Home": "Home",
     "BaseInfo": "BaseInfo",
     "Dictionary": "Dictionary",
+    "RoleSetting": "RoleSetting",
+    "Location": "Location",
+    "Approve": "Approve",
     "WorkOrder": "WorkOrder",
     "User": "User",
     "Schedule": "Schedule",
@@ -15,6 +18,8 @@
     "Inspect": "Inspect",
     "Transport": "Transport",
     "Report": "Report",
-    "UserWorkCount": "UserWorkCount"
+    //员工工时报表
+    "UserWorkCount": "UserWorkCount",
+    "TransportCount": "TransportCount"
   }
 }

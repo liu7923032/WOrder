@@ -25,6 +25,9 @@ using Abp.UI;
 using Microsoft.EntityFrameworkCore;
 using WOrder.File;
 using Dark.Common.Extension;
+using Abp.Domain.Uow;
+using Abp.Notifications;
+using WOrder.Extension;
 
 namespace WOrder.UserApp
 {
@@ -35,7 +38,7 @@ namespace WOrder.UserApp
         //登陆系统
         Task<UserDto> SignAsync(LoginModel login);
         //创建证件当事人
-        Task<ClaimsPrincipal> GetPrincipalAsync(UserDto user, string authenticationType);
+        Task<ClaimsPrincipal> GetPrincipalAsync(string userId, string account, string authenticationType);
         //通过用户来获取账号人员信息
         Task<UserDto> GetUserById(long id);
 
@@ -58,12 +61,7 @@ namespace WOrder.UserApp
         /// <param name="input"></param>
         /// <returns></returns>
         Task<UserDto> Register(CreateUserInput input);
-        /// <summary>
-        /// 激活账号
-        /// </summary>
-        /// <param name="userId"></param>
-        /// <returns></returns>
-        Task<bool> ActiveAccount(long userId);
+
 
         /// <summary>
         /// 返回新图片地址
@@ -71,6 +69,7 @@ namespace WOrder.UserApp
         /// <param name="fileId"></param>
         /// <returns></returns>
         Task<string> ChangePhoto(int fileId);
+
 
     }
 
@@ -80,10 +79,18 @@ namespace WOrder.UserApp
         private IRepository<WOrder_Account, long> _accountRepository;
         private IRepository<WOrder_AttachFile> _fileRepository;
 
-        public UserAppService(IRepository<WOrder_Account, long> userRepository, IRepository<WOrder_AttachFile> fileRepository) : base(userRepository)
+        private readonly IRealTimeNotifier _realTimeNotifier;
+        private readonly JPushHelper _jpushHelper;
+
+        public UserAppService(IRepository<WOrder_Account, long> userRepository, IRepository<WOrder_AttachFile> fileRepository,
+            IRealTimeNotifier realTimeNotifier,
+            JPushHelper jPushHelper) : base(userRepository)
         {
             _accountRepository = userRepository;
             _fileRepository = fileRepository;
+            _realTimeNotifier = realTimeNotifier;
+            _jpushHelper = jPushHelper;
+
         }
 
         #region 1.0 登陆功能
@@ -96,15 +103,15 @@ namespace WOrder.UserApp
         public async Task<UserDto> GetUserByAccountAsync(string account)
         {
             WOrder_Account user = null;
-            var isTel = int.TryParse(account, out int telphone);
+            var isTel = double.TryParse(account, out double telphone);
             if (isTel)
             {
-                user = _accountRepository.GetAll().Where(u => u.Phone.Equals(account)).Include("Department").FirstOrDefault();
+                user = _accountRepository.GetAll().Where(u => u.Phone.Equals(account)).Include("Department").Include("Roles").FirstOrDefault();
             }
             else
             {
                 string strAccount = account.ToUpper();
-                user = _accountRepository.GetAll().Where(u => u.Account.Equals(account)).Include("Department").FirstOrDefault();
+                user = _accountRepository.GetAll().Where(u => u.Account.Equals(account)).Include("Department").Include("Roles").FirstOrDefault();
             }
             return await Task.FromResult(user.MapTo<UserDto>());
         }
@@ -127,6 +134,8 @@ namespace WOrder.UserApp
             {
                 throw new UserFriendlyException("密码错误,请重试");
             }
+            //获取用户的角色
+            
             //2:创建身份认证
             //ClaimsIdentity identity = new ClaimsIdentity(authenticationType);
             //identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()));
@@ -135,12 +144,12 @@ namespace WOrder.UserApp
             return await Task.FromResult(user);
         }
 
-        public async Task<ClaimsPrincipal> GetPrincipalAsync(UserDto user, string authenticationType)
+        public async Task<ClaimsPrincipal> GetPrincipalAsync(string userId, string account, string authenticationType)
         {
 
             ClaimsIdentity identity = new ClaimsIdentity(authenticationType);
-            identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()));
-            identity.AddClaim(new Claim(ClaimTypes.Name, user.Account));
+            identity.AddClaim(new Claim(ClaimTypes.NameIdentifier, userId));
+            identity.AddClaim(new Claim(ClaimTypes.Name, account));
             return await Task.FromResult(new ClaimsPrincipal(identity));
         }
 
@@ -156,10 +165,13 @@ namespace WOrder.UserApp
         [AbpAuthorize(PermissionNames.Page_Admin)]
         public async override Task<UserDto> Create(CreateUserInput input)
         {
-            input.Account = input.Account.ToUpper();
             input.IsActive = true;
-            WOrder_Account account = input.MapTo<WOrder_Account>();
+            if (string.IsNullOrEmpty(input.Account))
+            {
+                input.Account = GenerateAccount();
+            }
 
+            WOrder_Account account = input.MapTo<WOrder_Account>();
             await _accountRepository.InsertAsync(account);
             await CurrentUnitOfWork.SaveChangesAsync();
             if (!string.IsNullOrEmpty(input.FileIds))
@@ -175,6 +187,16 @@ namespace WOrder.UserApp
             return await Task.FromResult(account.MapTo<UserDto>());
         }
 
+
+        private string GenerateAccount()
+        {
+            using (CurrentUnitOfWork.DisableFilter(AbpDataFilters.SoftDelete))
+            {
+                var userNum = _accountRepository.Count(u => !string.IsNullOrEmpty(u.Account));
+                return "T" + userNum.ToString().PadLeft(4, '0');
+            }
+        }
+
         [AbpAuthorize(PermissionNames.Page_Admin)]
         public async override Task<UserDto> Update(UpdateUserInput input)
         {
@@ -183,6 +205,14 @@ namespace WOrder.UserApp
                 int fileId = input.FileIds.ToListBySplit().FirstOrDefault();
                 var newFile = await UpdateUserPhoto(input.Id, fileId);
                 input.Photos = newFile.FilePath;
+            }
+
+            //检查账号是否存在,如果不存在,那么就自动生成
+            if (string.IsNullOrEmpty(input.Account))
+            {
+                input.Account = GenerateAccount();
+                ////提醒手机用户,信息审核通过
+                await _jpushHelper.PushToAlias("审核通过", $"恭喜你,你的信息已经审核;账号:{input.Account},密码身份证后6位", new List<string>() { input.Id.ToString() });
             }
 
             return await base.Update(input);
@@ -199,7 +229,7 @@ namespace WOrder.UserApp
         {
             return base.CreateFilteredQuery(input)
                  .WhereIf(!string.IsNullOrEmpty(input.Key),
-                            u => (u.Account.Contains(input.Key) 
+                            u => (u.Account.Contains(input.Key)
                             || u.Department.Name.Contains(input.Key)
                             || u.UserName.Contains(input.Key)))
                  //.WhereIf(!string.IsNullOrEmpty(input.UserName), u => u.UserName.Contains(input.UserName))
@@ -250,22 +280,48 @@ namespace WOrder.UserApp
             //注册时候,默认是未激活状态
             WOrder_Account account = input.MapTo<WOrder_Account>();
             account.IsActive = false;
+            if (string.IsNullOrEmpty(input.Account))
+            {
+                input.Account = string.Empty;
+            }
+
+            //检查身份证信息和手机是否有重复
+            var isExist = await _accountRepository.FirstOrDefaultAsync(u => u.IdCard.Equals(input.IdCard) || u.Phone.Equals(input.Phone));
+            if (isExist != null)
+            {
+                throw new UserFriendlyException("身份证信息或者手机信息有重复,请重新输入");
+            }
+            account.Password = input.IdCard.Substring(12, 6);
             await _accountRepository.InsertAsync(account);
+
+            await CurrentUnitOfWork.SaveChangesAsync();
+            //通知信息
+            await NotificationToAdmin(input);
+            //保存数据
             return await Task.FromResult(account.MapTo<UserDto>());
         }
 
-        /// <summary>
-        /// 激活账号
-        /// </summary>
-        /// <param name="userId"></param>
-        /// <returns></returns>
-        public async Task<bool> ActiveAccount(long userId)
+        private async Task NotificationToAdmin(CreateUserInput user)
         {
-            var account = _accountRepository.Get(userId);
-            account.IsActive = true;
-            await _accountRepository.UpdateAsync(account);
-            return await Task.FromResult(true);
+            UserNotification userNotification = new UserNotification();
+            NotificationData notificationData = new NotificationData();
+            notificationData["category"] = $"姓名:{user.UserName}";
+            notificationData["title"] = "请帮忙审核";
+            userNotification.Notification =
+                new TenantNotification()
+                {
+                    CreationTime = DateTime.Now,
+                    NotificationName = "人员注册提醒",
+                    Severity = NotificationSeverity.Info,
+                    Data = notificationData
+                };
+            userNotification.TenantId = AbpSession.GetTenantId();
+            //通知管理员
+            userNotification.UserId = 1;
+            userNotification.Id = Guid.NewGuid();
+            await _realTimeNotifier.SendNotificationsAsync(new UserNotification[] { userNotification });
         }
+
 
         public async Task<string> ChangePhoto(int fileId)
         {

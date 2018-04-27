@@ -24,6 +24,7 @@ namespace WOrder.Domain.Entities
         [StringLength(20)]
         public string Category { get; set; }
 
+
         /// <summary>
         /// 项目名称
         /// </summary>
@@ -31,6 +32,10 @@ namespace WOrder.Domain.Entities
         [StringLength(200)]
         public string ItemName { get; set; }
 
+        /// <summary>
+        /// 出发位置
+        /// </summary>
+        public string StartAddr { get; set; }
         /// <summary>
         /// 具体位置
         /// </summary>
@@ -44,22 +49,44 @@ namespace WOrder.Domain.Entities
         [StringLength(1000)]
         public string Description { get; set; }
 
-        /// <summary>
-        /// 到达时间
-        /// </summary>
-        public DateTime? ArriveDate { get; set; }
 
         /// <summary>
-        /// 单据的类别 ,默认是0是派单，1是抢单 
+        /// 完成时间
+        /// </summary>
+        public DateTime? EndDate { get; set; }
+
+        /// <summary>
+        /// 记录完成位置
+        /// </summary>
+        public string Location { get; set; }
+
+        /// <summary>
+        /// 普通订单,运送订单
         /// </summary>
         [Required]
         public OrderType OrderType { get; set; }
+
+        /// <summary>
+        /// 运送开始
+        /// </summary>
+        public DateTime? SDate { get; set; }
+
+        /// <summary>
+        /// 运送结束
+        /// </summary>
+        public DateTime? EDate { get; set; }
 
         /// <summary>
         /// 当前订单状态
         /// </summary>
         [Required]
         public TStatus TStatus { get; set; }
+
+        /// <summary>
+        /// 稽核状态
+        /// </summary>
+        public CStatus CStatus { get; set; }
+
 
         /// <summary>
         /// 通过串联创建人和修改人
@@ -72,11 +99,22 @@ namespace WOrder.Domain.Entities
         public virtual WOrder_Account LastModifierUser { get; set; }
 
         /// <summary>
+        /// 处理人
+        /// </summary>
+        public long? HandlerId { get; set; }
+        /// <summary>
         /// 工单的处理人
         /// </summary>
-        public virtual ICollection<WOrder_Handler> Handlers { get; set; }
-    }
+        [ForeignKey("HandlerId")]
+        public virtual WOrder_Account Handler { get; set; }
 
+        /// <summary>
+        /// 来源id，当产生稽核后，会记录最开始的id
+        /// </summary>
+        public long? SrcId { get; set; }
+
+        
+    }
 
     /// <summary>
     /// 订单类别
@@ -84,15 +122,35 @@ namespace WOrder.Domain.Entities
     public enum OrderType
     {
         /// <summary>
-        /// 派单
+        /// 报修
         /// </summary>
-        Dispatch,
+        [Description("维修类")]
+        Repair,
         /// <summary>
-        /// 抢单
+        /// 运送类
         /// </summary>
-        Rob
+        [Description("运送类")]
+        Transport
     }
 
+
+    public enum CStatus
+    {
+        /// <summary>
+        /// 初始状态
+        /// </summary>
+        Init,
+        /// <summary>
+        /// 整改
+        /// </summary>
+        [Description("需整改")]
+        Reform,
+        /// <summary>
+        /// 通过
+        /// </summary>
+        [Description("已通过")]
+        Pass
+    }
     /// <summary>
     /// 任务状态
     /// </summary>
@@ -118,6 +176,8 @@ namespace WOrder.Domain.Entities
         /// </summary>
         [Description("已完成")]
         Finish,
+
+       
     }
 
 }

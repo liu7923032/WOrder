@@ -1,4 +1,10 @@
 ﻿$.extend({
+    getQuery: function (name) {
+        var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", "i");
+        var r = window.location.search.substr(1).match(reg);
+        if (r != null) return unescape(r[2]);
+        return null;
+    },
     initMenu: function () {
 
         $('.sys-menu').find('li>a').click(function () {
@@ -180,6 +186,32 @@
             options.save(editIndex, editIndexArray);
         }
     },
+    combobox: function (options) {
+        var opts = {
+            textField: 'name',
+            method: "GET",
+            editable: true,
+            icons: [{
+                iconCls: 'icon-clear',
+                handler: function (e) {
+                    $(e.data.target).combobox('clear');
+                }
+            }],
+            loadFilter: function (data) {
+                if (data instanceof Array) {
+                    return data;
+                } else {
+                    return data["items"];
+                }
+            },
+            filter: function (q, row) {
+                var opts = $(this).combobox('options');
+                return row[opts.textField].indexOf(q) >= 0;
+            }
+        }
+        $('#' + options.id).combobox($.extend(opts, options));
+    },
+    
     //行选择检查
     rowSelectCheck: function (id, message, func) {
         var row = $('#' + id).datagrid('getSelected');
@@ -440,7 +472,7 @@
             url: "/api/file/upload",
             fileName: 'file',
             width: 250,
-            module:"order",
+            module: "order",
             //上传成功
             success: function () {
             }
@@ -499,7 +531,7 @@
     showFiles: function (options) {
         var opts = {
             parentId: '',
-            module:'order',
+            module: 'order',
             selector: '.img-list',
             success: function () { },
             files: []

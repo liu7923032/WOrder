@@ -69,7 +69,7 @@
             <tr>
                 <td class="tdLabel">账号</td>
                 <td>
-                    <input class="easyui-textbox" name="account" data-options="width:200,required:true" />
+                    <input class="easyui-textbox" name="account" data-options="width:200,required:false,readonly:true,prompt:'系统自动生成'" />
                 </td>
                 <td class="tdLabel">密码</td>
                 <td>
@@ -84,16 +84,30 @@
                 <td>
                     <input class="easyui-textbox" name="userName" data-options="width:200,required:true" />
                 </td>
+                <td class="tdLabel">
+                    身份证
+                </td>
+                <td>
+                    <input class="easyui-textbox" name="idCard" data-options="width:200,required:true,validType:['length[18,18]']" />
+                </td>
+              
+            </tr>
+
+            <tr>
                 <td class="tdLabel">部门</td>
                 <td>
                     <input class="easyui-combobox" id="txtDeptId" name="deptId" data-options="width:200,required:true,valueField:'text',textField:'text',editable:false" />
                 </td>
-            </tr>
-
-            <tr>
                 <td class="tdLabel">岗位名称</td>
                 <td>
-                    <input class="easyui-textbox" name="position" data-options="width:200,required:true" />
+                    <input class="easyui-combobox" name="position" id="txtPosition" data-options="width:200" />
+                </td>
+               
+            </tr>
+            <tr>
+                <td class="tdLabel">联系方式</td>
+                <td>
+                    <input class="easyui-textbox" name="phone" data-options="width:200,required:true,prompt:'185xx'" />
                 </td>
                 <td class="tdLabel">性别</td>
                 <td>
@@ -101,35 +115,19 @@
                 </td>
             </tr>
             <tr>
-                <td class="tdLabel">联系方式</td>
-                <td>
-                    <input class="easyui-textbox" name="phone" data-options="width:200,required:true,prompt:'185xx'" />
-                </td>
-                <td class="tdLabel">邮箱</td>
-                <td>
-                    <input class="easyui-textbox" name="email" data-options="width:200,validType:['email','length[0,20]']" />
-                </td>
-            </tr>
-            <tr>
                 <td class="tdLabel">负责区域</td>
-                <td>
-                    <input class="easyui-textbox" name="areaName" data-options="width:200,prompt:'负责的位置'" />
-                </td>
-                <td class="tdLabel">工作模式</td>
-                <td>
-                    <input class="easyui-textbox" name="workMode" data-options="width:200" />
+                <td colspan="3">
+                    <input class="easyui-combobox" name="areaName" id="txtAreaName" data-options="width:540,prompt:'负责的位置'" />
                 </td>
             </tr>
             <tr>
                 <td class="tdLabel">上传头像</td>
-                <td >
+                <td>
                     <input id="uploader" />
                 </td>
-                <td class="tdLabel">
-                    身份证
-                </td>
+                <td class="tdLabel">工作模式</td>
                 <td>
-                    <input class="easyui-textbox" name="idCard" data-options="width:200,validType:['length[18,18]']" />
+                    <input  name="workMode" id="txtWorkMode" data-options="width:200" />
                 </td>
             </tr>
             <tr>
@@ -155,7 +153,7 @@
                 , deptUrl = "/api/services/app/Dept/GetAll?maxResultCount=10000&skipCount=0"
                 , _deptService = abp.services.app.dept
                 , _userService = abp.services.app.user
-                ;
+                , dictUrl = "/api/services/app/dictionary/GetAll?maxResultCount=10000&skipCount=0";
             var methods = {
                 init: function () {
 
@@ -211,9 +209,30 @@
                         }
                     });
 
+                    $.combobox({
+                        id: 'txtPosition',
+                        url: dictUrl + "&dictType=" + encodeURIComponent("岗位排班字典"),
+                        valueField: 'name',
+                    });
+
+                    $.combobox({
+                        id:'txtAreaName',
+                        url: dictUrl + "&dictType=" + encodeURIComponent("科室位置"),
+                        valueField: 'name',
+                    });
+
+                   
+
+                    $.combobox({
+                        id: 'txtWorkMode',
+                        url: dictUrl + "&dictType=" + encodeURIComponent("上班方式"),
+                        valueField: 'name',
+                    });
+
                     //上传文件
                     $.fileUpload({
-                        module:"user",
+                        module: "user",
+                        width: 200,
                         success: function (file) {
                             $('#txtFileIds').val(file.id);
                         }
@@ -310,7 +329,7 @@
                                 iconCls: 'icon-remove',
                                 handler: function () {
                                     $.rowSelectCheck('tb_user', "请先选择要删除的人员", function (row, rowIndex) {
-                                        abp.message.confirm("确定要删除人员:" + row.name, function (r) {
+                                        abp.message.confirm("确定要删除人员:" + row.userName, function (r) {
                                             _userService.delete({ id: row.id }, {
                                                 success: function (data) {
                                                     abp.notify.success("删除成功");
@@ -327,7 +346,7 @@
 
                 queryUser: function () {
                     var param = {};
-                    if (selectNode) {
+                    if (selectNode && selectNode.id!=0) {
                         param["deptId"] = selectNode.id;
                     }
                     $('#tb_user').datagrid('reload', param);

@@ -30,293 +30,202 @@
             font: 16px/20px microsft yahei;
         }
 
-        .wrap {
+        .login-top {
             width: 100%;
             height: 100%;
-            padding: 40px 0;
-            position: fixed;
             opacity: 0.8;
-            background: linear-gradient(to bottom right,#50a3a2,#53e3a6);
-            background: -webkit-linear-gradient(to bottom right,#50a3a2,#53e3a6);
+            position: fixed;
+            background: url(/image/login_bg.jpg) no-repeat center center fixed;
+            background-size: cover;
+            /*background: linear-gradient(to bottom right,#0B6EC3,#0F74C6);
+            background: -webkit-linear-gradient(to bottom right,#0B6EC3,#0F74C6);*/
         }
 
         .container {
-            width: 50%;
-            margin: 0 auto;
-            top:50%;
-            position:relative;
-            margin-top:-128px;
-        }
-
-            .container h1 {
-                text-align: center;
-                color: #FFFFFF;
-                font-weight: 500;
-            }
-
-            .container input {
-                width: 320px;
-                display: block;
-                height: 36px;
-                border: 0;
-                outline: 0;
-                padding: 6px 10px;
-                line-height: 24px;
-                margin: 32px auto;
-                -webkit-transition: all 0s ease-in 0.1ms;
-                -moz-transition: all 0s ease-in 0.1ms;
-                transition: all 0s ease-in 0.1ms;
-            }
-
-                .container input[type="text"], .container input[type="password"] {
-                    background-color: #FFFFFF;
-                    font-size: 16px;
-                    color: #50a3a2;
-                }
-
-                .container input[type='submit'] {
-                    font-size: 16px;
-                    letter-spacing: 2px;
-                    color: #666666;
-                    background-color: #FFFFFF;
-                }
-
-                .container input:focus {
-                    width: 400px;
-                }
-
-                .container input[type='submit']:hover {
-                    cursor: pointer;
-                    width: 400px;
-                }
-
-        .wrap ul {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -10;
+            width: 360px;
+            height: 300px;
+            top: 50%;
+            right: 100px;
+            margin-top: -200px;
         }
 
-            .wrap ul li {
-                list-style-type: none;
-                display: block;
-                position: absolute;
-                bottom: -120px;
-                width: 15px;
-                height: 15px;
-                z-index: -8;
-                background-color: rgba(255, 255, 255, 0.15);
-                animotion: square 25s infinite;
-                -webkit-animation: square 25s infinite;
-            }
-
-                .wrap ul li:nth-child(1) {
-                    left: 0;
-                    animation-duration: 10s;
-                    -moz-animation-duration: 10s;
-                    -o-animation-duration: 10s;
-                    -webkit-animation-duration: 10s;
-                }
-
-                .wrap ul li:nth-child(2) {
-                    width: 40px;
-                    height: 40px;
-                    left: 10%;
-                    animation-duration: 15s;
-                    -moz-animation-duration: 15s;
-                    -o-animation-duration: 15s;
-                    -webkit-animation-duration: 15s;
-                }
-
-                .wrap ul li:nth-child(3) {
-                    left: 20%;
-                    width: 25px;
-                    height: 25px;
-                    animation-duration: 12s;
-                    -moz-animation-duration: 12s;
-                    -o-animation-duration: 12s;
-                    -webkit-animation-duration: 12s;
-                }
-
-                .wrap ul li:nth-child(4) {
-                    width: 50px;
-                    height: 50px;
-                    left: 30%;
-                    -webkit-animation-delay: 3s;
-                    -moz-animation-delay: 3s;
-                    -o-animation-delay: 3s;
-                    animation-delay: 3s;
-                    animation-duration: 12s;
-                    -moz-animation-duration: 12s;
-                    -o-animation-duration: 12s;
-                    -webkit-animation-duration: 12s;
-                }
-
-                .wrap ul li:nth-child(5) {
-                    width: 60px;
-                    height: 60px;
-                    left: 40%;
-                    animation-duration: 10s;
-                    -moz-animation-duration: 10s;
-                    -o-animation-duration: 10s;
-                    -webkit-animation-duration: 10s;
-                }
-
-                .wrap ul li:nth-child(6) {
-                    width: 75px;
-                    height: 75px;
-                    left: 50%;
-                    -webkit-animation-delay: 7s;
-                    -moz-animation-delay: 7s;
-                    -o-animation-delay: 7s;
-                    animation-delay: 7s;
-                }
-
-                .wrap ul li:nth-child(7) {
-                    left: 60%;
-                    animation-duration: 8s;
-                    -moz-animation-duration: 8s;
-                    -o-animation-duration: 8s;
-                    -webkit-animation-duration: 8s;
-                }
-
-                .wrap ul li:nth-child(8) {
-                    width: 90px;
-                    height: 90px;
-                    left: 70%;
-                    -webkit-animation-delay: 4s;
-                    -moz-animation-delay: 4s;
-                    -o-animation-delay: 4s;
-                    animation-delay: 4s;
-                }
-
-                .wrap ul li:nth-child(9) {
-                    width: 100px;
-                    height: 100px;
-                    left: 80%;
-                    animation-duration: 20s;
-                    -moz-animation-duration: 20s;
-                    -o-animation-duration: 20s;
-                    -webkit-animation-duration: 20s;
-                }
-
-                .wrap ul li:nth-child(10) {
-                    width: 120px;
-                    height: 120px;
-                    left: 90%;
-                    -webkit-animation-delay: 6s;
-                    -moz-animation-delay: 6s;
-                    -o-animation-delay: 6s;
-                    animation-delay: 6s;
-                    animation-duration: 30s;
-                    -moz-animation-duration: 30s;
-                    -o-animation-duration: 30s;
-                    -webkit-animation-duration: 30s;
-                }
-
-        @@keyframes square {
-            0% {
-                -webkit-transform: translateY(0);
-                transform: translateY(0)
-            }
-
-            100% {
-                bottom: 400px;
-                transform: rotate(600deg);
-                -webit-transform: rotate(600deg);
-                -webkit-transform: translateY(-500);
-                transform: translateY(-500)
-            }
-        }
-
-        @@-webkit-keyframes square {
-            0% {
-                -webkit-transform: translateY(0);
-                transform: translateY(0)
-            }
-
-            100% {
-                bottom: 400px;
-                transform: rotate(600deg);
-                -webit-transform: rotate(600deg);
-                -webkit-transform: translateY(-500);
-                transform: translateY(-500)
-            }
-        }
-
-        .logo-desc {
-            line-height: 50px;
-            text-align: center;
-            position: relative;
-        }
-
-            .logo-desc img {
-                vertical-align: middle;
+            .container .layui-form {
+                width: 100%;
+                height: 100%;
+                background-color: white;
+                box-shadow: 4px 4px 4px #0961BA;
+                padding: 10px 20px;
             }
 
         .logo-name {
-            vertical-align: middle;
-            color: white;
-            margin-left: 10px;
+            position: relative;
+            height: 55px;
+            color: #70B5F3;
+            padding: 15px;
             font-size: 24px;
+            border-bottom: 2px solid #F6F6F6;
         }
+
+
+        .login-input {
+            position: relative;
+            line-height: 36px;
+            border: 1px solid #DBDBDB;
+            padding: 3px 10px;
+            margin-top: 20px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+
+            .login-input img {
+                vertical-align: middle;
+                height: 20px;
+                width: auto;
+            }
+
+            .login-input input {
+                vertical-align: middle;
+                height: 28px;
+                width: 200px;
+                border: 0;
+                margin-left: 15px;
+            }
+
+                .login-input input:focus {
+                    outline: none;
+                    background-color: transparent;
+                }
+
+                .login-input input ::selection {
+                    background: transparent;
+                }
+
+                .login-input input::-moz-selection {
+                    background: transparent;
+                }
+
+        .logo-title {
+            line-height: 50px;
+            line-height: 50px;
+            color: white;
+            font-family: 'Microsoft YaHei';
+            font-size: 30px;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+            .logo-title img {
+                vertical-align: middle;
+            }
+
+            .logo-title label {
+                vertical-align: middle;
+                margin-left: 10px;
+            }
+
+
+        .login-remember {
+            height: 30px;
+            padding: 10px 0px;
+        }
+
+            .login-remember input {
+                vertical-align: middle;
+            }
+
+            .login-remember label {
+                vertical-align: middle;
+                font-size: 14px;
+            }
+
+        .login-btn {
+            padding: 15px 0px;
+        }
+
+            .login-btn input {
+                width: 100%;
+            }
+
+             
+            .login-footer{
+                position:absolute;
+                left:50%;
+                bottom:40px;
+                color:white;
+                margin-left:-144px;
+                font-weight:600;
+                font-size:14px;
+            }
     </style>
+    <link rel="stylesheet" href="~/lib/layui/css/layui.css" />
 </head>
 <body>
-    <div class="wrap">
+    <div class="login-top">
         <div class="container">
-            <div class="logo-desc"> <img src="~/image/logo_tran.png" /><label class="logo-name">天翔物业</label></div>
-            <div id="frm_login" >
-                <input type="text" name="account" placeholder="账号/手机" />
-                <input type="password" name="password" placeholder="密码" />
-                <input type="submit" id="btnLogin" value="登录" />
+            <div class="logo-title">
+                <img src="~/image/logo_tran.png" />
+                <label>天翔云系统</label>
             </div>
+            <form class="layui-form">
+                <div class="logo-name">用户登陆</div>
+                <div class="login-input">
+                    <img src="~/image/phone.png" />
+                    <input type="text" name="account" autocomplete="off" placeholder="请输入账号/手机" />
+                </div>
+                <div class="login-input">
+                    <img src="~/image/password.png" />
+                    <input type="password" name="password" autocomplete="off" placeholder="请输入密码" />
+                </div>
+                <div class="login-remember">
+                    <input type="checkbox" name="isRemember" title="记住密码" lay-skin="primary" checked>
+                </div>
+                <div class="login-btn"><input type="button" class="layui-btn layui-btn-normal" lay-submit lay-filter="btnLogin" value="登录" /></div>
+            </form>
+
+
         </div>
-        <ul>
-            <li></li>
-            <li></li>
-            <li></li>
-            <li></li>
-            <li></li>
-            <li></li>
-            <li></li>
-            <li></li>
-            <li></li>
-            <li></li>
-        </ul>
+        <div class="login-footer">
+            苏州市环亚数据技术有限公司 版权所有@2018
+        </div>
     </div>
-    <script src="~/lib/easyui/jquery.min.js"></script>
+    <script src="~/lib/jquery/dist/jquery.js"></script>
+    <script src="~/lib/layui/layui.js"></script>
     <script src="~/lib/abp-web-resources/Abp/Framework/scripts/abp.js"></script>
     <!---------abp扩展的ajax ----------->
     <script src="~/lib/abp-web-resources/Abp/Framework/scripts/libs/abp.jquery.js"></script>
+    <script src="~/lib/layui-extend/abp/abp.layui.js"></script>
     <script type="text/javascript">
-        $(function () {
 
-            $('#btnLogin').click(function () {
-                //账号检查
-                var account = $('input[name=account]').val();
-                var pwd = $('input[name=password]').val();
-                if ($.trim(account).length == 0) {
-                    alert("账号不能为空");
+
+        layui.use(['form','layer'], function () {
+            var form = layui.form
+            , layer = layui.layer;
+
+
+            form.on('submit(btnLogin)', function (data) {
+
+                if ($.trim(data.field["account"]).length == 0) {
+                    layer.msg('账号不能为空', { icon: 1 });
                     return;
                 }
-                if ($.trim(pwd).length == 0) {
-                    alert("密码不能为空");
+
+                if ($.trim(data.field["password"]).length == 0) {
+                    layer.msg('密码不能为空', { icon: 1 });
                     return;
+                }
+                if (data.field["isRemember"] == "on") {
+                    data.field["isRemember"] = true;
+                } else {
+                    data.field["isRemember"] = false;
                 }
                 abp.ajax({
                     url: "/Account/LoginAsync",
-                    data: JSON.stringify({
-                        "account": account,
-                        "password": pwd,
-                        "isRemember":true
-                    }),
+                    data: JSON.stringify(data.field),
                 });
-            })
-          
-        })
+            });
+
+        });
     </script>
 </body>
 </html>
